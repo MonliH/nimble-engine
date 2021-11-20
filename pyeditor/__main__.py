@@ -1,4 +1,4 @@
-import moderngl_window
+import moderngl_window as mglw
 from window import WindowEvents
 
-moderngl_window.run_window_config(WindowEvents)
+mglw.run_window_config(WindowEvents)
