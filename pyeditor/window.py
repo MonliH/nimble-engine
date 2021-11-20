@@ -4,7 +4,7 @@ import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from moderngl_window.scene import camera
 from pyrr import Vector3
-from model import Sphere
+from model import Cube, Sphere
 from shader_manager import global_sm
 from resources import resource_dir
 from grid import Grid
@@ -33,13 +33,13 @@ class WindowEvents(mglw.WindowConfig):
             target=(0.0, 0.0, 0.0),
             radius=2.0,
             aspect_ratio=self.wnd.aspect_ratio,
-            near=0.01,
-            far=100.0,
+            near=0.1,
+            far=50.0,
         )
 
         global_sm.load("viewport", str(resource_dir / "shaders/viewport.glsl"))
         global_sm.load("grid", str(resource_dir / "shaders/grid.glsl"))
-        self.objects = [Sphere(self.camera, global_sm.get("viewport"))]
+        self.objects = [Cube(self.camera, global_sm.get("viewport"))]
 
         self.camera.look_at(vec=Vector3([0.0, 0.0, 0.0]))
         self.camera.angle_x = 90
@@ -50,11 +50,12 @@ class WindowEvents(mglw.WindowConfig):
         self.grid = Grid(self.camera, 1, self.ctx)
 
     def render(self, time: float, frametime: float):
+        self.ctx.enable(mgl.CULL_FACE | mgl.DEPTH_TEST)
         self.ctx.clear(0.25, 0.25, 0.25)
 
-        self.grid.render()
         for object in self.objects:
             object.render()
+        self.grid.render()
 
         self.render_ui()
 

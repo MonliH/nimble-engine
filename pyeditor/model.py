@@ -27,11 +27,6 @@ class Cube(Model):
 
     def render(self):
         super().render()
-        self.prog["color"].value = (
-            0.5,
-            0.5,
-            0.5,
-        )
         self.cube.render(self.prog)
 
 

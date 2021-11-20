@@ -9,7 +9,28 @@ class Grid(Model):
         super().__init__(camera, global_sm.get("grid"))
         self.grid_size = grid_size
 
-        plane = np.array([1, 1, 0, -1, -1, 0, -1, 1, 0, -1, -1, 0, 1, 1, 0, 1, -1, 0])
+        plane = np.array(
+            [
+                -1,
+                1,
+                0,
+                -1,
+                -1,
+                0,
+                1,
+                1,
+                0,
+                1,
+                -1,
+                0,
+                1,
+                1,
+                0,
+                -1,
+                -1,
+                0,
+            ]
+        )
         vbo = ctx.buffer(plane.astype("f4").tobytes())
         self.vao = ctx.vertex_array(self.prog, [(vbo, "3f", "vert")])
 
