@@ -37,7 +37,7 @@ vec4 grid(vec2 uv_coord, float scale) {
 
 float log10 = 1 / log(10);
 float zoom_mag = log10*log(zoom_level);
-float zoom_stage = clamp(ceil(zoom_mag), 1, 4);
+float zoom_stage = clamp(ceil(zoom_mag), 2, 4);
 float zoom_segment_percentage = fract(zoom_mag);
 float grid_square_size = pow(10, 4-zoom_stage);
 
@@ -48,8 +48,15 @@ in vec3 model_pos;
 float radius_to_original = grid_radius/500;
 
 void main() {
-    frag_color = grid(frag_uv, grid_square_size * radius_to_original) * 2 * (1 + zoom_segment_percentage / 4) // Make larger grid more bold
-               + grid(frag_uv, grid_square_size * 20 * radius_to_original) * (1-zoom_segment_percentage); // Make smaller grid less bold based on zoom
+    vec4 bigger_color = grid(frag_uv, grid_square_size * radius_to_original);
+    // Make larget grid more bold based on zoomgrid
+    bigger_color.w *= (1 + zoom_segment_percentage);
+
+    vec4 smaller_color = grid(frag_uv, grid_square_size * 10 * radius_to_original);
+    // Make smaller grid less bold based on zoom
+    smaller_color.w *= 1-zoom_segment_percentage/(5-zoom_stage);
+
+    frag_color = bigger_color + smaller_color;
     
     float fade_factor = length(camera_target - model_pos);
     fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 0.5);
