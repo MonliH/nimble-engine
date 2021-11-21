@@ -2,13 +2,13 @@ import moderngl_window as mglw
 import moderngl as mgl
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from moderngl_window.scene import camera
 from math import cos, sin, radians
 from pyrr import Vector3, Vector4
 from model import Cube, Sphere
 from shader_manager import global_sm
 from resources import resource_dir
 from grid import Grid
+from orbit_camera import OrbitCamera
 import glm
 
 
@@ -32,8 +32,7 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui = ModernglWindowRenderer(self.wnd)
         self.imgui.refresh_font_texture()
 
-        self.camera = camera.OrbitCamera(
-            target=(0.0, 0.0, 0.0),
+        self.camera = OrbitCamera(
             radius=2.0,
             aspect_ratio=self.wnd.aspect_ratio,
             near=0.01,
@@ -44,11 +43,11 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("grid", str(resource_dir / "shaders/grid.glsl"))
         self.objects = [Cube(self.camera, global_sm.get("viewport"))]
 
-        self.camera.look_at(vec=Vector3([0.0, 0.0, 0.0]))
-        self.camera.angle_x = 90
-        self.camera.angle_y = -45
+        # self.camera.look_at(vec=Vector3([0.0, 0.0, 0.0]))
+        # self.camera.angle_x = 90
+        # self.camera.angle_y = -45
 
-        self.camera.mouse_sensitivity = 1.5
+        # self.camera.mouse_sensitivity = 1.5
 
         self.shift = False
 
@@ -86,7 +85,6 @@ class WindowEvents(mglw.WindowConfig):
         print("Window is closing")
 
     def resize(self, width: int, height: int):
-        self.camera.projection.update(aspect_ratio=width / height)
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):
@@ -103,37 +101,15 @@ class WindowEvents(mglw.WindowConfig):
     def mouse_drag_event(self, x, y, dx, dy):
         if self.last_key == 2:
             if self.shift:
-                depth = (
-                    self.camera.projection.matrix
-                    * self.camera.matrix
-                    * Vector4([0.0, 0.0, 0.0, 1.0])
-                )
-                depth = Vector3((depth.x, depth.y, depth.z)) / depth.w
-                depth = depth.z
-
-                wnd_from = glm.vec3((x, y, depth))
-                wnd_to = glm.vec3((x + dx, y - dy, depth))
-
-                vp_rect = glm.vec4(0, 0, self.wnd.width, self.wnd.height)
-                view, proj = (self.camera.matrix, self.camera.projection.matrix)
-                world_from = glm.unProject(wnd_from, view, proj, vp_rect)
-                world_to = glm.unProject(wnd_to, view, proj, vp_rect)
-
-                world_vec = (world_to - world_from) * 1000
-                (_x, _y, _z) = self.camera.target
-                self.camera.target = (
-                    _x - world_vec.x,
-                    _y - world_vec.y,
-                    _z - world_vec.z,
-                )
+                self.camera.pan(dx, dy)
             else:
-                self.camera.rot_state(dx, dy)
+                self.camera.rotate(dx, dy)
         self.imgui.mouse_drag_event(x, y, dx, dy)
 
     def mouse_scroll_event(self, x_offset, y_offset):
         if y_offset:
             if y_offset > 0 or self.camera.radius < 100:
-                self.camera.zoom_state(y_offset * self.camera.radius / 10)
+                self.camera.zoom(y_offset * self.camera.radius / 10)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):

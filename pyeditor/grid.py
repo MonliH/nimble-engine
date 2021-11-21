@@ -1,4 +1,5 @@
 import numpy as np
+from pyrr.objects.vector4 import Vector3
 from model import Model
 import moderngl as mgl
 from shader_manager import global_sm
@@ -32,6 +33,7 @@ class Grid(Model):
         self.transform = self.base_transform
         self.prog["zoom_level"] = self.camera.radius
         self.ctx = ctx
+        self.prog["camera_target"].write(Vector3((0.0, 0.0, 0.0), dtype="f4"))
 
     def render(self):
         self.prog["zoom_level"] = self.camera.radius
@@ -43,7 +45,6 @@ class Grid(Model):
         self.prog["model"].write(self.transform)
         self.prog["grid_radius"] = visible_grid_radius
 
-        self.prog["camera_target"] = self.camera.target
         self.ctx.disable(mgl.CULL_FACE)
         self.write_camera_matrix()
         self.vao.render()

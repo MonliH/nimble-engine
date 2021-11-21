@@ -10,8 +10,8 @@ class Model:
         self.translation = Matrix44.from_translation((0.0, 0.0, 0.0), dtype="f4")
 
     def write_camera_matrix(self):
-        self.prog["view"].write(self.camera.matrix)
-        self.prog["proj"].write(self.camera.projection.matrix)
+        self.prog["view"].write(self.camera.view)
+        self.prog["proj"].write(self.camera.proj)
 
     def render(self):
         self.write_camera_matrix()
