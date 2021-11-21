@@ -2,13 +2,14 @@ import moderngl_window as mglw
 import moderngl as mgl
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from moderngl_window.opengl.projection import Projection3D
 from moderngl_window.scene import camera
-from pyrr import Vector3, Matrix44
+from math import cos, sin, radians
+from pyrr import Vector3, Vector4
 from model import Cube, Sphere
 from shader_manager import global_sm
 from resources import resource_dir
 from grid import Grid
+import glm
 
 
 class WindowEvents(mglw.WindowConfig):
@@ -102,8 +103,29 @@ class WindowEvents(mglw.WindowConfig):
     def mouse_drag_event(self, x, y, dx, dy):
         if self.last_key == 2:
             if self.shift:
-                # TODO: Fix this
-                pass
+                depth = (
+                    self.camera.projection.matrix
+                    * self.camera.matrix
+                    * Vector4([0.0, 0.0, 0.0, 1.0])
+                )
+                depth = Vector3((depth.x, depth.y, depth.z)) / depth.w
+                depth = depth.z
+
+                wnd_from = glm.vec3((x, y, depth))
+                wnd_to = glm.vec3((x + dx, y - dy, depth))
+
+                vp_rect = glm.vec4(0, 0, self.wnd.width, self.wnd.height)
+                view, proj = (self.camera.matrix, self.camera.projection.matrix)
+                world_from = glm.unProject(wnd_from, view, proj, vp_rect)
+                world_to = glm.unProject(wnd_to, view, proj, vp_rect)
+
+                world_vec = (world_to - world_from) * 1000
+                (_x, _y, _z) = self.camera.target
+                self.camera.target = (
+                    _x - world_vec.x,
+                    _y - world_vec.y,
+                    _z - world_vec.z,
+                )
             else:
                 self.camera.rot_state(dx, dy)
         self.imgui.mouse_drag_event(x, y, dx, dy)
