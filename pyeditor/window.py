@@ -33,7 +33,7 @@ class WindowEvents(mglw.WindowConfig):
             target=(0.0, 0.0, 0.0),
             radius=2.0,
             aspect_ratio=self.wnd.aspect_ratio,
-            near=0.1,
+            near=0.01,
             far=50.0,
         )
 
@@ -50,7 +50,7 @@ class WindowEvents(mglw.WindowConfig):
         self.grid = Grid(self.camera, 1, self.ctx)
 
     def render(self, time: float, frametime: float):
-        self.ctx.enable(mgl.CULL_FACE | mgl.DEPTH_TEST)
+        self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.25, 0.25, 0.25)
 
         for object in self.objects:
