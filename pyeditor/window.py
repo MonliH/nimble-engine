@@ -2,8 +2,9 @@ import moderngl_window as mglw
 import moderngl as mgl
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
+from moderngl_window.opengl.projection import Projection3D
 from moderngl_window.scene import camera
-from pyrr import Vector3
+from pyrr import Vector3, Matrix44
 from model import Cube, Sphere
 from shader_manager import global_sm
 from resources import resource_dir
@@ -27,8 +28,6 @@ class WindowEvents(mglw.WindowConfig):
 
         self.imgui = ModernglWindowRenderer(self.wnd)
         self.imgui.refresh_font_texture()
-
-        self.size = self.window_size
 
         self.camera = camera.OrbitCamera(
             target=(0.0, 0.0, 0.0),
@@ -75,19 +74,6 @@ class WindowEvents(mglw.WindowConfig):
                 imgui.end_menu()
             imgui.end_main_menu_bar()
 
-        imgui.set_next_window_size(300, 90)
-        imgui.set_next_window_position(0, 23)
-        imgui.begin(
-            "Create New Objects",
-            flags=imgui.WINDOW_NO_COLLAPSE
-            | imgui.WINDOW_NO_RESIZE
-            | imgui.WINDOW_NO_MOVE,
-        )
-        clicked = imgui.button("Add Cube")
-        imgui.end()
-        if clicked:
-            print("Clicked")
-
         imgui.render()
         self.imgui.render(imgui.get_draw_data())
 
@@ -95,8 +81,6 @@ class WindowEvents(mglw.WindowConfig):
         print("Window is closing")
 
     def resize(self, width: int, height: int):
-        # self.prog['m_proj'].write(Matrix44.perspective_projection(75, self.wnd.aspect_ratio, 1, 100, dtype='f4'))
-        self.size = (width, height)
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):

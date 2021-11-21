@@ -48,18 +48,21 @@ in vec3 model_pos;
 float radius_to_original = grid_radius/500;
 
 void main() {
-    frag_color = grid(frag_uv, grid_square_size * radius_to_original) * 2 * (1 + zoom_segment_percentage / 4)
-               + grid(frag_uv, grid_square_size * 20 * radius_to_original) * (1-zoom_segment_percentage);
+    frag_color = grid(frag_uv, grid_square_size * radius_to_original) * 2 * (1 + zoom_segment_percentage / 4) // Make larger grid more bold
+               + grid(frag_uv, grid_square_size * 20 * radius_to_original) * (1-zoom_segment_percentage); // Make smaller grid less bold based on zoom
     
     float fade_factor = length(camera_target - model_pos);
     fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 0.5);
     frag_color.w *= fade_factor;
 
+    // Render axes
     if (frag_uv.x > -0.0004 && frag_uv.x < 0.0004) {
+        // X axis
         frag_color.z = 1.0;
         frag_color.w = 1.0;
     }
     if (frag_uv.y > -0.0004 && frag_uv.y < 0.0004) {
+        // Z axis
         frag_color.x = 1.0;
         frag_color.w = 1.0;
     }
