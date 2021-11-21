@@ -4,6 +4,7 @@ from moderngl_window.scene.camera import Camera
 from pyrr import Vector3, Matrix44
 from math import acos, atan2, radians, sqrt, cos, sin, tan, pi
 import numpy as np
+import copy
 
 
 def clamp(n, smallest, largest):
@@ -51,7 +52,14 @@ class OrbitCamera(Camera):
         )
         self.up = Vector3((0, 1, 0), dtype="f4")
         self.target = Vector3((0, 0, 0), dtype="f4")
-        self.spherical = Spherical(radius, 0.3, 0.1)
+        self.spherical = Spherical(radius, radians(60), radians(45))
+
+        self.original_target = copy.deepcopy(self.target)
+        self.original_spherical = copy.deepcopy(self.spherical)
+
+    def reset_position(self):
+        self.target = self.original_target
+        self.spherical = self.original_spherical
 
     def set_window_size(self, width, height):
         self.width = width

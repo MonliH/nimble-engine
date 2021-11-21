@@ -17,7 +17,9 @@ class WindowEvents(mglw.WindowConfig):
     title = "Py3ditor"
     cursor = True
     vsync = True
-    samples = 4
+    samples = 8
+
+    aspect_ratio = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -35,7 +37,7 @@ class WindowEvents(mglw.WindowConfig):
         self.camera = OrbitCamera(
             self.wnd.width,
             self.wnd.height,
-            radius=2.0,
+            radius=3.0,
             near=0.01,
             far=500.0,
         )
@@ -68,13 +70,19 @@ class WindowEvents(mglw.WindowConfig):
         imgui.new_frame()
         if imgui.begin_main_menu_bar():
             if imgui.begin_menu("File", True):
-
-                clicked_quit, selected_quit = imgui.menu_item(
-                    "Quit", "Cmd+Q", False, True
-                )
+                clicked_quit, _ = imgui.menu_item("Quit", "Ctrl Q", False, True)
 
                 if clicked_quit:
                     exit(1)
+
+                imgui.end_menu()
+            if imgui.begin_menu("Viewport", True):
+                clicked_quit, _ = imgui.menu_item(
+                    "Reset Camera Position", None, False, True
+                )
+
+                if clicked_quit:
+                    self.camera.reset_position()
 
                 imgui.end_menu()
             imgui.end_main_menu_bar()

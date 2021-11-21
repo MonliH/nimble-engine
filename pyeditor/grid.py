@@ -2,12 +2,13 @@ import numpy as np
 from pyrr.objects.vector4 import Vector3
 from model import Model
 import moderngl as mgl
+from orbit_camera import OrbitCamera
 from shader_manager import global_sm
 from pyrr import Matrix44
 
 
 class Grid(Model):
-    def __init__(self, camera, grid_size, ctx):
+    def __init__(self, camera: OrbitCamera, grid_size, ctx):
         super().__init__(camera, global_sm.get("grid"))
         self.grid_size = grid_size
 
@@ -33,7 +34,7 @@ class Grid(Model):
         self.transform = self.base_transform
         self.prog["zoom_level"] = self.camera.radius
         self.ctx = ctx
-        self.prog["camera_target"].write(Vector3((0.0, 0.0, 0.0), dtype="f4"))
+        self.prog["camera_target"].write(self.camera.target)
 
     def render(self):
         self.prog["zoom_level"] = self.camera.radius
