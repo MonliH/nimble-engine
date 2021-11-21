@@ -34,7 +34,7 @@ class WindowEvents(mglw.WindowConfig):
             radius=2.0,
             aspect_ratio=self.wnd.aspect_ratio,
             near=0.01,
-            far=50.0,
+            far=250.0,
         )
 
         global_sm.load("viewport", str(resource_dir / "shaders/viewport.glsl"))
@@ -109,6 +109,8 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.mouse_drag_event(x, y, dx, dy)
 
     def mouse_scroll_event(self, x_offset, y_offset):
+        if y_offset:
+            self.camera.zoom_state(y_offset)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):

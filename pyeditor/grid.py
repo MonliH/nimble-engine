@@ -29,12 +29,15 @@ class Grid(Model):
         self.transform = (
             Matrix44.from_translation((0.0, 0.0, 0.0), dtype="f4")
             * Matrix44.from_eulers((np.pi / 2, 0.0, 0.0), dtype="f4")
-            * Matrix44.from_scale((10, 10, 1), dtype="f4")
+            * Matrix44.from_scale((1000, 1000, 1), dtype="f4")
         )
         self.prog["model"].write(self.transform)
+        self.prog["zoom_level"] = self.camera.radius
         self.ctx = ctx
 
     def render(self):
+        self.prog["zoom_level"] = self.camera.radius
+        self.prog["camera_target"] = self.camera.target
         self.ctx.disable(mgl.CULL_FACE)
         self.write_camera_matrix()
         self.vao.render()
