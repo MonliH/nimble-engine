@@ -33,8 +33,9 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.refresh_font_texture()
 
         self.camera = OrbitCamera(
+            self.wnd.width,
+            self.wnd.height,
             radius=2.0,
-            aspect_ratio=self.wnd.aspect_ratio,
             near=0.01,
             far=500.0,
         )
@@ -85,6 +86,7 @@ class WindowEvents(mglw.WindowConfig):
         print("Window is closing")
 
     def resize(self, width: int, height: int):
+        self.camera.set_window_size(width, height)
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):
