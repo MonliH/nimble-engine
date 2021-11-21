@@ -27,6 +27,11 @@ class Cube(Model):
 
     def render(self):
         super().render()
+        self.prog["color"].value = (
+            0.1,
+            0.1,
+            0.1,
+        )
         self.cube.render(self.prog)
 
 
@@ -38,8 +43,8 @@ class Sphere(Model):
     def render(self):
         super().render()
         self.prog["color"].value = (
-            0.5,
-            0.5,
-            0.5,
+            0.1,
+            0.1,
+            0.1,
         )
         self.sphere.render(self.prog)

@@ -31,12 +31,13 @@ vec4 grid(vec2 uv_coord, float scale) {
     vec2 grid = abs(fract(coord - 0.5) - 0.5) / derivative;
     float line = min(grid.x, grid.y);
     vec4 color = vec4(0.15, 0.15, 0.15, 1.0 - min(line, 1.0));
+
     return color;
 }
 
 float log10 = 1 / log(10);
 float zoom_mag = log10*log(zoom_level);
-float zoom_stage = ceil(zoom_mag);
+float zoom_stage = clamp(ceil(zoom_mag), 1, 4);
 float zoom_segment_percentage = fract(zoom_mag);
 float grid_square_size = pow(10, 4-zoom_stage);
 
@@ -51,8 +52,17 @@ void main() {
                + grid(frag_uv, grid_square_size * 20 * radius_to_original) * (1-zoom_segment_percentage);
     
     float fade_factor = length(camera_target - model_pos);
-    fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 1.0);
+    fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 0.5);
     frag_color.w *= fade_factor;
+
+    if (frag_uv.x > -0.0004 && frag_uv.x < 0.0004) {
+        frag_color.z = 1.0;
+        frag_color.w = 1.0;
+    }
+    if (frag_uv.y > -0.0004 && frag_uv.y < 0.0004) {
+        frag_color.x = 1.0;
+        frag_color.w = 1.0;
+    }
 } 
 
 #endif
