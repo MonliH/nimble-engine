@@ -15,6 +15,7 @@ class WindowEvents(mglw.WindowConfig):
     title = "Py3ditor"
     cursor = True
     vsync = True
+    samples = 4
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -34,7 +35,7 @@ class WindowEvents(mglw.WindowConfig):
             radius=2.0,
             aspect_ratio=self.wnd.aspect_ratio,
             near=0.01,
-            far=250.0,
+            far=500.0,
         )
 
         global_sm.load("viewport", str(resource_dir / "shaders/viewport.glsl"))
@@ -110,8 +111,8 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_scroll_event(self, x_offset, y_offset):
         if y_offset:
-            mag = self.camera.radius
-            self.camera.zoom_state(y_offset * self.camera.radius / 10)
+            if y_offset > 0 or self.camera.radius < 100:
+                self.camera.zoom_state(y_offset * self.camera.radius / 10)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):

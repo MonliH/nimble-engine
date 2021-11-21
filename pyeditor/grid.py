@@ -26,17 +26,23 @@ class Grid(Model):
         # fmt: on
         vbo = ctx.buffer(plane.astype("f4").tobytes())
         self.vao = ctx.vertex_array(self.prog, [(vbo, "3f", "vert")])
-        self.transform = (
-            Matrix44.from_translation((0.0, 0.0, 0.0), dtype="f4")
-            * Matrix44.from_eulers((np.pi / 2, 0.0, 0.0), dtype="f4")
-            * Matrix44.from_scale((1000, 1000, 1), dtype="f4")
-        )
-        self.prog["model"].write(self.transform)
+        self.base_transform = Matrix44.from_translation(
+            (0.0, 0.0, 0.0), dtype="f4"
+        ) * Matrix44.from_eulers((np.pi / 2, 0.0, 0.0), dtype="f4")
+        self.transform = self.base_transform
         self.prog["zoom_level"] = self.camera.radius
         self.ctx = ctx
 
     def render(self):
         self.prog["zoom_level"] = self.camera.radius
+
+        visible_grid_radius = self.camera.radius * 5
+        self.transform = self.base_transform * Matrix44.from_scale(
+            (visible_grid_radius, visible_grid_radius, 1), dtype="f4"
+        )
+        self.prog["model"].write(self.transform)
+        self.prog["grid_radius"] = visible_grid_radius
+
         self.prog["camera_target"] = self.camera.target
         self.ctx.disable(mgl.CULL_FACE)
         self.write_camera_matrix()

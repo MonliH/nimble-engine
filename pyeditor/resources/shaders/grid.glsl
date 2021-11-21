@@ -25,14 +25,6 @@ out vec4 frag_color;
 
 uniform float zoom_level;
 
-float roundUp(float numToRound, float multiple) {
-    float remainder = mod(numToRound, multiple);
-    if (remainder == 0.0) {
-        return numToRound;
-    }
-    return numToRound + multiple - remainder;
-}
-
 vec4 grid(vec2 uv_coord, float scale) {
     vec2 coord = uv_coord * scale;
     vec2 derivative = fwidth(coord);
@@ -46,17 +38,20 @@ float log10 = 1 / log(10);
 float zoom_mag = log10*log(zoom_level);
 float zoom_stage = ceil(zoom_mag);
 float zoom_segment_percentage = fract(zoom_mag);
-float grid_size = pow(10, 4-zoom_stage);
+float grid_square_size = pow(10, 4-zoom_stage);
 
+uniform float grid_radius;
 uniform vec3 camera_target;
 in vec3 model_pos;
 
+float radius_to_original = grid_radius/500;
+
 void main() {
-    frag_color = grid(frag_uv, (grid_size * 2)) * 2 * (1 + zoom_segment_percentage / 4)
-               + grid(frag_uv, (grid_size * 20)) * (1-zoom_segment_percentage);
+    frag_color = grid(frag_uv, grid_square_size * radius_to_original) * 2 * (1 + zoom_segment_percentage / 4)
+               + grid(frag_uv, grid_square_size * 20 * radius_to_original) * (1-zoom_segment_percentage);
     
     float fade_factor = length(camera_target - model_pos);
-    fade_factor = clamp(1 - fade_factor / (zoom_level*5), 0.0, 1.0);
+    fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 1.0);
     frag_color.w *= fade_factor;
 } 
 
