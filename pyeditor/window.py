@@ -26,6 +26,8 @@ class WindowEvents(mglw.WindowConfig):
             str(resource_dir / "fonts/Roboto-Regular.ttf"), 16
         )
 
+        self.last_key = None
+
         self.imgui = ModernglWindowRenderer(self.wnd)
         self.imgui.refresh_font_texture()
 
@@ -46,6 +48,8 @@ class WindowEvents(mglw.WindowConfig):
         self.camera.angle_y = -45
 
         self.camera.mouse_sensitivity = 1.5
+
+        self.shift = False
 
         self.grid = Grid(self.camera, 1, self.ctx)
 
@@ -81,16 +85,27 @@ class WindowEvents(mglw.WindowConfig):
         print("Window is closing")
 
     def resize(self, width: int, height: int):
+        self.camera.projection.update(aspect_ratio=width / height)
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):
+        if key == 65505:
+            if action == "ACTION_PRESS":
+                self.shift = True
+            elif action == "ACTION_RELEASE":
+                self.shift = False
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
         self.imgui.mouse_position_event(x, y, dx, dy)
 
     def mouse_drag_event(self, x, y, dx, dy):
-        self.camera.rot_state(dx, dy)
+        if self.last_key == 2:
+            if self.shift:
+                # TODO: Fix this
+                pass
+            else:
+                self.camera.rot_state(dx, dy)
         self.imgui.mouse_drag_event(x, y, dx, dy)
 
     def mouse_scroll_event(self, x_offset, y_offset):
@@ -100,6 +115,7 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):
+        self.last_key = button
         self.imgui.mouse_press_event(x, y, button)
 
     def mouse_release_event(self, x: int, y: int, button: int):
