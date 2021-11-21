@@ -110,7 +110,8 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_scroll_event(self, x_offset, y_offset):
         if y_offset:
-            self.camera.zoom_state(y_offset)
+            mag = self.camera.radius
+            self.camera.zoom_state(y_offset * self.camera.radius / 10)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):
