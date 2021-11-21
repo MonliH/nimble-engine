@@ -2,7 +2,7 @@ from __future__ import annotations
 from moderngl_window.opengl.projection import Projection3D
 from moderngl_window.scene.camera import Camera
 from pyrr import Vector3, Matrix44
-from math import acos, atan2, sqrt, cos, sin, tan, pi
+from math import acos, atan2, radians, sqrt, cos, sin, tan, pi
 import numpy as np
 
 
@@ -85,6 +85,7 @@ class OrbitCamera(Camera):
 
     def rotate_up(self, angle):
         self.spherical.phi -= angle
+        self.spherical.phi = clamp(self.spherical.phi, 0.000000001, pi)
 
     def rotate(self, dx, dy):
         self.rotate_left(dx * 0.01)
