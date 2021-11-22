@@ -58,8 +58,8 @@ class OrbitCamera(Camera):
         self.original_spherical = copy.deepcopy(self.spherical)
 
     def reset_position(self):
-        self.target = self.original_target
-        self.spherical = self.original_spherical
+        self.target = copy.deepcopy(self.original_target)
+        self.spherical = copy.deepcopy(self.original_spherical)
 
     def set_window_size(self, width, height):
         self.width = width

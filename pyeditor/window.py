@@ -58,7 +58,7 @@ class WindowEvents(mglw.WindowConfig):
 
     def render(self, time: float, frametime: float):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
-        self.ctx.clear(0.25, 0.25, 0.25)
+        self.ctx.clear(0.235, 0.235, 0.235)
 
         for object in self.objects:
             object.render()
@@ -77,15 +77,19 @@ class WindowEvents(mglw.WindowConfig):
 
                 imgui.end_menu()
             if imgui.begin_menu("Viewport", True):
-                clicked_quit, _ = imgui.menu_item(
+                clicked_reset_camera_pos, _ = imgui.menu_item(
                     "Reset Camera Position", None, False, True
                 )
 
-                if clicked_quit:
+                if clicked_reset_camera_pos:
                     self.camera.reset_position()
 
                 imgui.end_menu()
             imgui.end_main_menu_bar()
+
+        imgui.begin("Viewport")
+        imgui.text("Viewport")
+        imgui.end()
 
         imgui.render()
         self.imgui.render(imgui.get_draw_data())
@@ -98,28 +102,31 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):
-        if key == 65505:
-            if action == "ACTION_PRESS":
-                self.shift = True
-            elif action == "ACTION_RELEASE":
-                self.shift = False
+        if not self.imgui_io.want_capture_keyboard:
+            if key == 65505:
+                if action == "ACTION_PRESS":
+                    self.shift = True
+                elif action == "ACTION_RELEASE":
+                    self.shift = False
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
         self.imgui.mouse_position_event(x, y, dx, dy)
 
     def mouse_drag_event(self, x, y, dx, dy):
-        if self.last_key == 2:
-            if self.shift:
-                self.camera.pan(dx, dy)
-            else:
-                self.camera.rotate(dx, dy)
+        if not self.imgui_io.want_capture_mouse:
+            if self.last_key == 2:
+                if self.shift:
+                    self.camera.pan(dx, dy)
+                else:
+                    self.camera.rotate(dx, dy)
         self.imgui.mouse_drag_event(x, y, dx, dy)
 
     def mouse_scroll_event(self, x_offset, y_offset):
-        if y_offset:
-            if y_offset > 0 or self.camera.radius < 100:
-                self.camera.zoom(y_offset * self.camera.radius / 10)
+        if not self.imgui_io.want_capture_mouse:
+            if y_offset:
+                if y_offset > 0 or self.camera.radius < 100:
+                    self.camera.zoom(y_offset * self.camera.radius / 10)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):
