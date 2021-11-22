@@ -1,5 +1,6 @@
 from resources import resource_dir
 from moderngl_window.resources.programs import Programs
+from moderngl.program import Program
 from moderngl_window.meta.program import ProgramDescription
 
 
@@ -8,10 +9,12 @@ class ShaderManager:
         self.shaders = {}
         self.programs = Programs()
 
-    def load(self, name: str, path: str):
-        self.shaders[name] = self.programs.load(ProgramDescription(path=path))
+    def load(self, name: str, path: str) -> Program:
+        shader = self.programs.load(ProgramDescription(path=str(path)))
+        self.shaders[name] = shader
+        return shader
 
-    def get(self, name: str):
+    def get(self, name: str) -> Program:
         return self.shaders[name]
 
 

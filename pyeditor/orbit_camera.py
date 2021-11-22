@@ -1,4 +1,5 @@
 from __future__ import annotations
+import typing
 from moderngl_window.opengl.projection import Projection3D
 from moderngl_window.scene.camera import Camera
 from pyrr import Vector3, Matrix44
@@ -66,6 +67,10 @@ class OrbitCamera(Camera):
         self.height = height
         self.aspect_ratio = width / height
         self._projection.update(aspect_ratio=self.aspect_ratio)
+
+    @property
+    def viewport(self) -> typing.Tuple[float, float]:
+        return (self.width, self.height)
 
     @property
     def radius(self):

@@ -6,10 +6,9 @@ from math import cos, sin, radians
 from pyrr import Vector3, Vector4
 from model import Cube, Sphere
 from shader_manager import global_sm
-from resources import resource_dir
+from resources import resource_dir, shader
 from grid import Grid
 from orbit_camera import OrbitCamera
-import glm
 
 
 class WindowEvents(mglw.WindowConfig):
@@ -42,8 +41,8 @@ class WindowEvents(mglw.WindowConfig):
             far=500.0,
         )
 
-        global_sm.load("viewport", str(resource_dir / "shaders/viewport.glsl"))
-        global_sm.load("grid", str(resource_dir / "shaders/grid.glsl"))
+        global_sm.load("viewport", shader("viewport.glsl"))
+        global_sm.load("grid", shader("grid.glsl"))
         self.objects = [Cube(self.camera, global_sm.get("viewport"))]
 
         # self.camera.look_at(vec=Vector3([0.0, 0.0, 0.0]))
