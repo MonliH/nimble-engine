@@ -6,13 +6,14 @@ from orbit_camera import OrbitCamera
 from resources import shader
 from shader_manager import global_sm
 from pyrr import Matrix44
+import transform_matrix
 
 
 class Grid(Model):
     def __init__(self, camera: OrbitCamera, grid_size, ctx):
-        super().__init__(camera, global_sm.get("grid"))
+        super().__init__(camera, global_sm["grid"])
         self.grid_size = grid_size
-        self.axis_prog = global_sm.load("axis_line", shader("axis_line.glsl"))
+        self.axis_prog = global_sm["line"]
 
         # fmt: off
         plane = np.array(
@@ -24,17 +25,17 @@ class Grid(Model):
                 -1, -1, 0,
                 1, 1, 0,
                 1, -1, 0,
-            ]
+            ],
+            dtype="f4"
         )
 
         # fmt: on
-        vbo = ctx.buffer(plane.astype("f4").tobytes())
+        vbo = ctx.buffer(plane.tobytes())
         self.vao = ctx.vertex_array(self.prog, [(vbo, "3f", "vert")])
 
-        x_line = np.array([-1, 0, 0, 1, 0, 0])
-        x_vbo = ctx.buffer(x_line.astype("f4").tobytes())
-
-        self.x_vao = ctx.vertex_array(self.axis_prog, [(x_vbo, "3f", "vert")])
+        line = np.array([-1, 0, 0, 1, 1, 0, 0, 1], dtype="f4")
+        x_vbo = ctx.buffer(line.tobytes())
+        self.x_vao = ctx.vertex_array(self.axis_prog, [(x_vbo, "4f", "vert")])
 
         self.base_transform = Matrix44.from_translation(
             (0.0, 0.0, 0.0), dtype="f4"
@@ -49,8 +50,9 @@ class Grid(Model):
             np.absolute(Vector3((0, 0, 0), dtype="f4") - self.camera.target).max()
         )
         visible_grid_radius = self.camera.radius * 5
+        grid_size = visible_grid_radius + diff_center
         self.transform = self.base_transform * Matrix44.from_scale(
-            (visible_grid_radius + diff_center, visible_grid_radius + diff_center, 1),
+            (grid_size, grid_size, 1),
             dtype="f4",
         )
         self.prog["model"].write(self.transform)
@@ -61,13 +63,17 @@ class Grid(Model):
         self.write_camera_matrix()
         self.vao.render()
 
-        self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST)
+        self.ctx.enable(mgl.BLEND)
 
-        mvp = self.camera.proj * self.camera.view * self.transform
-        self.axis_prog["u_col"] = (1, 0, 0, 1)
-        self.axis_prog["u_width"] = 2
-        self.axis_prog["u_mvp"].write(mvp)
-        self.axis_prog["u_viewport_size"] = self.camera.viewport
-        self.axis_prog["u_aa_radius"] = (2.0, 2.0)
+        mvp = (
+            self.camera.proj
+            * self.camera.view
+            * (self.base_transform * Matrix44.from_scale((10, 1, 1), dtype="f4"))
+        )
+        self.axis_prog["color"] = (1, 0, 0, 1)
+        self.axis_prog["mvp"].write(mvp)
+        self.axis_prog["Thickness"] = 4.0
+        self.axis_prog["Viewport"] = (self.camera.width, self.camera.height)
+        self.axis_prog["MiterLimit"] = 0.1
 
-        self.x_vao.render(mgl.LINES)
+        self.x_vao.render(mgl.LINES_ADJACENCY)

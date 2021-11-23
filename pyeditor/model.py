@@ -1,4 +1,4 @@
-from pyrr import Matrix44
+from pyrr import Matrix44, Vector3
 import moderngl_window as mglw
 
 
@@ -6,18 +6,26 @@ class Model:
     def __init__(self, camera, prog):
         self.camera = camera
         self.prog = prog
-        self.rotation = Matrix44.from_eulers((0.0, 0.0, 0.0), dtype="f4")
-        self.translation = Matrix44.from_translation((0.0, 0.0, 0.0), dtype="f4")
+        self.rotation = Vector3((0, 0, 0), dtype="f4")
+        self.translation = Vector3((0, 0, 0), dtype="f4")
+        self.scale = Vector3((1, 1, 1), dtype="f4")
 
     def write_camera_matrix(self):
         self.prog["view"].write(self.camera.view)
         self.prog["proj"].write(self.camera.proj)
 
+    @property
+    def model(self):
+        return (
+            Matrix44.from_eulers(self.rotation, dtype="f4")
+            * Matrix44.from_translation(self.translation, dtype="f4")
+            * Matrix44.from_scale(self.scale, dtype="f4")
+        )
+
     def render(self):
         self.write_camera_matrix()
 
-        model = self.translation * self.rotation
-        self.prog["model"].write(model)
+        self.prog["model"].write(self.model)
 
 
 class Cube(Model):

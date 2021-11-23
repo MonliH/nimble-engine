@@ -2,13 +2,12 @@ import moderngl_window as mglw
 import moderngl as mgl
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from math import cos, sin, radians
-from pyrr import Vector3, Vector4
-from model import Cube, Sphere
 from shader_manager import global_sm
 from resources import resource_dir, shader
 from grid import Grid
 from orbit_camera import OrbitCamera
+from object_manager import ObjectManager
+from model import Cube
 
 
 class WindowEvents(mglw.WindowConfig):
@@ -43,13 +42,11 @@ class WindowEvents(mglw.WindowConfig):
 
         global_sm.load("viewport", shader("viewport.glsl"))
         global_sm.load("grid", shader("grid.glsl"))
-        self.objects = [Cube(self.camera, global_sm.get("viewport"))]
+        global_sm.load("line", shader("line.glsl"))
+        self.object_manager = ObjectManager()
+        self.object_manager.add_object("Cube", Cube(self.camera, global_sm["viewport"]))
 
-        # self.camera.look_at(vec=Vector3([0.0, 0.0, 0.0]))
-        # self.camera.angle_x = 90
-        # self.camera.angle_y = -45
-
-        # self.camera.mouse_sensitivity = 1.5
+        self.active_object = self.object_manager.first()
 
         self.shift = False
 
@@ -59,8 +56,7 @@ class WindowEvents(mglw.WindowConfig):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
-        for object in self.objects:
-            object.render()
+        self.object_manager.render()
         self.grid.render()
 
         self.render_ui()
@@ -86,8 +82,11 @@ class WindowEvents(mglw.WindowConfig):
                 imgui.end_menu()
             imgui.end_main_menu_bar()
 
-        imgui.begin("Viewport")
-        imgui.text("Viewport")
+        current = -1
+        imgui.begin("Outline")
+        current, clicked = imgui.listbox(
+            "Items", current, self.object_manager.objects_list
+        )
         imgui.end()
 
         imgui.render()

@@ -62,6 +62,17 @@ void main() {
     float fade_factor = length(diff.xz);
     fade_factor = clamp(1 - fade_factor / grid_radius, 0.0, 0.5);
     frag_color.w *= fade_factor;
+
+    // if (frag_uv.x > -0.0004 && frag_uv.x < 0.0004) {
+    //     // X axis
+    //     frag_color.z = 1.0;
+    //     frag_color.w *= 2;
+    // }
+    // if (frag_uv.y > -0.0004 && frag_uv.y < 0.0004) {
+    //     // Z axis
+    //     frag_color.x = 1.0;
+    //     frag_color.w *= 2;
+    // }
 } 
 
 #endif

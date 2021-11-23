@@ -14,8 +14,11 @@ class ShaderManager:
         self.shaders[name] = shader
         return shader
 
-    def get(self, name: str) -> Program:
+    def _get(self, name: str) -> Program:
         return self.shaders[name]
+
+    def __getitem__(self, name: str) -> Program:
+        return self._get(name)
 
 
 global_sm = ShaderManager()

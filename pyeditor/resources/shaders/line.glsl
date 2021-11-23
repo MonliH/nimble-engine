@@ -1,11 +1,42 @@
 #version 330
 
+#if defined VERTEX_SHADER
+
+in vec4 vert;
+
+uniform vec4 color;
+uniform mat4 mvp;
+
+out VertexData{
+    vec4 mColor;
+} VertexOut;
+
+void main(void)
+{
+    VertexOut.mColor = color;
+    gl_Position = mvp * vert;
+}
+
+#elif defined FRAGMENT_SHADER
+
+in VertexData{
+    vec2 mTexCoord;
+    vec4 mColor;
+} VertexIn;
+
+void main(void)
+{
+    gl_FragColor = VertexIn.mColor;
+}
+
+#elif defined GEOMETRY_SHADER
+
 uniform float Thickness;
 uniform vec2 Viewport;
 uniform float MiterLimit;
 
 layout(lines_adjacency) in;
-layout(triangle_strip, max_vertices = 7) out;
+layout(triangle_strip, max_vertices = 20) out;
 
 in VertexData{
     vec4 mColor;
@@ -165,3 +196,5 @@ void main(void)
 
     drawSegment(points, colors, zValues);
 }
+
+#endif
