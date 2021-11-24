@@ -1,3 +1,4 @@
+from moderngl.framebuffer import Framebuffer
 from pyrr import Matrix44, Vector3
 import moderngl_window as mglw
 
@@ -29,9 +30,11 @@ class Model:
 
 
 class Cube(Model):
-    def __init__(self, camera, prog):
+    def __init__(self, camera, prog, outline_fb: Framebuffer, screen):
         super().__init__(camera, prog)
         self.cube = mglw.geometry.cube(size=(1, 1, 1))
+        self.fbo = outline_fb
+        self.screen = screen
 
     def render(self):
         super().render()
@@ -40,7 +43,17 @@ class Cube(Model):
             0.1,
             0.1,
         )
+        self.fbo.clear()
+        self.fbo.use()
         self.cube.render(self.prog)
+        self.screen.use()
+        self.cube.render(self.prog)
+
+        # 1) Render scene to fbo with color and depth texture attachment
+        # 2) Render a quick blur of the linearlized depth buffer with a 3 x 3
+        #    kernel to the screen. Treat 1.0 as 0 and anything below 1.0 as 1.0.
+        #    so you deal with a simple mask
+        # 3) Render the scene from the first fbo on top (with blending or discard fragments with alpha 0)
 
 
 class Sphere(Model):

@@ -19,6 +19,9 @@ class ObjectManager:
     def first(self) -> str:
         return self.objects[self.objects_list[0]]
 
+    def __getitem__(self, key: str) -> Model:
+        return self.objects[key]
+
     def get_new_name(self, name: str) -> str:
         i = 1
         while f"{name}{i}" in self.objects:

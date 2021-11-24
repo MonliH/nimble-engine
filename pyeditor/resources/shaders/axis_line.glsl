@@ -7,7 +7,7 @@ in vec3 vert;
 uniform mat4 mvp;
 
 void main() {
-    gl_Position = mvp * vec4(vert, 1.0);
+    gl_Position = mvp * vec4(ver, 1.0);
 }
 
 #elif defined FRAGMENT_SHADER

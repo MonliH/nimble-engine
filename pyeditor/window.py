@@ -1,5 +1,6 @@
 import moderngl_window as mglw
 import moderngl as mgl
+from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from shader_manager import global_sm
@@ -8,6 +9,7 @@ from grid import Grid
 from orbit_camera import OrbitCamera
 from object_manager import ObjectManager
 from model import Cube
+from pyrr import Matrix33
 
 
 class WindowEvents(mglw.WindowConfig):
@@ -43,21 +45,39 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("viewport", shader("viewport.glsl"))
         global_sm.load("grid", shader("grid.glsl"))
         global_sm.load("line", shader("line.glsl"))
+        global_sm.load("filter", shader("filter.glsl"))
         self.object_manager = ObjectManager()
-        self.object_manager.add_object("Cube", Cube(self.camera, global_sm["viewport"]))
+        self.active_buffer = self.ctx.framebuffer(
+            (),
+            self.ctx.depth_texture((self.camera.width, self.camera.height)),
+        )
+        self.object_manager.add_object(
+            "Cube",
+            Cube(
+                self.camera, global_sm["viewport"], self.active_buffer, self.ctx.screen
+            ),
+        )
 
         self.active_object = self.object_manager.first()
 
         self.shift = False
-
         self.grid = Grid(self.camera, 1, self.ctx)
+
+        self.active_vao = quad_fs()
 
     def render(self, time: float, frametime: float):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
         self.object_manager.render()
+        self.ctx.screen.use()
         self.grid.render()
+
+        self.active_buffer.depth_attachment.use(location=0)
+        global_sm["filter"]["kernel"].write(
+            Matrix33([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype="f4") / 16
+        )
+        self.active_vao.render(global_sm["filter"])
 
         self.render_ui()
 

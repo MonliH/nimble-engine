@@ -76,4 +76,5 @@ class Grid(Model):
         self.axis_prog["Viewport"] = (self.camera.width, self.camera.height)
         self.axis_prog["MiterLimit"] = 0.1
 
-        self.x_vao.render(mgl.LINES_ADJACENCY)
+        # TODO: revisit
+        # self.x_vao.render(mgl.LINES_ADJACENCY)
