@@ -33,10 +33,6 @@ class Grid(Model):
         vbo = ctx.buffer(plane.tobytes())
         self.vao = ctx.vertex_array(self.prog, [(vbo, "3f", "vert")])
 
-        line = np.array([-1, 0, 0, 1, 1, 0, 0, 1], dtype="f4")
-        x_vbo = ctx.buffer(line.tobytes())
-        self.x_vao = ctx.vertex_array(self.axis_prog, [(x_vbo, "4f", "vert")])
-
         self.base_transform = Matrix44.from_translation(
             (0.0, 0.0, 0.0), dtype="f4"
         ) * Matrix44.from_eulers((np.pi / 2, 0.0, 0.0), dtype="f4")
@@ -62,19 +58,3 @@ class Grid(Model):
         self.ctx.disable(mgl.CULL_FACE)
         self.write_camera_matrix()
         self.vao.render()
-
-        self.ctx.enable(mgl.BLEND)
-
-        mvp = (
-            self.camera.proj
-            * self.camera.view
-            * (self.base_transform * Matrix44.from_scale((10, 1, 1), dtype="f4"))
-        )
-        self.axis_prog["color"] = (1, 0, 0, 1)
-        self.axis_prog["mvp"].write(mvp)
-        self.axis_prog["Thickness"] = 4.0
-        self.axis_prog["Viewport"] = (self.camera.width, self.camera.height)
-        self.axis_prog["MiterLimit"] = 0.1
-
-        # TODO: revisit
-        # self.x_vao.render(mgl.LINES_ADJACENCY)

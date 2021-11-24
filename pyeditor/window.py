@@ -3,6 +3,7 @@ import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
+from pyrr.objects.matrix44 import Matrix44
 from shader_manager import global_sm
 from resources import resource_dir, shader
 from grid import Grid
@@ -49,16 +50,19 @@ class WindowEvents(mglw.WindowConfig):
         self.object_manager = ObjectManager()
         self.active_buffer = self.ctx.framebuffer(
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),
-            self.ctx.depth_texture((self.camera.width, self.camera.height)),
-        )
-        self.object_manager.add_object(
-            "Cube",
-            Cube(
-                self.camera, global_sm["viewport"], self.active_buffer, self.ctx.screen
-            ),
         )
 
-        self.active_object = self.object_manager.first()
+        self.object_manager.add_object(
+            "Cube",
+            Cube(self.camera, global_sm["viewport"]),
+        )
+        self.object_manager.set_active("Cube")
+        self.object_manager.add_object(
+            "Cube2",
+            Cube(self.camera, global_sm["viewport"]),
+        )
+
+        self.object_manager.get_object("Cube2").translation.xyz = (-1.5, 1.2, -1.1)
 
         self.shift = False
         self.grid = Grid(self.camera, 1, self.ctx)
@@ -69,14 +73,12 @@ class WindowEvents(mglw.WindowConfig):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
-        self.object_manager.render()
-        self.ctx.screen.use()
+        self.object_manager.render(self.active_buffer, self.ctx.screen)
         self.grid.render()
 
         self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False
-        # global_sm["filter"]["zoom_level"] = self.camera.radius
         global_sm["filter"]["kernel"].write(
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )

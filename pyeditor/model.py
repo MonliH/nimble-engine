@@ -30,11 +30,9 @@ class Model:
 
 
 class Cube(Model):
-    def __init__(self, camera, prog, outline_fb: Framebuffer, screen):
+    def __init__(self, camera, prog):
         super().__init__(camera, prog)
         self.cube = mglw.geometry.cube(size=(1, 1, 1))
-        self.fbo = outline_fb
-        self.screen = screen
 
     def render(self):
         super().render()
@@ -43,10 +41,6 @@ class Cube(Model):
             0.1,
             0.1,
         )
-        self.fbo.clear()
-        self.fbo.use()
-        self.cube.render(self.prog)
-        self.screen.use()
         self.cube.render(self.prog)
 
         # 1) Render scene to fbo with color and depth texture attachment

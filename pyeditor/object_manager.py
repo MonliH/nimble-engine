@@ -1,11 +1,21 @@
-import typing
+from typing import Optional, Dict
+
+from moderngl.framebuffer import Framebuffer
 from model import Model
 
 
 class ObjectManager:
     def __init__(self) -> None:
-        self.objects: typing.Dict[str, Model] = {}
+        self.objects: Dict[str, Model] = {}
         self.objects_list = []
+        self.active = ""
+
+    def set_active(self, obj_name: str):
+        if obj_name in self.objects_list:
+            self.active = obj_name
+
+    def get_active(self) -> Optional[Model]:
+        return self.objects[self.active]
 
     def add_object(self, name: str, obj: object) -> str:
         object_name = name if name not in self.objects else self.get_new_name(name)
@@ -28,6 +38,12 @@ class ObjectManager:
             i += 1
         return f"{name}{i}"
 
-    def render(self) -> None:
+    def render(self, active_fbo: Framebuffer, screen: Framebuffer) -> None:
         for obj in self.objects.values():
             obj.render()
+        active_fbo.clear()
+        active = self.get_active()
+        if active:
+            active_fbo.use()
+            active.render()
+        screen.use()

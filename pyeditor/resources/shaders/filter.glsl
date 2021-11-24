@@ -18,19 +18,9 @@ void main()
 in vec2 TexCoords;
 
 layout (location=0) uniform sampler2D depthTexture;
-uniform float zoom_level;
 uniform float kernel[9];
 
 out vec4 FragColor;
-
-float near=0.1;
-float far=500.0;
-
-float LinearizeDepth(float depth) 
-{
-    float z = depth * 2.0 - 1.0; // back to NDC 
-    return (2.0 * near * far) / (far + near - z * (far - near));	
-}
 
 const float offset = 1.0 / 300.0;  
 
@@ -60,6 +50,6 @@ void main()
     if (col.w >= 0.1) {
         col.w = 1.0;
     }
-    FragColor = vec4(1.0, 0.5, 0.4, col.w);
+    FragColor = vec4(1.0, 0.5, 0.2, col.w);
 }  
 #endif
