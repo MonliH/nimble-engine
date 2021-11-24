@@ -56,13 +56,12 @@ class WindowEvents(mglw.WindowConfig):
             "Cube",
             Cube(self.camera, global_sm["viewport"]),
         )
-        self.object_manager.set_active("Cube")
         self.object_manager.add_object(
-            "Cube2",
+            "Cube 2",
             Cube(self.camera, global_sm["viewport"]),
         )
 
-        self.object_manager.get_object("Cube2").translation.xyz = (-1.5, 1.2, -1.1)
+        self.object_manager.get_object("Cube 2").translation.xyz = (-1.5, 1.2, -1.1)
 
         self.shift = False
         self.grid = Grid(self.camera, 1, self.ctx)
@@ -107,11 +106,19 @@ class WindowEvents(mglw.WindowConfig):
                 imgui.end_menu()
             imgui.end_main_menu_bar()
 
-        current = -1
         imgui.begin("Outline")
-        current, clicked = imgui.listbox(
-            "Items", current, self.object_manager.objects_list
-        )
+        imgui.listbox_header("", 200, 100)
+
+        for i, item in enumerate(self.object_manager.objects_list):
+            pressed, selected = imgui.selectable(
+                item, item == self.object_manager.active
+            )
+
+            if pressed and selected:
+                self.object_manager.set_active(i)
+
+        imgui.listbox_footer()
+
         imgui.end()
 
         imgui.render()

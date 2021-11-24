@@ -8,32 +8,34 @@ class ObjectManager:
     def __init__(self) -> None:
         self.objects: Dict[str, Model] = {}
         self.objects_list = []
-        self.active = ""
+        self.active_idx = 0
 
-    def set_active(self, obj_name: str):
-        if obj_name in self.objects_list:
-            self.active = obj_name
+    def set_active(self, idx: int):
+        self.active_idx = idx
+
+    @property
+    def active(self):
+        return self.objects_list[self.active_idx]
 
     def get_active(self) -> Optional[Model]:
-        return self.objects[self.active]
+        if self.active in self.objects:
+            return self.objects[self.active]
 
-    def add_object(self, name: str, obj: object) -> str:
+    def add_object(self, name: str, obj: object) -> int:
         object_name = name if name not in self.objects else self.get_new_name(name)
         self.objects[object_name] = obj
+        idx = len(self.objects_list)
         self.objects_list.append(object_name)
-        return object_name
+        return idx
 
     def get_object(self, name: str) -> Model:
         return self.objects[name]
-
-    def first(self) -> str:
-        return self.objects[self.objects_list[0]]
 
     def __getitem__(self, key: str) -> Model:
         return self.objects[key]
 
     def get_new_name(self, name: str) -> str:
-        i = 1
+        i = 2
         while f"{name}{i}" in self.objects:
             i += 1
         return f"{name}{i}"
