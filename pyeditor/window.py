@@ -48,7 +48,7 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("filter", shader("filter.glsl"))
         self.object_manager = ObjectManager()
         self.active_buffer = self.ctx.framebuffer(
-            (),
+            (self.ctx.texture((self.camera.width, self.camera.height), 4)),
             self.ctx.depth_texture((self.camera.width, self.camera.height)),
         )
         self.object_manager.add_object(
@@ -73,9 +73,12 @@ class WindowEvents(mglw.WindowConfig):
         self.ctx.screen.use()
         self.grid.render()
 
-        self.active_buffer.depth_attachment.use(location=0)
+        self.active_buffer.color_attachments[0].use(location=0)
+        self.active_buffer.color_attachments[0].repeat_x = False
+        self.active_buffer.color_attachments[0].repeat_y = False
+        # global_sm["filter"]["zoom_level"] = self.camera.radius
         global_sm["filter"]["kernel"].write(
-            Matrix33([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype="f4") / 16
+            Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
         self.active_vao.render(global_sm["filter"])
 

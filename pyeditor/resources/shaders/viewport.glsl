@@ -34,6 +34,7 @@ void main()
 {
     float l = dot(normalize(-pos), normalize(normal));
     frag_color = vec4(color, 1.0) * (0.25 + abs(l) * 0.75);
+    frag_color.w = 1.0;
 } 
 
 #endif

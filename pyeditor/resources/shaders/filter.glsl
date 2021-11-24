@@ -18,6 +18,7 @@ void main()
 in vec2 TexCoords;
 
 layout (location=0) uniform sampler2D depthTexture;
+uniform float zoom_level;
 uniform float kernel[9];
 
 out vec4 FragColor;
@@ -47,20 +48,18 @@ void main()
         vec2( offset, -offset)  // bottom-right    
     );
 
-    float sampleTex[9];
+    vec4 sampleTex[9];
     for(int i = 0; i < 9; i++)
     {
-        sampleTex[i] = LinearizeDepth(texture(depthTexture, TexCoords.st + offsets[i]).x) / far;
+        sampleTex[i] = texture(depthTexture, TexCoords.st + offsets[i]);
     }
-    float col = 0.0;
+    vec4 col = vec4(0);
     for(int i = 0; i < 9; i++)
         col += sampleTex[i] * kernel[i];
-    
-    if (col >= 0.9999) {
-        col = 0.0;
-    } else if (col >= 0.5) {
-        col = 1.0;
-    } else {col/=10;}
-    FragColor = vec4(1, 0.5, 0.4, col);
+
+    if (col.w >= 0.1) {
+        col.w = 1.0;
+    }
+    FragColor = vec4(1.0, 0.5, 0.4, col.w);
 }  
 #endif
