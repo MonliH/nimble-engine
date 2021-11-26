@@ -30,7 +30,7 @@ class WindowEvents(mglw.WindowConfig):
             str(resource_dir / "fonts/Roboto-Regular.ttf"), 16
         )
 
-        self.last_key = None
+        self.last_mouse_button = None
 
         self.imgui = ModernglWindowRenderer(self.wnd)
         self.imgui.refresh_font_texture()
@@ -145,7 +145,7 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_drag_event(self, x, y, dx, dy):
         if not self.imgui_io.want_capture_mouse:
-            if self.last_key == 2:
+            if self.last_mouse_button == 2:
                 if self.shift:
                     self.camera.pan(dx, dy)
                 else:
@@ -160,7 +160,13 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):
-        self.last_key = button
+        self.last_mouse_button = button
+        if self.last_mouse_button == 1:
+            hit_object = self.object_manager.cast_ray(x, y, self.camera)
+            if hit_object is not None:
+                self.object_manager.set_active(hit_object[1])
+            else:
+                self.object_manager.set_active(None)
         self.imgui.mouse_press_event(x, y, button)
 
     def mouse_release_event(self, x: int, y: int, button: int):

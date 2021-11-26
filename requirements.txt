@@ -2,5 +2,4 @@ moderngl==5.6.4
 moderngl_window==2.4.0
 imgui==1.4.1
 pyrr==0.10.3
-numpy==1.12.4
-pyglm==2.5.5
+numpy==1.21.4

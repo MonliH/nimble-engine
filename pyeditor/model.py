@@ -1,15 +1,26 @@
-from moderngl.framebuffer import Framebuffer
+from typing import Tuple
 from pyrr import Matrix44, Vector3
 import moderngl_window as mglw
 
 
+BoundingBox = Tuple[Vector3, Vector3]
+
+
 class Model:
-    def __init__(self, camera, prog):
+    def __init__(self, camera, prog, bounding_box: BoundingBox = None):
         self.camera = camera
         self.prog = prog
         self.rotation = Vector3((0, 0, 0), dtype="f4")
         self.translation = Vector3((0, 0, 0), dtype="f4")
         self.scale = Vector3((1, 1, 1), dtype="f4")
+
+        if bounding_box is None:
+            self.bounding_box = (
+                Vector3((0, 0, 0), dtype="f4"),
+                Vector3((0, 0, 0), dtype="f4"),
+            )
+        else:
+            self.bounding_box = bounding_box
 
     def write_camera_matrix(self):
         self.prog["view"].write(self.camera.view)
@@ -23,6 +34,13 @@ class Model:
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
 
+    @property
+    def bounding_box_world(self):
+        world_transform = self.model
+        return (world_transform * self.bounding_box[0]), (
+            world_transform * self.bounding_box[1]
+        )
+
     def render(self):
         self.write_camera_matrix()
 
@@ -31,7 +49,11 @@ class Model:
 
 class Cube(Model):
     def __init__(self, camera, prog):
-        super().__init__(camera, prog)
+        super().__init__(
+            camera,
+            prog,
+            bounding_box=(Vector3((-0.5, -0.5, -0.5)), Vector3((0.5, 0.5, 0.5))),
+        )
         self.cube = mglw.geometry.cube(size=(1, 1, 1))
 
     def render(self):
