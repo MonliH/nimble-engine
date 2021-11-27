@@ -58,12 +58,6 @@ class WindowEvents(mglw.WindowConfig):
             "Cube",
             Cube(self.camera, global_sm["viewport"]),
         )
-        self.object_manager.add_obj(
-            "Cube 2",
-            Cube(self.camera, global_sm["viewport"]),
-        )
-
-        self.object_manager.get_obj("Cube 2").translation.xyz = (-1.5, 1.2, -1.1)
 
         self.shift = False
         self.grid = Grid(self.camera, 1, self.ctx)
@@ -151,6 +145,15 @@ class WindowEvents(mglw.WindowConfig):
                 if imgui.begin("general-context-menu", flags=flags):
                     imgui.text("General Actions")
                     imgui.separator()
+                    if imgui.begin_menu("New Object", True):
+                        _, add_cube = imgui.selectable("Cube")
+                        if add_cube:
+                            self.object_manager.add_obj(
+                                "Cube",
+                                Cube(self.camera, global_sm["viewport"]),
+                            )
+                            self.open_context = None
+                        imgui.end_menu()
                     imgui.end()
 
         imgui.render()
@@ -178,6 +181,7 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_drag_event(self, x, y, dx, dy):
         self.did_drag = True
+        self.open_context = None
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 2:
                 if self.shift:

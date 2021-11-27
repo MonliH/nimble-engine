@@ -1,7 +1,7 @@
 # py3ditor
 
 py3ditor (pronounced pie-editor), is a baic 3d editor written in python. 
-It renders the 3d models using OpenGL and low level GLSL shaders.
+It renders the 3d models using low level GLSL shaders (with OpenGL).
 
 ## running
 
