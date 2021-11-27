@@ -1,3 +1,4 @@
+import math
 import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window.geometry import quad_fs
@@ -173,8 +174,21 @@ class WindowEvents(mglw.WindowConfig):
                     self.shift = True
                 elif action == "ACTION_RELEASE":
                     self.shift = False
-            elif key == 65535:
+            elif key == 65535 and action == "ACTION_PRESS":
                 self.object_manager.delete_obj(self.object_manager.active_idx)
+            elif (49 <= key <= 51) and action == "ACTION_PRESS":
+                if key == 49:
+                    # Make camera look from x axis
+                    self.camera.spherical.phi = math.pi / 2
+                    self.camera.spherical.theta = math.pi / 2
+                elif key == 50:
+                    # Y axis
+                    self.camera.spherical.phi = 0.000000000001
+                    self.camera.spherical.theta = 0
+                elif key == 51:
+                    # Z axis
+                    self.camera.spherical.phi = math.pi / 2
+                    self.camera.spherical.theta = 0
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
