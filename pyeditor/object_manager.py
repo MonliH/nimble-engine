@@ -26,21 +26,30 @@ class ObjectManager:
         self.active_idx = idx
 
     @property
-    def active(self):
-        return self.objects_list[self.active_idx]
+    def active(self) -> Optional[str]:
+        if 0 <= self.active_idx < len(self.objects_list):
+            return self.objects_list[self.active_idx]
+
+    def get_obj_from_idx(self, idx: int) -> Model:
+        if 0 <= idx < len(self.objects_list):
+            return self.objects[self.objects_list[idx]]
+
+    def get_obj_name(self, idx) -> str:
+        if 0 <= idx < len(self.objects_list):
+            return self.objects_list[idx]
 
     def get_active(self) -> Optional[Model]:
         if self.active in self.objects:
             return self.objects[self.active]
 
-    def add_object(self, name: str, obj: object) -> int:
+    def add_obj(self, name: str, obj: object) -> int:
         object_name = name if name not in self.objects else self.get_new_name(name)
         self.objects[object_name] = obj
         idx = len(self.objects_list)
         self.objects_list.append(object_name)
         return idx
 
-    def get_object(self, name: str) -> Model:
+    def get_obj(self, name: str) -> Model:
         return self.objects[name]
 
     def __getitem__(self, key: str) -> Model:

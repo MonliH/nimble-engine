@@ -3,6 +3,7 @@ import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
+from numpy import array
 from pyrr.objects.matrix44 import Matrix44
 from shader_manager import global_sm
 from resources import resource_dir, shader
@@ -34,6 +35,7 @@ class WindowEvents(mglw.WindowConfig):
 
         self.imgui = ModernglWindowRenderer(self.wnd)
         self.imgui.refresh_font_texture()
+        self.mouse = (0, 0)
 
         self.camera = OrbitCamera(
             self.wnd.width,
@@ -52,21 +54,24 @@ class WindowEvents(mglw.WindowConfig):
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),
         )
 
-        self.object_manager.add_object(
+        self.object_manager.add_obj(
             "Cube",
             Cube(self.camera, global_sm["viewport"]),
         )
-        self.object_manager.add_object(
+        self.object_manager.add_obj(
             "Cube 2",
             Cube(self.camera, global_sm["viewport"]),
         )
 
-        self.object_manager.get_object("Cube 2").translation.xyz = (-1.5, 1.2, -1.1)
+        self.object_manager.get_obj("Cube 2").translation.xyz = (-1.5, 1.2, -1.1)
 
         self.shift = False
         self.grid = Grid(self.camera, 1, self.ctx)
 
         self.active_vao = quad_fs()
+        self.did_drag = False
+        self.open_context = None
+        self.context_menu_pos = (0, 0)
 
     def render(self, time: float, frametime: float):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
@@ -118,8 +123,34 @@ class WindowEvents(mglw.WindowConfig):
                 self.object_manager.set_active(i)
 
         imgui.listbox_footer()
-
         imgui.end()
+
+        if self.open_context is not None:
+            imgui.set_next_window_position(
+                self.context_menu_pos[0], self.context_menu_pos[1]
+            )
+            flags = (
+                imgui.WINDOW_NO_MOVE
+                | imgui.WINDOW_ALWAYS_AUTO_RESIZE
+                | imgui.WINDOW_NO_TITLE_BAR
+                | imgui.WINDOW_NO_SCROLLBAR
+                | imgui.WINDOW_NO_RESIZE
+            )
+            if self.open_context >= 0:
+                if imgui.begin("object-context-menu", flags=flags):
+                    imgui.text(
+                        f"{self.object_manager.get_obj_name(self.open_context)} Actions"
+                    )
+                    imgui.separator()
+                    _, delete = imgui.selectable("Delete")
+                    if delete:
+                        self.open_context = None
+                    imgui.end()
+            else:
+                if imgui.begin("general-context-menu", flags=flags):
+                    imgui.text("General Actions")
+                    imgui.separator()
+                    imgui.end()
 
         imgui.render()
         self.imgui.render(imgui.get_draw_data())
@@ -141,9 +172,11 @@ class WindowEvents(mglw.WindowConfig):
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
+        self.mouse = (x, y)
         self.imgui.mouse_position_event(x, y, dx, dy)
 
     def mouse_drag_event(self, x, y, dx, dy):
+        self.did_drag = True
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 2:
                 if self.shift:
@@ -161,15 +194,28 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_press_event(self, x, y, button):
         self.last_mouse_button = button
-        if self.last_mouse_button == 1:
-            hit_object = self.object_manager.cast_ray(x, y, self.camera)
-            if hit_object is not None:
-                self.object_manager.set_active(hit_object[1])
-            else:
-                self.object_manager.set_active(None)
+        if not self.imgui_io.want_capture_mouse:
+            if self.last_mouse_button == 1:
+                hit_object = self.object_manager.cast_ray(x, y, self.camera)
+                if hit_object is not None:
+                    self.object_manager.set_active(hit_object[1])
+                else:
+                    self.object_manager.set_active(-1)
+            if self.last_mouse_button != 2:
+                self.open_context = None
         self.imgui.mouse_press_event(x, y, button)
 
     def mouse_release_event(self, x: int, y: int, button: int):
+        if not self.imgui_io.want_capture_mouse:
+            if button == 2 and not self.did_drag:
+                hit_object = self.object_manager.cast_ray(x, y, self.camera)
+                self.context_menu_pos = self.mouse
+                if hit_object is not None:
+                    self.open_context = hit_object[1]
+                else:
+                    # Show context menu
+                    self.open_context = -1
+        self.did_drag = False
         self.imgui.mouse_release_event(x, y, button)
 
     def unicode_char_entered(self, char):
