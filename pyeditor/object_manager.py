@@ -20,7 +20,7 @@ class ObjectManager:
     def __init__(self) -> None:
         self.objects: Dict[str, Model] = {}
         self.objects_list = []
-        self.active_idx = 0
+        self.active_idx = -1
 
     def set_active(self, idx: int):
         self.active_idx = idx
@@ -29,6 +29,15 @@ class ObjectManager:
     def active(self) -> Optional[str]:
         if 0 <= self.active_idx < len(self.objects_list):
             return self.objects_list[self.active_idx]
+
+    def delete_obj(self, idx: int) -> None:
+        if 0 <= idx < len(self.objects_list):
+            if idx == self.active_idx:
+                self.active_idx = -1
+            elif idx < self.active_idx:
+                self.active_idx -= 1
+            del self.objects[self.objects_list[idx]]
+            del self.objects_list[idx]
 
     def get_obj_from_idx(self, idx: int) -> Model:
         if 0 <= idx < len(self.objects_list):

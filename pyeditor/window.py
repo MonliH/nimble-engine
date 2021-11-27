@@ -144,6 +144,7 @@ class WindowEvents(mglw.WindowConfig):
                     imgui.separator()
                     _, delete = imgui.selectable("Delete")
                     if delete:
+                        self.object_manager.delete_obj(self.open_context)
                         self.open_context = None
                     imgui.end()
             else:
