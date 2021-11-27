@@ -173,6 +173,8 @@ class WindowEvents(mglw.WindowConfig):
                     self.shift = True
                 elif action == "ACTION_RELEASE":
                     self.shift = False
+            elif key == 65535:
+                self.object_manager.delete_obj(self.object_manager.active_idx)
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
@@ -181,13 +183,13 @@ class WindowEvents(mglw.WindowConfig):
 
     def mouse_drag_event(self, x, y, dx, dy):
         self.did_drag = True
-        self.open_context = None
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 2:
                 if self.shift:
                     self.camera.pan(dx, dy)
                 else:
                     self.camera.rotate(dx, dy)
+            self.open_context = None
         self.imgui.mouse_drag_event(x, y, dx, dy)
 
     def mouse_scroll_event(self, x_offset, y_offset):
