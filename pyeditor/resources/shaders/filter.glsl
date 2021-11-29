@@ -20,7 +20,7 @@ in vec2 TexCoords;
 layout (location=0) uniform sampler2D depthTexture;
 uniform float kernel[9];
 
-out vec4 FragColor;
+out vec4 frag_color;
 
 const float offset = 1.0 / 300.0;  
 
@@ -50,6 +50,6 @@ void main()
     if (col.w >= 0.1) {
         col.w = 1.0;
     }
-    FragColor = vec4(1.0, 0.5, 0.2, col.w);
+    frag_color = vec4(1.0, 0.5, 0.2, col.w);
 }  
 #endif

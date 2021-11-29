@@ -52,6 +52,7 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("grid", shader("grid.glsl"))
         global_sm.load("line", shader("line.glsl"))
         global_sm.load("filter", shader("filter.glsl"))
+        global_sm.load("line", shader("line.glsl"))
         self.object_manager = ObjectManager()
         self.active_buffer = self.ctx.framebuffer(
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),

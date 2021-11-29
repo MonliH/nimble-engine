@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import Optional
 from pyrr import Matrix44, Vector3
-from moderngl_window.scene import Camera
 from moderngl.program import Program
+
+from interface.orbit_camera import OrbitCamera
 from .geometry import Geometry
 
 
@@ -16,7 +17,7 @@ class Model:
         if geometry is not None:
             self.geometry = geometry
 
-    def write_matrix(self, camera: Camera, model: bool = True):
+    def write_matrix(self, camera: OrbitCamera, model: bool = True):
         self.shader["view"].write(camera.view)
         self.shader["proj"].write(camera.proj)
 
@@ -38,6 +39,6 @@ class Model:
             world_transform * self.geometry.bounding_box[1]
         )
 
-    def render(self, camera: Camera):
+    def render(self, camera: OrbitCamera):
         self.write_matrix(camera)
         self.geometry.vao.render(self.shader)

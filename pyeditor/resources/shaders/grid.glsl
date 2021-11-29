@@ -1,7 +1,7 @@
 #version 330 core
 
 #if defined VERTEX_SHADER
-in vec3 vert;
+in vec3 in_position;
 
 uniform mat4 view;
 uniform mat4 proj;
@@ -12,9 +12,9 @@ out vec3 model_pos;
 
 void main()
 {
-    vec4 p = model * vec4(vert.xyz, 1.0);
+    vec4 p = model * vec4(in_position.xyz, 1.0);
     gl_Position = proj * view * p;
-    frag_uv = vert.xy;
+    frag_uv = in_position.xy;
     model_pos = p.xyz;
 }
 
