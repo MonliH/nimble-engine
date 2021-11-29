@@ -14,6 +14,9 @@ from userspace.geometry import Cube, Cylinder, Sphere
 from pyrr import Matrix33
 
 
+new_obj_menu = [("Cube", Cube), ("Sphere", Sphere)]
+
+
 class WindowEvents(mglw.WindowConfig):
     gl_version = (3, 3)
     title = "Py3ditor"
@@ -56,7 +59,7 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Model(global_sm["viewport"], Cylinder()),
+            Model(global_sm["viewport"], Cube()),
         )
 
         self.shift = False
@@ -147,13 +150,14 @@ class WindowEvents(mglw.WindowConfig):
                     imgui.text("General Actions")
                     imgui.separator()
                     if imgui.begin_menu("New Object", True):
-                        _, add_cube = imgui.selectable("Cube")
-                        if add_cube:
-                            self.object_manager.add_obj(
-                                "Cube",
-                                Model(global_sm["viewport"], Cube()),
-                            )
-                            self.open_context = None
+                        for name, Constructor in new_obj_menu:
+                            _, add_obj = imgui.selectable(name)
+                            if add_obj:
+                                self.object_manager.add_obj(
+                                    name,
+                                    Model(global_sm["viewport"], Constructor()),
+                                )
+                                self.open_context = None
                         imgui.end_menu()
                     imgui.end()
 

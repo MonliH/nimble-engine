@@ -38,7 +38,7 @@ class ObjectManager:
                 self.active_idx = -1
             elif idx < self.active_idx:
                 self.active_idx -= 1
-            self.objects[self.objects_list[idx]].geometry.release()
+            self.objects[self.objects_list[idx]].geometry.vao.release()
             del self.objects[self.objects_list[idx]]
             del self.objects_list[idx]
 
