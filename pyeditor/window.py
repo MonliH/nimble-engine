@@ -9,7 +9,8 @@ from common.resources import resource_dir, shader
 from interface.grid import Grid
 from interface.orbit_camera import OrbitCamera
 from userspace.object_manager import ObjectManager
-from userspace.model import Cube
+from userspace.model import Model
+from userspace.geometry import Cube, Cylinder, Sphere
 from pyrr import Matrix33
 
 
@@ -55,7 +56,7 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Cube(global_sm["viewport"]),
+            Model(global_sm["viewport"], Cylinder()),
         )
 
         self.shift = False
@@ -150,7 +151,7 @@ class WindowEvents(mglw.WindowConfig):
                         if add_cube:
                             self.object_manager.add_obj(
                                 "Cube",
-                                Cube(self.camera, global_sm["viewport"]),
+                                Model(global_sm["viewport"], Cube()),
                             )
                             self.open_context = None
                         imgui.end_menu()

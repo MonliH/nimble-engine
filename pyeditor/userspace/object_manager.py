@@ -2,7 +2,8 @@ from typing import Optional, Dict, Tuple
 
 from moderngl.framebuffer import Framebuffer
 from moderngl_window.scene.camera import Camera
-from userspace.model import BoundingBox, Model
+from userspace.model import Model
+from userspace.bounding_box import BoundingBox
 from interface.orbit_camera import OrbitCamera
 from pyrr import Vector3, Vector4
 
@@ -37,6 +38,7 @@ class ObjectManager:
                 self.active_idx = -1
             elif idx < self.active_idx:
                 self.active_idx -= 1
+            self.objects[self.objects_list[idx]].geometry.release()
             del self.objects[self.objects_list[idx]]
             del self.objects_list[idx]
 

@@ -1,5 +1,6 @@
+PyOpenGL==3.1.5
+numpy==1.21.4
 moderngl==5.6.4
 moderngl_window==2.4.0
-imgui==1.4.1
 pyrr==0.10.3
-numpy==1.21.4
+imgui==1.4.1

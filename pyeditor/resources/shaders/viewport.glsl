@@ -26,7 +26,7 @@ void main()
 in vec3 pos;
 in vec3 normal;
 
-uniform vec3 color;
+uniform vec3 color = vec3(0.2, 0.2, 0.2);
 
 out vec4 frag_color;
 
