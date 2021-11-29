@@ -4,8 +4,6 @@ import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from numpy import array
-from pyrr.objects.matrix44 import Matrix44
 from userspace.shader_manager import global_sm
 from common.resources import resource_dir, shader
 from interface.grid import Grid
@@ -57,11 +55,11 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Cube(self.camera, global_sm["viewport"]),
+            Cube(global_sm["viewport"]),
         )
 
         self.shift = False
-        self.grid = Grid(self.camera, 1, self.ctx)
+        self.grid = Grid(1, self.ctx)
 
         self.active_vao = quad_fs()
         self.did_drag = False
@@ -72,9 +70,10 @@ class WindowEvents(mglw.WindowConfig):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
-        self.object_manager.render(self.active_buffer, self.ctx.screen)
-        self.grid.render()
+        self.object_manager.render(self.camera, self.active_buffer, self.ctx.screen)
+        self.grid.render(self.camera)
 
+        # Draw active object outline with offscreen buffer
         self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False

@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Tuple
 
 from moderngl.framebuffer import Framebuffer
+from moderngl_window.scene.camera import Camera
 from userspace.model import BoundingBox, Model
 from interface.orbit_camera import OrbitCamera
 from pyrr import Vector3, Vector4
@@ -70,14 +71,16 @@ class ObjectManager:
             i += 1
         return f"{name}{i}"
 
-    def render(self, active_fbo: Framebuffer, screen: Framebuffer) -> None:
+    def render(
+        self, camera: Camera, active_fbo: Framebuffer, screen: Framebuffer
+    ) -> None:
         for obj in self.objects.values():
-            obj.render()
+            obj.render(camera)
         active_fbo.clear()
         active = self.get_active()
         if active:
             active_fbo.use()
-            active.render()
+            active.render(camera)
         screen.use()
 
     def cast_ray(

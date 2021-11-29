@@ -6,10 +6,10 @@ from moderngl_window.meta.program import ProgramDescription
 class ShaderManager:
     def __init__(self):
         self.shaders = {}
-        self.programs = Programs()
+        self.shaderrams = Programs()
 
     def load(self, name: str, path: str) -> Program:
-        shader = self.programs.load(ProgramDescription(path=str(path)))
+        shader = self.shaderrams.load(ProgramDescription(path=str(path)))
         self.shaders[name] = shader
         return shader
 
