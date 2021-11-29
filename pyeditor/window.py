@@ -6,12 +6,12 @@ import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from numpy import array
 from pyrr.objects.matrix44 import Matrix44
-from shader_manager import global_sm
-from resources import resource_dir, shader
-from grid import Grid
-from orbit_camera import OrbitCamera
-from object_manager import ObjectManager
-from model import Cube
+from userspace.shader_manager import global_sm
+from common.resources import resource_dir, shader
+from interface.grid import Grid
+from interface.orbit_camera import OrbitCamera
+from userspace.object_manager import ObjectManager
+from userspace.model import Cube
 from pyrr import Matrix33
 
 

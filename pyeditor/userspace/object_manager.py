@@ -1,8 +1,8 @@
 from typing import Optional, Dict, Tuple
 
 from moderngl.framebuffer import Framebuffer
-from model import BoundingBox, Model
-from orbit_camera import OrbitCamera
+from userspace.model import BoundingBox, Model
+from interface.orbit_camera import OrbitCamera
 from pyrr import Vector3, Vector4
 
 

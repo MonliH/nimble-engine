@@ -1,12 +1,11 @@
 import numpy as np
 from pyrr.objects.vector4 import Vector3
-from model import Model
+from userspace.model import Model
 import moderngl as mgl
-from orbit_camera import OrbitCamera
-from resources import shader
-from shader_manager import global_sm
+from interface.orbit_camera import OrbitCamera
+from common.resources import shader
+from userspace.shader_manager import global_sm
 from pyrr import Matrix44
-import transform_matrix
 
 
 class Grid(Model):

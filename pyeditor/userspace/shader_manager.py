@@ -1,4 +1,3 @@
-from resources import resource_dir
 from moderngl_window.resources.programs import Programs
 from moderngl.program import Program
 from moderngl_window.meta.program import ProgramDescription

@@ -1,6 +1,7 @@
 from typing import Tuple
 from pyrr import Matrix44, Vector3
 import moderngl_window as mglw
+import moderngl as mgl
 
 
 BoundingBox = Tuple[Vector3, Vector3]
@@ -85,3 +86,10 @@ class Sphere(Model):
             0.1,
         )
         self.sphere.render(self.prog)
+
+
+class Cylinder(Model):
+    def __init__(self, camera, prog, ctx: mgl.Context):
+        super().__init__(camera, prog)
+        vbo = ctx.buffer(cylinder)
+        self.cylinder = ctx.vertex_array()
