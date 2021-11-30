@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional
 from pyrr import Matrix44, Vector3
 from moderngl.program import Program
+import moderngl as mgl
 
 from interface.orbit_camera import OrbitCamera
 from .geometry import Geometry

@@ -60,7 +60,7 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Model(global_sm["viewport"], Cube()),
+            Model(global_sm["viewport"], Cylinder()),
         )
 
         self.shift = False
