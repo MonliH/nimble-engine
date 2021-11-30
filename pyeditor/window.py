@@ -14,7 +14,7 @@ from userspace.geometry import Cube, Cylinder, Sphere
 from pyrr import Matrix33
 
 
-new_obj_menu = [("Cube", Cube), ("Sphere", Sphere)]
+new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
 
 
 class WindowEvents(mglw.WindowConfig):
@@ -60,7 +60,7 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Model(global_sm["viewport"], Cylinder()),
+            Model(global_sm["viewport"], Cube()),
         )
 
         self.shift = False

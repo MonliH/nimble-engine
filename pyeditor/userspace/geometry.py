@@ -160,4 +160,11 @@ class Cylinder(Geometry):
         vao.buffer(normals, "3f", [AttributeNames.NORMAL])
         vao.buffer(uvs, "2f", [AttributeNames.TEXCOORD_0])
 
-        super().__init__(vao)
+        max_radius = max(radius_top, radius_bottom)
+        super().__init__(
+            vao,
+            (
+                Vector3((-max_radius, -max_radius, -half_height), dtype="f4"),
+                Vector3((max_radius, max_radius, half_height), dtype="f4"),
+            ),
+        )
