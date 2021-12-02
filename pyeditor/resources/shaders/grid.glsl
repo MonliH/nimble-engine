@@ -64,14 +64,11 @@ void main() {
     frag_color.w *= fade_factor;
 
     if (frag_uv.x > -0.0004 && frag_uv.x < 0.0004) {
-        // X axis
-        frag_color.z = 1.0;
-        frag_color.w *= 2;
-    }
-    if (frag_uv.y > -0.0004 && frag_uv.y < 0.0004) {
         // Z axis
-        frag_color.x = 1.0;
-        frag_color.w *= 2;
+        frag_color = vec4(0.1, 0.1, 1.0, 1.0);
+    } else if (frag_uv.y > -0.0004 && frag_uv.y < 0.0004) {
+        // X axis
+        frag_color = vec4(1.0, 0.1, 0.1, 1.0);
     }
 } 
 

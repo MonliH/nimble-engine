@@ -5,7 +5,7 @@ from userspace.model import Model
 import moderngl as mgl
 from interface.orbit_camera import OrbitCamera
 from common.resources import shader
-from userspace.shader_manager import global_sm
+from common.shader_manager import global_sm
 from pyrr import Matrix44
 
 

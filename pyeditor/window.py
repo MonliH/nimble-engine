@@ -4,14 +4,20 @@ import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from userspace.shader_manager import global_sm
+from pyrr import Matrix33
+
+from common.shader_manager import global_sm
 from common.resources import resource_dir, shader
+import common.ray_cast as ray_cast
+
 from interface.grid import Grid
 from interface.orbit_camera import OrbitCamera
+from interface.axis_arrows import AxisArrows
+
+import userspace.bounding_box as bounding_box
 from userspace.object_manager import ObjectManager
 from userspace.model import Model
 from userspace.geometry import Cube, Cylinder, Sphere
-from pyrr import Matrix33
 
 
 new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
@@ -51,6 +57,7 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("viewport", shader("viewport.glsl"))
         global_sm.load("grid", shader("grid.glsl"))
         global_sm.load("line", shader("line.glsl"))
+        global_sm.load("constant_color", shader("constant_color.glsl"))
         global_sm.load("filter", shader("filter.glsl"))
         global_sm.load("line", shader("line.glsl"))
         self.object_manager = ObjectManager()
@@ -60,11 +67,13 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Model(global_sm["viewport"], Cube()),
+            Model(global_sm["viewport"], Cylinder()),
         )
+        self.object_manager["Cube"].rotation = (0, math.pi / 4, 0)
 
         self.shift = False
         self.grid = Grid(1, self.ctx)
+        self.axis = AxisArrows(0.1)
 
         self.active_vao = quad_fs()
         self.did_drag = False
@@ -76,6 +85,7 @@ class WindowEvents(mglw.WindowConfig):
         self.ctx.clear(0.235, 0.235, 0.235)
 
         self.object_manager.render(self.camera, self.active_buffer, self.ctx.screen)
+        self.axis.render(self.camera)
         self.grid.render(self.camera)
 
         # Draw active object outline with offscreen buffer
@@ -222,11 +232,20 @@ class WindowEvents(mglw.WindowConfig):
         self.last_mouse_button = button
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 1:
-                hit_object = self.object_manager.cast_ray(x, y, self.camera)
-                if hit_object is not None:
-                    self.object_manager.set_active(hit_object[1])
+                # Maybe pressed on axis
+                ray = ray_cast.get_ray(x, y, self.camera)
+                if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
+                    print("move x")
+                elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
+                    print("move y")
+                if ray_cast.does_intersect(self.axis.z.bounding_box, ray):
+                    print("move z")
                 else:
-                    self.object_manager.set_active(-1)
+                    hit_object = self.object_manager.cast_ray(x, y, self.camera)
+                    if hit_object is not None:
+                        self.object_manager.set_active(hit_object[1])
+                    else:
+                        self.object_manager.set_active(-1)
             if self.last_mouse_button != 2:
                 self.open_context = None
         self.imgui.mouse_press_event(x, y, button)
