@@ -35,17 +35,17 @@ vec4 grid(vec2 uv_coord, float scale) {
     return color;
 }
 
-float log10 = 1 / log(10);
+float log10 = 1.0 / log(10.0);
 float zoom_mag = log10*log(zoom_level);
-float zoom_stage = clamp(ceil(zoom_mag), 2, 4);
+float zoom_stage = clamp(ceil(zoom_mag), 2.0, 4.0);
 float zoom_segment_percentage = fract(zoom_mag);
-float grid_square_size = pow(10, 4-zoom_stage);
+float grid_square_size = pow(10.0, 4.0-zoom_stage);
 
 uniform float grid_radius;
 uniform vec3 camera_target;
 in vec3 model_pos;
 
-float radius_to_original = grid_radius/500;
+float radius_to_original = grid_radius/500.0;
 
 void main() {
     vec4 bigger_color = grid(frag_uv, grid_square_size * radius_to_original);
