@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Tuple
 
 from moderngl.framebuffer import Framebuffer
+from moderngl_window import activate_context
 from moderngl_window.scene.camera import Camera
 from userspace.model import Model
 from interface.orbit_camera import OrbitCamera
@@ -71,7 +72,7 @@ class ObjectManager:
         active = self.get_active()
         if active:
             active_fbo.use()
-            active.render(camera)
+            active.render(camera, bounding=False)
         screen.use()
 
     def cast_ray(

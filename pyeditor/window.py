@@ -59,7 +59,7 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("line", shader("line.glsl"))
         global_sm.load("constant_color", shader("constant_color.glsl"))
         global_sm.load("bounding_box", shader("bounding_box.glsl"))
-        global_sm.load("filter", shader("filter.glsl"))
+        global_sm.load("outline_filter", shader("outline_filter.glsl"))
         global_sm.load("line", shader("line.glsl"))
         self.object_manager = ObjectManager()
         self.active_buffer = self.ctx.framebuffer(
@@ -95,10 +95,10 @@ class WindowEvents(mglw.WindowConfig):
         self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False
-        global_sm["filter"]["kernel"].write(
+        global_sm["outline_filter"]["kernel"].write(
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
-        self.active_vao.render(global_sm["filter"])
+        self.active_vao.render(global_sm["outline_filter"])
 
         self.render_ui()
 

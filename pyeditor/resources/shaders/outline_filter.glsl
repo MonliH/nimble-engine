@@ -19,6 +19,7 @@ in vec2 TexCoords;
 
 layout (location=0) uniform sampler2D depthTexture;
 uniform float kernel[9];
+uniform vec3 outline_color = vec3(1.0, 0.5, 0.2);
 
 out vec4 frag_color;
 
@@ -50,6 +51,6 @@ void main()
     if (col.w >= 0.1) {
         col.w = 1.0;
     }
-    frag_color = vec4(1.0, 0.5, 0.2, col.w);
+    frag_color = vec4(outline_color, col.w);
 }  
 #endif

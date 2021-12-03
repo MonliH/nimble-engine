@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from typing import Optional
+from typing import Optional, Tuple
 import moderngl_window as mglw
 import moderngl as mgl
 from pyrr import Matrix44, Vector3
@@ -103,10 +103,17 @@ class Model:
         self.bounding_box_world = self.geometry.get_world_bounding_box(self.model)
         self.update_bounding_render()
 
-    def render(self, camera: OrbitCamera, mvp: bool = False):
+    def render(self, camera: OrbitCamera, mvp: bool = False, bounding: bool = True):
         self.write_matrix(camera, mvp=mvp)
         self.geometry.vao.render(self.shader)
-        if self.bounding_box_buffer is not None:
-            self.bounding_box_buffer.program["color"] = (1, 1, 1)
-            self.bounding_box_buffer.program["vp"].write(camera.proj * camera.view)
-            self.bounding_box_buffer.render(mgl.LINE_LOOP)
+        if self.bounding_box_buffer is not None and bounding:
+            self.render_bounding_box(camera)
+
+    def render_bounding_box(
+        self,
+        camera: OrbitCamera,
+        color: Tuple[float, float, float] = (1, 1, 1),
+    ):
+        self.bounding_box_buffer.program["color"] = color
+        self.bounding_box_buffer.program["vp"].write(camera.proj * camera.view)
+        self.bounding_box_buffer.render(mgl.LINE_LOOP)
