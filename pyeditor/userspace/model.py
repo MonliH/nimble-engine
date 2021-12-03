@@ -64,15 +64,17 @@ class Model:
         ], dtype="f4")
         # fmt: on
         indicies = np.array(
-            [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="int"
+            [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="i4"
         )
 
         ctx = mglw.ctx()
-        vbo_vert = ctx.buffer(verts[indicies])
+        vbo_vert = ctx.buffer(verts)
+        vbo_ind = ctx.buffer(indicies)
 
         self.bounding_box_buffer = ctx.vertex_array(
             global_sm["bounding_box"],
             [(vbo_vert, "3f", "model_position")],
+            index_buffer=vbo_ind,
         )
 
     def translate(self, translation: Vector3):
