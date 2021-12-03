@@ -1,12 +1,15 @@
 from __future__ import annotations
+import numpy as np
 from typing import Optional
+import moderngl_window as mglw
+import moderngl as mgl
 from pyrr import Matrix44, Vector3
 from moderngl.program import Program
-import moderngl as mgl
 
 from interface.orbit_camera import OrbitCamera
-from userspace.bounding_box import apply_world_transform
+from common.bounding_box import BoundingBox
 from .geometry import Geometry
+from common.shader_manager import global_sm
 
 
 class Model:
@@ -32,14 +35,53 @@ class Model:
         if scale is not None:
             self.scale = scale
 
+        self.bounding_box_world: BoundingBox = None
+        self.model: Optional[Matrix44] = None
+        self.bounding_box_buffer = None
+
         if geometry is not None:
             self.geometry = geometry
 
-        self.bounding_box_verts = []
-        self.bounding_box_indices = []
+            self.transform_changed()
+
+            if draw_bounding_box:
+                self.update_bounding_render()
+
+    def update_bounding_render(self):
+        i = self.bounding_box_world[0]
+        a = self.bounding_box_world[1]
+        # fmt: off
+        verts = np.array([
+            [i[0], a[1], i[2]],
+            [a[0], a[1], i[2]],
+            [a[0], a[1], a[2]],
+            [i[0], a[1], a[2]],
+
+            [i[0], i[1], a[2]],
+            [a[0], i[1], a[2]],
+            [a[0], i[1], i[2]],
+            [i[0], i[1], i[2]],
+        ], dtype="f4")
+        # fmt: on
+        indicies = np.array(
+            [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="int"
+        )
+
+        ctx = mglw.ctx()
+        vbo_vert = ctx.buffer(verts[indicies])
+
+        self.bounding_box_buffer = ctx.vertex_array(
+            global_sm["bounding_box"],
+            [(vbo_vert, "3f", "model_position")],
+        )
 
     def translate(self, translation: Vector3):
         self.position += translation
+        self.transform_changed()
+
+    def rotate(self, rotation: Vector3):
+        self.rotation += rotation
+        self.transform_changed()
 
     def write_matrix(self, camera: OrbitCamera, model: bool = True, mvp: bool = False):
         if mvp:
@@ -52,24 +94,19 @@ class Model:
         if model:
             self.shader["model"].write(self.model)
 
-    @property
-    def model(self):
-        return (
+    def transform_changed(self):
+        self.model = (
             Matrix44.from_eulers(self.rotation, dtype="f4")
             * Matrix44.from_translation(self.position, dtype="f4")
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
-
-    @property
-    def bounding_box_world(self):
-        return apply_world_transform(
-            (
-                (self.geometry.bounding_box[0]),
-                (self.geometry.bounding_box[1]),
-            ),
-            self.model,
-        )
+        self.bounding_box_world = self.geometry.get_world_bounding_box(self.model)
+        self.update_bounding_render()
 
     def render(self, camera: OrbitCamera, mvp: bool = False):
         self.write_matrix(camera, mvp=mvp)
         self.geometry.vao.render(self.shader)
+        if self.bounding_box_buffer is not None:
+            self.bounding_box_buffer.program["color"] = (1, 1, 1)
+            self.bounding_box_buffer.program["vp"].write(camera.proj * camera.view)
+            self.bounding_box_buffer.render(mgl.LINE_LOOP)

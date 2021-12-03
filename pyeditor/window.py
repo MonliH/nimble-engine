@@ -5,6 +5,7 @@ from moderngl_window.geometry import quad_fs
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from pyrr import Matrix33
+from pyrr.objects.vector3 import Vector3
 
 from common.shader_manager import global_sm
 from common.resources import resource_dir, shader
@@ -14,7 +15,6 @@ from interface.grid import Grid
 from interface.orbit_camera import OrbitCamera
 from interface.axis_arrows import AxisArrows
 
-import userspace.bounding_box as bounding_box
 from userspace.object_manager import ObjectManager
 from userspace.model import Model
 from userspace.geometry import Cube, Cylinder, Sphere
@@ -58,6 +58,7 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("grid", shader("grid.glsl"))
         global_sm.load("line", shader("line.glsl"))
         global_sm.load("constant_color", shader("constant_color.glsl"))
+        global_sm.load("bounding_box", shader("bounding_box.glsl"))
         global_sm.load("filter", shader("filter.glsl"))
         global_sm.load("line", shader("line.glsl"))
         self.object_manager = ObjectManager()
@@ -67,9 +68,11 @@ class WindowEvents(mglw.WindowConfig):
 
         self.object_manager.add_obj(
             "Cube",
-            Model(global_sm["viewport"], Cylinder()),
+            Model(global_sm["viewport"], Sphere(), draw_bounding_box=True),
         )
-        self.object_manager["Cube"].rotation = (0, math.pi / 4, 0)
+        self.object_manager["Cube"].rotate(
+            Vector3([math.pi / 4, math.pi / 4, 0], dtype="f4")
+        )
 
         self.shift = False
         self.grid = Grid(1, self.ctx)

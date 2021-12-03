@@ -6,8 +6,9 @@ from math import pi, sin, cos
 import numpy as np
 from moderngl_window.geometry.attributes import AttributeNames
 from moderngl_window.opengl.vao import VAO
+from pyrr.objects.matrix44 import Matrix44
 
-from .bounding_box import BoundingBox, vao2bounding_box
+from common.bounding_box import BoundingBox, apply_world_transform, vao2bounding_box
 
 
 class Geometry:
@@ -23,6 +24,15 @@ class Geometry:
             bounding_box = vao2bounding_box(self.vao)
 
         self.bounding_box = bounding_box
+
+    def get_world_bounding_box(self, model: Matrix44) -> BoundingBox:
+        return apply_world_transform(
+            (
+                (self.bounding_box[0]),
+                (self.bounding_box[1]),
+            ),
+            model,
+        )
 
 
 class Cube(Geometry):
@@ -54,6 +64,20 @@ class Sphere(Geometry):
                 Vector3((-radius,) * 3, dtype="f4"),
                 Vector3((radius,) * 3, dtype="f4"),
             ),
+        )
+
+    def get_world_bounding_box(self, model: Matrix44) -> BoundingBox:
+        # Special, just give direct bounding box without rotation
+        (s, _, t) = model.decompose()
+        new = Matrix44.from_translation(t, dtype="f4") * Matrix44.from_scale(
+            s, dtype="f4"
+        )
+        return apply_world_transform(
+            (
+                (self.bounding_box[0]),
+                (self.bounding_box[1]),
+            ),
+            new,
         )
 
 

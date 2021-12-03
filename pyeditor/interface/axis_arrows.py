@@ -3,7 +3,7 @@ from pyrr import Vector3
 
 from userspace.model import Model
 from userspace.geometry import Cylinder
-import userspace.bounding_box as bounding_box
+import common.bounding_box as bounding_box
 
 from common.shader_manager import global_sm
 from .orbit_camera import OrbitCamera

@@ -1,7 +1,7 @@
 from typing import Tuple
 from pyrr import Vector3, Vector4
 from interface.orbit_camera import OrbitCamera
-from userspace.bounding_box import BoundingBox
+from common.bounding_box import BoundingBox
 
 
 # (origin, direction, inv_direction, sign)
