@@ -27,10 +27,7 @@ class Geometry:
 
     def get_world_bounding_box(self, model: Matrix44) -> BoundingBox:
         return apply_world_transform(
-            (
-                (self.bounding_box[0]),
-                (self.bounding_box[1]),
-            ),
+            self.bounding_box,
             model,
         )
 
@@ -188,7 +185,7 @@ class Cylinder(Geometry):
         super().__init__(
             vao,
             (
-                Vector3((-max_radius, -max_radius, -half_height), dtype="f4"),
-                Vector3((max_radius, max_radius, half_height), dtype="f4"),
+                Vector3((-max_radius, -half_height, -max_radius), dtype="f4"),
+                Vector3((max_radius, half_height, max_radius), dtype="f4"),
             ),
         )

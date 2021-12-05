@@ -1,9 +1,14 @@
-# py3ditor
+# nimble-engine
 
-py3ditor (pronounced pie-editor), is a baic 3d editor written in python. 
+Nimble Engine is a basic 3d game engine written in python. 
 It renders the 3d models using low level GLSL shaders (with OpenGL).
 
 ## running
+
+Download the source either through github zip, or:
+```bash
+git clone https://github.com/MonliH/nimble-engine.git
+```
 
 Install the dependencies:
 
@@ -11,8 +16,8 @@ Install the dependencies:
 pip insall -r requirements.txt
 ```
 
-Then run (while in the `py3ditor` directory, NOT the `pyeditor` directory):
+Then run (while in the `nimble-engine` directory, NOT the `nimble` directory):
 
 ```
-python pyeditor
+python nimble
 ```

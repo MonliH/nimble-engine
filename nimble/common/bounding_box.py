@@ -24,10 +24,12 @@ def join(b1: BoundingBox, b2: BoundingBox) -> BoundingBox:
 
 def apply_world_transform(b: BoundingBox, transform: Matrix44) -> BoundingBox:
     """Convert a bounding box into world space."""
+    print(transform)
     transformed = get_bounding_box_points(b)
     points = transformed.dot(transform.T)
-    mi = Vector3(np.amin(points, axis=0)[:3], dtype="f4")
-    ma = Vector3(np.amax(points, axis=0)[:3], dtype="f4")
+    points = np.true_divide(points[:, :3], points[:, [-1]])
+    mi = Vector3(np.amin(points, axis=0), dtype="f4")
+    ma = Vector3(np.amax(points, axis=0), dtype="f4")
     return (mi, ma)
 
 

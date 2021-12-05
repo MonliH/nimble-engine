@@ -66,13 +66,17 @@ class WindowEvents(mglw.WindowConfig):
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),
         )
 
-        self.object_manager.add_obj(
-            "Cube",
-            Model(global_sm["viewport"], Sphere(), draw_bounding_box=True),
-        )
-        self.object_manager["Cube"].rotate(
-            Vector3([math.pi / 4, math.pi / 4, 0], dtype="f4")
-        )
+        # self.object_manager.add_obj(
+        #     "Cube",
+        #     Model(
+        #         global_sm["viewport"],
+        #         Cylinder(radius_bottom=1, radius_top=0),
+        #         draw_bounding_box=True,
+        #     ),
+        # )
+        # self.object_manager["Cube"].rotate(
+        #     Vector3([math.pi / 4, math.pi / 4, 0], dtype="f4")
+        # )
 
         self.shift = False
         self.grid = Grid(1, self.ctx)
@@ -83,7 +87,7 @@ class WindowEvents(mglw.WindowConfig):
         self.open_context = None
         self.context_menu_pos = (0, 0)
 
-    def render(self, time: float, frametime: float):
+    def render(self, _time: float, _frametime: float):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
@@ -237,10 +241,10 @@ class WindowEvents(mglw.WindowConfig):
             if self.last_mouse_button == 1:
                 # Maybe pressed on axis
                 ray = ray_cast.get_ray(x, y, self.camera)
-                if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
-                    print("move x")
-                elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
-                    print("move y")
+                # if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
+                #     print("move x")
+                # elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
+                #     print("move y")
                 if ray_cast.does_intersect(self.axis.z.bounding_box, ray):
                     print("move z")
                 else:

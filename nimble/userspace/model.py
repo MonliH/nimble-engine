@@ -38,18 +38,16 @@ class Model:
         self.bounding_box_world: BoundingBox = None
         self.model: Optional[Matrix44] = None
         self.bounding_box_buffer = None
+        self.draw_bounding_box = draw_bounding_box
 
-        if geometry is not None:
-            self.geometry = geometry
+        self.geometry = geometry
 
-            self.transform_changed()
-
-            if draw_bounding_box:
-                self.update_bounding_render()
+        self.transform_changed()
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]
         a = self.bounding_box_world[1]
+
         # fmt: off
         verts = np.array([
             [i[0], a[1], i[2]],
@@ -97,18 +95,20 @@ class Model:
             self.shader["model"].write(self.model)
 
     def transform_changed(self):
+        print(Matrix44.from_translation(self.position, dtype="f4"))
         self.model = (
-            Matrix44.from_eulers(self.rotation, dtype="f4")
-            * Matrix44.from_translation(self.position, dtype="f4")
+            Matrix44.from_translation(self.position, dtype="f4")
+            * Matrix44.from_eulers(self.rotation, dtype="f4")
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
-        self.bounding_box_world = self.geometry.get_world_bounding_box(self.model)
-        self.update_bounding_render()
+        if self.geometry is not None:
+            self.bounding_box_world = self.geometry.get_world_bounding_box(self.model)
+            self.update_bounding_render()
 
     def render(self, camera: OrbitCamera, mvp: bool = False, bounding: bool = True):
         self.write_matrix(camera, mvp=mvp)
         self.geometry.vao.render(self.shader)
-        if self.bounding_box_buffer is not None and bounding:
+        if self.draw_bounding_box and self.bounding_box_buffer is not None and bounding:
             self.render_bounding_box(camera)
 
     def render_bounding_box(
