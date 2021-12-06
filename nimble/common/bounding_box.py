@@ -24,7 +24,6 @@ def join(b1: BoundingBox, b2: BoundingBox) -> BoundingBox:
 
 def apply_world_transform(b: BoundingBox, transform: Matrix44) -> BoundingBox:
     """Convert a bounding box into world space."""
-    print(transform)
     transformed = get_bounding_box_points(b)
     points = transformed.dot(transform.T)
     points = np.true_divide(points[:, :3], points[:, [-1]])

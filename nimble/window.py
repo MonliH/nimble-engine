@@ -70,7 +70,7 @@ class WindowEvents(mglw.WindowConfig):
         #     "Cube",
         #     Model(
         #         global_sm["viewport"],
-        #         Cylinder(radius_bottom=1, radius_top=0),
+        #         Cylinder(height=0.5, radius_bottom=1, radius_top=0, height_offset=0.25),
         #         draw_bounding_box=True,
         #     ),
         # )

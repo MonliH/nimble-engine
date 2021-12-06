@@ -54,13 +54,13 @@ class Model:
             [a[0], a[1], i[2]],
             [a[0], a[1], a[2]],
             [i[0], a[1], a[2]],
-
             [i[0], i[1], a[2]],
             [a[0], i[1], a[2]],
             [a[0], i[1], i[2]],
             [i[0], i[1], i[2]],
         ], dtype="f4")
         # fmt: on
+
         indicies = np.array(
             [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="i4"
         )
@@ -95,7 +95,6 @@ class Model:
             self.shader["model"].write(self.model)
 
     def transform_changed(self):
-        print(Matrix44.from_translation(self.position, dtype="f4"))
         self.model = (
             Matrix44.from_translation(self.position, dtype="f4")
             * Matrix44.from_eulers(self.rotation, dtype="f4")

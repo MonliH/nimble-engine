@@ -28,7 +28,7 @@ class Geometry:
     def get_world_bounding_box(self, model: Matrix44) -> BoundingBox:
         return apply_world_transform(
             self.bounding_box,
-            model,
+            model.T,
         )
 
 
@@ -88,6 +88,7 @@ class Cylinder(Geometry):
         radius_bottom: float = 0.5,
         theta_start: float = 0.0,
         theta_length: float = 2 * pi,
+        height_offset: float = 0.0,
     ):
         half_height = height / 2
 
@@ -110,7 +111,11 @@ class Cylinder(Geometry):
                 sin_theta = sin(theta)
                 cos_theta = cos(theta)
                 verticies.append(
-                    [radius * sin_theta, -v * height + half_height, radius * cos_theta]
+                    [
+                        radius * sin_theta,
+                        -v * height + half_height + height_offset,
+                        radius * cos_theta,
+                    ]
                 )
                 normals.append(
                     Vector3((sin_theta, slope, cos_theta), dtype="f4").normalized
@@ -136,7 +141,7 @@ class Cylinder(Geometry):
             radius = radius_top if top else radius_bottom
             sign = 1 if top else -1
             for x in range(radial_segments + 1):
-                verticies.append([0, half_height * sign, 0])
+                verticies.append([0, half_height * sign + height_offset, 0])
                 normals.append([0, sign, 0])
                 uvs.append([0.5, 0.5])
                 index += 1
@@ -149,7 +154,11 @@ class Cylinder(Geometry):
                 cos_theta = cos(theta)
                 sin_theta = sin(theta)
                 verticies.append(
-                    [radius * sin_theta, sign * half_height, radius * cos_theta]
+                    [
+                        radius * sin_theta,
+                        sign * half_height + height_offset,
+                        radius * cos_theta,
+                    ]
                 )
                 normals.append([0, sign, 0])
                 uvs.append([cos_theta * 0.5 + 0.5, sin_theta * 0.5 * sign + 0.5])
@@ -171,21 +180,27 @@ class Cylinder(Geometry):
         if radius_bottom != 0:
             index = generate_cap(index, False, verticies, normals, uvs, indicies)
 
-        indicies = np.array(indicies)
-        verticies = np.array(verticies, dtype="f4")[indicies]
-        normals = np.array(normals, dtype="f4")[indicies]
-        uvs = np.array(uvs, dtype="f4")[indicies]
+        indicies = np.array(indicies, dtype="i4")
+        verticies = np.array(verticies, dtype="f4")
+        normals = np.array(normals, dtype="f4")
+        uvs = np.array(uvs, dtype="f4")
 
         vao = VAO()
         vao.buffer(verticies, "3f", [AttributeNames.POSITION])
         vao.buffer(normals, "3f", [AttributeNames.NORMAL])
         vao.buffer(uvs, "2f", [AttributeNames.TEXCOORD_0])
 
+        vao.index_buffer(indicies)
+
         max_radius = max(radius_top, radius_bottom)
         super().__init__(
             vao,
             (
-                Vector3((-max_radius, -half_height, -max_radius), dtype="f4"),
-                Vector3((max_radius, half_height, max_radius), dtype="f4"),
+                Vector3(
+                    (-max_radius, -half_height + height_offset, -max_radius), dtype="f4"
+                ),
+                Vector3(
+                    (max_radius, half_height + height_offset, max_radius), dtype="f4"
+                ),
             ),
         )

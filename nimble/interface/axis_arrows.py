@@ -10,7 +10,7 @@ from .orbit_camera import OrbitCamera
 
 
 class Arrow:
-    def __init__(self, color: Vector3, offset: float, rotation: Vector3, scale: float):
+    def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
         self.axis_shader = global_sm["constant_color"]
@@ -20,16 +20,23 @@ class Arrow:
 
         self.line = Model(
             self.axis_shader,
-            Cylinder(radius_top=0.03, radius_bottom=0.03),
-            position=Vector3((0, 0, -(line_height * scale / 2 + offset)), dtype="f4"),
+            Cylinder(
+                height=line_height,
+                radius_top=0.03,
+                radius_bottom=0.03,
+            ),
             rotation=rotation,
             scale=Vector3((scale,) * 3, dtype="f4"),
             draw_bounding_box=True,
         )
         self.point = Model(
             self.axis_shader,
-            Cylinder(height=height, radius_top=0, radius_bottom=0.1),
-            position=Vector3((0, 0, -(line_height * scale + offset)), dtype="f4"),
+            Cylinder(
+                height=height,
+                radius_top=0,
+                radius_bottom=0.1,
+                height_offset=line_height / 2,
+            ),
             rotation=rotation,
             scale=Vector3((scale,) * 3, dtype="f4"),
             draw_bounding_box=True,
@@ -47,15 +54,11 @@ class Arrow:
 
 class AxisArrows:
     def __init__(self, scale):
-        # self.x = Arrow(
-        #     Vector3((1, 0, 0)), 0, Vector3((0, pi / 2, 0), dtype="f4"), scale
-        # )
-        # self.y = Arrow(Vector3((0, 1, 0)), 0, Vector3((0, 0, 0), dtype="f4"), scale)
-        self.z = Arrow(
-            Vector3((0, 0, 1)), 0, Vector3((pi / 2, 0, 0), dtype="f4"), scale
-        )
+        self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, pi / 2, 0), dtype="f4"), scale)
+        self.y = Arrow(Vector3((0, 1, 0)), Vector3((0, 0, 0), dtype="f4"), scale)
+        self.z = Arrow(Vector3((0, 0, 1)), Vector3((pi / 2, 0, 0), dtype="f4"), scale)
 
     def render(self, camera: OrbitCamera):
-        # self.x.render(camera)
-        # self.y.render(camera)
+        self.x.render(camera)
+        self.y.render(camera)
         self.z.render(camera)
