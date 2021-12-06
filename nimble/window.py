@@ -80,7 +80,9 @@ class WindowEvents(mglw.WindowConfig):
 
         self.shift = False
         self.grid = Grid(1, self.ctx)
-        self.axis = AxisArrows(0.1)
+        axis_rel_scale = 0.6
+        self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
+        self.axis = AxisArrows(axis_rel_scale)
 
         self.active_vao = quad_fs()
         self.did_drag = False
@@ -233,6 +235,7 @@ class WindowEvents(mglw.WindowConfig):
             if y_offset:
                 if y_offset > 0 or self.camera.radius < 100:
                     self.camera.zoom(y_offset * self.camera.radius / 10)
+                    self.axis.set_scale(self.camera.radius * self.zoom_to_axis_ratio)
         self.imgui.mouse_scroll_event(x_offset, y_offset)
 
     def mouse_press_event(self, x, y, button):
@@ -241,11 +244,11 @@ class WindowEvents(mglw.WindowConfig):
             if self.last_mouse_button == 1:
                 # Maybe pressed on axis
                 ray = ray_cast.get_ray(x, y, self.camera)
-                # if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
-                #     print("move x")
-                # elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
-                #     print("move y")
-                if ray_cast.does_intersect(self.axis.z.bounding_box, ray):
+                if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
+                    print("move x")
+                elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
+                    print("move y")
+                elif ray_cast.does_intersect(self.axis.z.bounding_box, ray):
                     print("move z")
                 else:
                     hit_object = self.object_manager.cast_ray(x, y, self.camera)

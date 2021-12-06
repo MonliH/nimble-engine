@@ -15,31 +15,31 @@ class Arrow:
 
         self.axis_shader = global_sm["constant_color"]
 
-        line_height = 1
-        height = 0.25
+        line_height = 0.5
+        height = line_height * 0.35
+        line_radius = 0.015
 
         self.line = Model(
             self.axis_shader,
             Cylinder(
                 height=line_height,
-                radius_top=0.03,
-                radius_bottom=0.03,
+                radius_top=line_radius,
+                radius_bottom=line_radius,
+                height_offset=line_height / 2,
             ),
             rotation=rotation,
             scale=Vector3((scale,) * 3, dtype="f4"),
-            draw_bounding_box=True,
         )
         self.point = Model(
             self.axis_shader,
             Cylinder(
                 height=height,
                 radius_top=0,
-                radius_bottom=0.1,
-                height_offset=line_height / 2,
+                radius_bottom=0.04,
+                height_offset=line_height + height / 2,
             ),
             rotation=rotation,
             scale=Vector3((scale,) * 3, dtype="f4"),
-            draw_bounding_box=True,
         )
 
         self.bounding_box = bounding_box.join(
@@ -50,6 +50,10 @@ class Arrow:
         self.axis_shader["color"].write(self.color)
         self.line.render(camera, mvp=True)
         self.point.render(camera, mvp=True)
+
+    def set_scale(self, scale: Vector3):
+        self.line.set_scale(scale)
+        self.point.set_scale(scale)
 
 
 class AxisArrows:
@@ -62,3 +66,9 @@ class AxisArrows:
         self.x.render(camera)
         self.y.render(camera)
         self.z.render(camera)
+
+    def set_scale(self, scale: float):
+        scale = Vector3((scale,) * 3, dtype="f4")
+        self.x.set_scale(scale)
+        self.y.set_scale(scale)
+        self.z.set_scale(scale)

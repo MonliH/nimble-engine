@@ -83,6 +83,10 @@ class Model:
         self.rotation += rotation
         self.transform_changed()
 
+    def set_scale(self, scale: Vector3):
+        self.scale = scale
+        self.transform_changed()
+
     def write_matrix(self, camera: OrbitCamera, model: bool = True, mvp: bool = False):
         if mvp:
             self.shader["mvp"].write(camera.proj * camera.view * self.model)
