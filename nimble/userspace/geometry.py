@@ -74,7 +74,7 @@ class Sphere(Geometry):
                 (self.bounding_box[0]),
                 (self.bounding_box[1]),
             ),
-            new,
+            new.T,
         )
 
 

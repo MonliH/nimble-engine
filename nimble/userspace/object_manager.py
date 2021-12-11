@@ -22,6 +22,10 @@ class ObjectManager:
         if 0 <= self.active_idx < len(self.objects_list):
             return self.objects_list[self.active_idx]
 
+    @property
+    def has_object_selected(self) -> bool:
+        return self.active_idx != -1
+
     def delete_obj(self, idx: int) -> None:
         if 0 <= idx < len(self.objects_list):
             if idx == self.active_idx:

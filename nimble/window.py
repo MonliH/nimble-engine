@@ -13,7 +13,7 @@ import common.ray_cast as ray_cast
 
 from interface.grid import Grid
 from interface.orbit_camera import OrbitCamera
-from interface.axis_arrows import AxisArrows
+from interface.axis_arrows import Axis, AxisArrows
 
 from userspace.object_manager import ObjectManager
 from userspace.model import Model
@@ -62,21 +62,16 @@ class WindowEvents(mglw.WindowConfig):
         global_sm.load("outline_filter", shader("outline_filter.glsl"))
         global_sm.load("line", shader("line.glsl"))
         self.object_manager = ObjectManager()
-        self.active_buffer = self.ctx.framebuffer(
-            (self.ctx.texture((self.camera.width, self.camera.height), 4)),
-        )
 
-        # self.object_manager.add_obj(
-        #     "Cube",
-        #     Model(
-        #         global_sm["viewport"],
-        #         Cylinder(height=0.5, radius_bottom=1, radius_top=0, height_offset=0.25),
-        #         draw_bounding_box=True,
-        #     ),
-        # )
-        # self.object_manager["Cube"].rotate(
-        #     Vector3([math.pi / 4, math.pi / 4, 0], dtype="f4")
-        # )
+        self.object_manager.add_obj(
+            "Cube",
+            Model(
+                global_sm["viewport"],
+                Sphere(),
+            ),
+        )
+        self.object_manager["Cube"].translate(Vector3([1, 0, 0], dtype="f4"))
+        self.regen_active_buffer()
 
         self.shift = False
         self.grid = Grid(1, self.ctx)
@@ -89,12 +84,16 @@ class WindowEvents(mglw.WindowConfig):
         self.open_context = None
         self.context_menu_pos = (0, 0)
 
+    def regen_active_buffer(self):
+        self.active_buffer = self.ctx.framebuffer(
+            (self.ctx.texture((self.camera.width, self.camera.height), 4)),
+        )
+
     def render(self, _time: float, _frametime: float):
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
 
         self.object_manager.render(self.camera, self.active_buffer, self.ctx.screen)
-        self.axis.render(self.camera)
         self.grid.render(self.camera)
 
         # Draw active object outline with offscreen buffer
@@ -105,6 +104,11 @@ class WindowEvents(mglw.WindowConfig):
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
         self.active_vao.render(global_sm["outline_filter"])
+
+        if self.object_manager.has_object_selected:
+            self.ctx.disable(mgl.DEPTH_TEST)
+            self.axis.render(self.camera)
+            self.ctx.enable(mgl.DEPTH_TEST)
 
         self.render_ui()
 
@@ -189,6 +193,7 @@ class WindowEvents(mglw.WindowConfig):
 
     def resize(self, width: int, height: int):
         self.camera.set_window_size(width, height)
+        self.regen_active_buffer()
         self.imgui.resize(width, height)
 
     def key_event(self, key, action, modifiers):
@@ -222,7 +227,9 @@ class WindowEvents(mglw.WindowConfig):
     def mouse_drag_event(self, x, y, dx, dy):
         self.did_drag = True
         if not self.imgui_io.want_capture_mouse:
-            if self.last_mouse_button == 2:
+            if self.last_mouse_button == 1:
+                self.axis.did_drag(self.camera, x, y, dx, dy)
+            elif self.last_mouse_button == 2:
                 if self.shift:
                     self.camera.pan(dx, dy)
                 else:
@@ -243,17 +250,24 @@ class WindowEvents(mglw.WindowConfig):
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 1:
                 # Maybe pressed on axis
-                ray = ray_cast.get_ray(x, y, self.camera)
-                if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
-                    print("move x")
-                elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
-                    print("move y")
-                elif ray_cast.does_intersect(self.axis.z.bounding_box, ray):
-                    print("move z")
+                axis = None
+
+                if self.object_manager.has_object_selected:
+                    ray = ray_cast.get_ray(x, y, self.camera)
+                    if ray_cast.does_intersect(self.axis.x.bounding_box, ray):
+                        axis = Axis.X
+                    elif ray_cast.does_intersect(self.axis.y.bounding_box, ray):
+                        axis = Axis.Y
+                    elif ray_cast.does_intersect(self.axis.z.bounding_box, ray):
+                        axis = Axis.Z
+
+                if axis is not None:
+                    self.axis.start_drag(axis)
                 else:
                     hit_object = self.object_manager.cast_ray(x, y, self.camera)
                     if hit_object is not None:
                         self.object_manager.set_active(hit_object[1])
+                        self.axis.set_active(self.object_manager.get_active())
                     else:
                         self.object_manager.set_active(-1)
             if self.last_mouse_button != 2:
@@ -271,6 +285,7 @@ class WindowEvents(mglw.WindowConfig):
                     # Show context menu
                     self.open_context = -1
         self.did_drag = False
+        self.axis.stop_drag()
         self.imgui.mouse_release_event(x, y, button)
 
     def unicode_char_entered(self, char):

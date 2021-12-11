@@ -2,6 +2,7 @@ from typing import Tuple
 from pyrr import Vector3, Vector4
 from interface.orbit_camera import OrbitCamera
 from common.bounding_box import BoundingBox
+from userspace.model import Model
 
 
 # (origin, direction, inv_direction, sign)
@@ -30,6 +31,12 @@ def get_ray(x: int, y: int, camera: OrbitCamera) -> Ray:
     ray = create_ray(orig, ray_wor)
 
     return ray
+
+
+def get_ray_between(camera: OrbitCamera, obj: Model) -> Ray:
+    """Get the ray between the camera and an object in the global axes."""
+    direction = (obj.model * obj.position) - camera.position
+    return create_ray(camera.position, direction)
 
 
 def does_intersect(
