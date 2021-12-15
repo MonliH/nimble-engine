@@ -78,6 +78,18 @@ class Sphere(Geometry):
         )
 
 
+class Ray(Geometry):
+    def __init__(self, start: Vector3, ray: Vector3):
+        self.ray = ray
+        vao = VAO()
+        vao.buffer(
+            np.array([start, start + ray]),
+            "3f",
+            [AttributeNames.POSITION],
+        )
+        super().__init__(vao)
+
+
 class Cylinder(Geometry):
     def __init__(
         self,

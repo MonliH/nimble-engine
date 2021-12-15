@@ -13,11 +13,11 @@ import common.ray_cast as ray_cast
 
 from interface.grid import Grid
 from interface.orbit_camera import OrbitCamera
-from interface.axis_arrows import Axis, AxisArrows
+from interface.object_controls import Axis, AxisArrows
 
 from userspace.object_manager import ObjectManager
 from userspace.model import Model
-from userspace.geometry import Cube, Cylinder, Sphere
+from userspace.geometry import Cube, Cylinder, Ray, Sphere
 
 
 new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
@@ -56,21 +56,14 @@ class WindowEvents(mglw.WindowConfig):
 
         global_sm.load("viewport", shader("viewport.glsl"))
         global_sm.load("grid", shader("grid.glsl"))
-        global_sm.load("line", shader("line.glsl"))
         global_sm.load("constant_color", shader("constant_color.glsl"))
         global_sm.load("bounding_box", shader("bounding_box.glsl"))
         global_sm.load("outline_filter", shader("outline_filter.glsl"))
-        global_sm.load("line", shader("line.glsl"))
+        global_sm.load("ray", shader("ray.glsl"))
         self.object_manager = ObjectManager()
 
-        self.object_manager.add_obj(
-            "Cube",
-            Model(
-                global_sm["viewport"],
-                Sphere(),
-            ),
-        )
-        self.object_manager["Cube"].translate(Vector3([1, 0, 0], dtype="f4"))
+        self.object_manager.add_obj("Cube", Model(global_sm["viewport"], Cube()))
+
         self.regen_active_buffer()
 
         self.shift = False
@@ -218,17 +211,28 @@ class WindowEvents(mglw.WindowConfig):
                     # Z axis
                     self.camera.spherical.phi = math.pi / 2
                     self.camera.spherical.theta = 0
+            elif key == 116 and action == "ACTION_PRESS":
+                # T for translate
+                self.axis.start_translate({Axis.X, Axis.Y, Axis.Z})
+            elif key == 114 and action == "ACTION_PRESS":
+                # R for rotate
+                pass
+            elif key == 115 and action == "ACTION_PRESS":
+                # S for scale
+                pass
         self.imgui.key_event(key, action, modifiers)
 
     def mouse_position_event(self, x, y, dx, dy):
         self.mouse = (x, y)
+        if self.axis.translating:
+            self.axis.did_drag(self.camera, x, y, dx, dy, self.object_manager)
         self.imgui.mouse_position_event(x, y, dx, dy)
 
     def mouse_drag_event(self, x, y, dx, dy):
         self.did_drag = True
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 1:
-                self.axis.did_drag(self.camera, x, y, dx, dy)
+                self.axis.did_drag(self.camera, x, y, dx, dy, self.object_manager)
             elif self.last_mouse_button == 2:
                 if self.shift:
                     self.camera.pan(dx, dy)
@@ -267,7 +271,9 @@ class WindowEvents(mglw.WindowConfig):
                     hit_object = self.object_manager.cast_ray(x, y, self.camera)
                     if hit_object is not None:
                         self.object_manager.set_active(hit_object[1])
-                        self.axis.set_active(self.object_manager.get_active())
+                        self.axis.set_active(
+                            self.object_manager.get_active(), self.camera
+                        )
                     else:
                         self.object_manager.set_active(-1)
             if self.last_mouse_button != 2:

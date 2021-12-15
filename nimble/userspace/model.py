@@ -21,6 +21,8 @@ class Model:
         position: Optional[Vector3] = None,
         scale: Optional[Vector3] = None,
         draw_bounding_box: bool = False,
+        model: bool = True,
+        lines: bool = False,
     ):
         self.shader = shader
 
@@ -43,6 +45,9 @@ class Model:
         self.geometry = geometry
 
         self.transform_changed()
+        self.pass_model = model
+        self.draw_lines = lines
+        self.red = red
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]
@@ -99,7 +104,7 @@ class Model:
         self.shader["view"].write(camera.view)
         self.shader["proj"].write(camera.proj)
 
-        if model:
+        if model and self.pass_model:
             self.shader["model"].write(self.model)
 
     def transform_changed(self):
@@ -114,7 +119,9 @@ class Model:
 
     def render(self, camera: OrbitCamera, mvp: bool = False, bounding: bool = True):
         self.write_matrix(camera, mvp=mvp)
-        self.geometry.vao.render(self.shader)
+        self.geometry.vao.render(
+            self.shader, mode=mgl.TRIANGLES if not self.draw_lines else mgl.LINES
+        )
         if self.draw_bounding_box and self.bounding_box_buffer is not None and bounding:
             self.render_bounding_box(camera)
 

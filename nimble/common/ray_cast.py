@@ -16,21 +16,35 @@ def create_ray(origin: Vector3, direction: Vector3) -> Ray:
 
 
 def get_ray(x: int, y: int, camera: OrbitCamera) -> Ray:
-    width, height = camera.width, camera.height
-    x = (2.0 * x) / width - 1.0
-    y = 1.0 - (2.0 * y) / height
-    z = 1.0
-
-    ray_nds = Vector3((x, y, z), dtype="f4")
-    ray_clip = Vector4((ray_nds.x, ray_nds.y, -1.0, 1.0), dtype="f4")
-    ray_eye = (~camera.proj) * ray_clip
-    ray_eye = Vector4((ray_eye.x, ray_eye.y, -1.0, 0.0), dtype="f4")
-
-    ray_wor = Vector3(((~camera.view) * ray_eye).xyz, dtype="f4").normalized
+    ray_wor = unproject(x, y, camera).normalized
     orig = camera.position
     ray = create_ray(orig, ray_wor)
 
     return ray
+
+
+def unproject(x: int, y: int, camera: OrbitCamera) -> Vector3:
+    """Unproject a vector from the viewport to the world."""
+    width, height = camera.width, camera.height
+    x = (2.0 * x) / width - 1.0
+    y = 1.0 - (2.0 * y) / height
+
+    clip = Vector4((x, y, 0.5, 1.0), dtype="f4")
+    eye = (~camera.proj) * clip
+    eye = Vector4((eye.x, eye.y, -1.0, 0.0), dtype="f4")
+
+    world = Vector3(((~camera.view) * eye).xyz, dtype="f4")
+
+    return world
+
+
+def get_pos(x: int, y: int, camera: OrbitCamera) -> Vector3:
+    """Get position of mouse in world space with depth."""
+    world = unproject(x, y, camera)
+    world -= camera.position
+    world.normalise()
+
+    return world
 
 
 def get_ray_between(camera: OrbitCamera, obj: Model) -> Ray:

@@ -1,9 +1,10 @@
-from math import pi
-from typing import Optional
+from math import dist, pi
+from typing import Optional, Set, Union
 from pyrr import Vector3
 
 from userspace.model import Model
-from userspace.geometry import Cylinder
+from userspace.geometry import Cylinder, Ray
+from userspace.object_manager import ObjectManager
 import common.bounding_box as bounding_box
 import common.ray_cast as ray_cast
 
@@ -86,6 +87,8 @@ class AxisArrows:
 
         self.dragged = None
         self.active: Optional[Model] = None
+        self.translating = False
+        self.plane = None
 
     def render(self, camera: OrbitCamera):
         self.x.render(camera)
@@ -98,37 +101,58 @@ class AxisArrows:
         self.y.set_scale(scale)
         self.z.set_scale(scale)
 
-    def start_drag(self, axis: Axis):
-        self.dragged = axis
+    def start_translate(self, axis: Union[Axis, Set[Axis]]):
+        self.start_drag(axis)
+        self.translating = True
+
+    def start_drag(self, axis: Union[Axis, Set[Axis]]):
+        self.dragged = set(axis) if isinstance(axis, set) else {axis}
 
     def stop_drag(self):
         self.dragged = None
+        self.translating = False
+        self.length = None
 
-    def set_active(self, active: Optional[Model]):
+    def set_active(self, active: Optional[Model], camera):
         if active is not None:
             self.active = active
             self.x.set_position(active.position)
             self.y.set_position(active.position)
             self.z.set_position(active.position)
 
-    def did_drag(self, camera: OrbitCamera, x: int, y: int, dx: int, dy: int):
+            normal = camera.position - self.active.position
+            self.plane = (normal, self.active.position)
+
+    def did_drag(
+        self,
+        camera: OrbitCamera,
+        x: int,
+        y: int,
+        dx: int,
+        dy: int,
+        obj_manager: ObjectManager,
+    ):
+        if self.active is None:
+            return
+
         if self.dragged is not None:
-            length = ray_cast.get_ray_between(camera, self.active)[1]
+            normal, p0 = self.plane
 
-            model = ray_cast.get_ray(x, y, camera)[1].normalised
-            model_delta = ray_cast.get_ray(x + dx, y + dy, camera)[1].normalised
-            model *= length.length
-            model_delta *= length.length
+            model = ray_cast.get_pos(x, y, camera).normalised * normal.length
 
-            diff = model_delta - model
-            diff *= 0.2
+            l = ray_cast.get_pos(x + dx, y + dy, camera).normalised
+
+            l0 = camera.position
+            d = (p0 - l0).dot(normal) / l.dot(normal)
+            intersection = l0 + l * d
+            new_vector = (intersection - camera.position).normalised * normal.length
+
+            diff = new_vector - model
 
             translation = (
-                (diff.x, 0, 0)
-                if self.dragged == Axis.X
-                else (0, diff.y, 0)
-                if self.dragged == Axis.Y
-                else (0, 0, diff.z)
+                diff.x if Axis.X in self.dragged else 0,
+                diff.y if Axis.Y in self.dragged else 0,
+                diff.z if Axis.Z in self.dragged else 0,
             )
             translate_vec = Vector3(translation, dtype="f4")
 
