@@ -47,7 +47,6 @@ class Model:
         self.transform_changed()
         self.pass_model = model
         self.draw_lines = lines
-        self.red = red
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]

@@ -1,5 +1,6 @@
 from math import dist, pi
-from typing import Optional, Set, Union
+from typing import Optional, Set, Tuple, Union
+from numpy.lib.type_check import real
 from pyrr import Vector3
 
 from userspace.model import Model
@@ -123,6 +124,20 @@ class AxisArrows:
             normal = camera.position - self.active.position
             self.plane = (normal, self.active.position)
 
+    @staticmethod
+    def project_point_on_plane(
+        ray: Vector3, plane: Tuple[Vector3, Vector3], camera: OrbitCamera
+    ) -> Vector3:
+        normal, p0 = plane
+        l = ray.normalised
+
+        l0 = camera.position
+        d = (p0 - l0).dot(normal) / l.dot(normal)
+        intersection = l0 + l * d
+
+        real_diff = intersection - camera.position
+        return real_diff
+
     def did_drag(
         self,
         camera: OrbitCamera,
@@ -130,24 +145,21 @@ class AxisArrows:
         y: int,
         dx: int,
         dy: int,
-        obj_manager: ObjectManager,
     ):
         if self.active is None:
             return
 
         if self.dragged is not None:
-            normal, p0 = self.plane
+            normal, _ = self.plane
+            real_model = ray_cast.get_pos(x, y, camera)
+            model = real_model.normalised * normal.length
 
-            model = ray_cast.get_pos(x, y, camera).normalised * normal.length
-
-            l = ray_cast.get_pos(x + dx, y + dy, camera).normalised
-
-            l0 = camera.position
-            d = (p0 - l0).dot(normal) / l.dot(normal)
-            intersection = l0 + l * d
-            new_vector = (intersection - camera.position).normalised * normal.length
-
+            real_diff = self.project_point_on_plane(
+                ray_cast.get_pos(x + dx, y + dy, camera), self.plane, camera
+            )
+            new_vector = real_diff.normalised * normal.length
             diff = new_vector - model
+            diff *= camera.radius / 3
 
             translation = (
                 diff.x if Axis.X in self.dragged else 0,

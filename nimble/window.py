@@ -225,14 +225,14 @@ class WindowEvents(mglw.WindowConfig):
     def mouse_position_event(self, x, y, dx, dy):
         self.mouse = (x, y)
         if self.axis.translating:
-            self.axis.did_drag(self.camera, x, y, dx, dy, self.object_manager)
+            self.axis.did_drag(self.camera, x, y, dx, dy)
         self.imgui.mouse_position_event(x, y, dx, dy)
 
     def mouse_drag_event(self, x, y, dx, dy):
         self.did_drag = True
         if not self.imgui_io.want_capture_mouse:
             if self.last_mouse_button == 1:
-                self.axis.did_drag(self.camera, x, y, dx, dy, self.object_manager)
+                self.axis.did_drag(self.camera, x, y, dx, dy)
             elif self.last_mouse_button == 2:
                 if self.shift:
                     self.camera.pan(dx, dy)
