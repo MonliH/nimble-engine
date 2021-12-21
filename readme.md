@@ -8,6 +8,7 @@ It renders the 3d models using low level GLSL shaders (with OpenGL).
 Download the source either through github zip, or:
 ```bash
 git clone https://github.com/MonliH/nimble-engine.git
+cd nimble-engine
 ```
 
 Install the dependencies:
@@ -16,7 +17,7 @@ Install the dependencies:
 pip insall -r requirements.txt
 ```
 
-Then run (while in the `nimble-engine` directory, NOT the `nimble` directory):
+Then run:
 
 ```
 python nimble

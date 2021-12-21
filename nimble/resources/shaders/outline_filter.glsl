@@ -17,40 +17,50 @@ void main()
 
 in vec2 TexCoords;
 
-layout (location=0) uniform sampler2D depthTexture;
+layout (location=0) uniform sampler2DMS depthTexture;
 uniform float kernel[9];
 uniform vec3 outline_color = vec3(1.0, 0.5, 0.2);
+uniform float width;
+uniform float height;
 
 out vec4 frag_color;
 
-const float offset = 1.0 / 300.0;  
+float offsetW = 2.0 / width;
+float offsetH = 2.0 / height;
 
 void main()
 {
     vec2 offsets[9] = vec2[](
-        vec2(-offset,  offset), // top-left
-        vec2( 0.0f,    offset), // top-center
-        vec2( offset,  offset), // top-right
-        vec2(-offset,  0.0f),   // center-left
+        vec2(-offsetW,  offsetH), // top-left
+        vec2( 0.0f,    offsetH), // top-center
+        vec2( offsetW,  offsetH), // top-right
+        vec2(-offsetW,  0.0f),   // center-left
         vec2( 0.0f,    0.0f),   // center-center
-        vec2( offset,  0.0f),   // center-right
-        vec2(-offset, -offset), // bottom-left
-        vec2( 0.0f,   -offset), // bottom-center
-        vec2( offset, -offset)  // bottom-right    
+        vec2( offsetW,  0.0f),   // center-right
+        vec2(-offsetW, -offsetH), // bottom-left
+        vec2( 0.0f,   -offsetH), // bottom-center
+        vec2( offsetW, -offsetH)  // bottom-right    
     );
 
     vec4 sampleTex[9];
     for(int i = 0; i < 9; i++)
     {
-        sampleTex[i] = texture(depthTexture, TexCoords.st + offsets[i]);
+        ivec2 vp_coords = ivec2(width, height);
+        vp_coords.x = int(vp_coords.x * (TexCoords.x + offsets[i].x));
+        vp_coords.y = int(vp_coords.y * (TexCoords.y + offsets[i].y));
+
+        vec4 sum = vec4(0);
+        for(int j = 0; j < 4; j++) {
+            sum += texelFetch(depthTexture, vp_coords, j);
+        }
+        sum /= 4;
+        sampleTex[i] = sum;
     }
+
     vec4 col = vec4(0);
     for(int i = 0; i < 9; i++)
         col += sampleTex[i] * kernel[i];
 
-    if (col.w >= 0.1) {
-        col.w = 1.0;
-    }
-    frag_color = vec4(outline_color, col.w);
+    frag_color = vec4(outline_color, col.w*10);
 }  
 #endif

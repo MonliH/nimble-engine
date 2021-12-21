@@ -116,6 +116,8 @@ class QModernGLWidget(QOpenGLWidget):
         self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False
+        global_sm["outline_filter"]["width"] = self.camera.width
+        global_sm["outline_filter"]["height"] = self.camera.height
         global_sm["outline_filter"]["kernel"].write(
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
@@ -156,7 +158,7 @@ class QModernGLWidget(QOpenGLWidget):
             self.active_buffer.release()
             self.active_buffer = None
         self.active_buffer = self.ctx.framebuffer(
-            (self.ctx.texture((self.camera.width, self.camera.height), 4)),
+            (self.ctx.texture((self.camera.width, self.camera.height), 4, samples=4),),
         )
 
     def key_press_event(self, key, action: ActionType):
@@ -284,6 +286,10 @@ class QModernGLWidget(QOpenGLWidget):
     def wheelEvent(self, event: QtGui.QWheelEvent):
         super().wheelEvent(event)
         self.scrolled.emit(event)
+    
+    def contextMenuEvent(self, event: PySide2.QtGui.QContextMenuEvent):
+        print("hi")
+        super().contextMenuEvent(event)
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
