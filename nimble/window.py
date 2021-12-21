@@ -1,18 +1,18 @@
 import math
 from typing import Callable, Optional
-from PySide2.QtGui import QOpenGLTexture, QSurfaceFormat
+from PySide2 import QtCore
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QSurfaceFormat
 import moderngl_window as mglw
 import moderngl as mgl
-import moderngl_window.context.pyside2
 from moderngl_window.geometry import quad_fs
 from pyrr import Matrix33
-from PySide2.QtCore import QElapsedTimer, QSize, QTimer, Qt
+from PySide2.QtCore import QElapsedTimer,  QTimer, Qt
 from PySide2.QtWidgets import QDockWidget, QMainWindow, QOpenGLWidget
+from PySide2 import QtGui
 import PySide2
-import logging
 
 from common.shader_manager import global_sm, init_shaders
-from common.resources import shader
 import common.ray_cast as ray_cast
 
 from interface.grid import Grid
@@ -25,15 +25,38 @@ from userspace.geometry import Cube, Cylinder, Sphere
 
 
 new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
+class ActionType:
+    KEY_PRESS = 0
+    KEY_RELEASE = 1
 
 
 class QModernGLWidget(QOpenGLWidget):
+    keyPressed = QtCore.Signal(QtCore.QEvent)
+    keyReleased = QtCore.Signal(QtCore.QEvent)
+    mouseMoved = QtCore.Signal(QtCore.QEvent)
+    mousePressed = QtCore.Signal(QtCore.QEvent)
+    mouseReleased = QtCore.Signal(QtCore.QEvent)
+    scrolled = QtCore.Signal(QtCore.QEvent)
+
     def __init__(self, parent=None, on_gl_init: Optional[Callable[[], None]] = None):
         super().__init__(parent)  # fmt, None)
         fmt = QSurfaceFormat()
-        fmt.setVersion(4, 1)
+        fmt.setVersion(4, 3)
         fmt.setProfile(QSurfaceFormat.CoreProfile)
-        fmt.setSamples(0)
+        fmt.setSamples(8)
+
+        self.setFocusPolicy(Qt.StrongFocus)
+        self.setMouseTracking(True)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        self.keyPressed.connect(self.on_key_press)
+        self.keyReleased.connect(self.on_key_release)
+
+        self.mouseMoved.connect(self.on_mouse_move)
+        self.mousePressed.connect(self.on_mouse_press)
+        self.mouseReleased.connect(self.on_mouse_release)
+
+        self.scrolled.connect(self.on_scroll)
 
         self.setFormat(fmt)
 
@@ -49,6 +72,10 @@ class QModernGLWidget(QOpenGLWidget):
         self.camera = None
         self.ctx = None
         self.active_buffer = None
+
+        self.last_mouse = None
+        self.last_mouse_button = None
+        self.shift = False
 
     def initializeGL(self):
         self.ctx = mgl.create_context(require=430)
@@ -132,117 +159,47 @@ class QModernGLWidget(QOpenGLWidget):
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),
         )
 
-    def key_press_event(self, key, action):
-        keys = mglw.context.pyside2.Keys()
-        global_om.set_active(0)
-        if key == 65505:
-            if action == "ACTION_PRESS":
-                self.shift = True
-            elif action == "ACTION_RELEASE":
+    def key_press_event(self, key, action: ActionType):
+        if action == ActionType.KEY_RELEASE:
+            if key == Qt.Key_Shift:
                 self.shift = False
-        elif key == 65535 and action == "ACTION_PRESS":
-            global_om.delete_obj(global_om.active_idx)
-        elif (keys.NUMBER_1 <= key <= keys.NUMBER_3) and action == "ACTION_PRESS":
-            if key == keys.NUMBER_1:
+        if action == ActionType.KEY_PRESS:
+            if key == Qt.Key_Shift:
+                self.shift = True
+            elif key == Qt.Key_Delete:
+                global_om.delete_obj(global_om.active_idx)
+            if key == Qt.Key_1:
                 # Make camera look from x axis
                 self.camera.spherical.phi = math.pi / 2
                 self.camera.spherical.theta = math.pi / 2
-            elif key == keys.NUMBER_2:
+            elif key == Qt.Key_2:
                 # Y axis
                 self.camera.spherical.phi = 0.000000000001
                 self.camera.spherical.theta = 0
-            elif key == keys.NUMBER_3:
+            elif key == Qt.Key_3:
                 # Z axis
                 self.camera.spherical.phi = math.pi / 2
                 self.camera.spherical.theta = 0
-        elif key == keys.T and action == "ACTION_PRESS":
-            # T for translate
-            self.axis.start_translate({Axis.X, Axis.Y, Axis.Z})
-        elif key == keys.R and action == "ACTION_PRESS":
-            # R for rotate
-            pass
-        elif key == keys.S and action == "ACTION_PRESS":
-            # S for scale
-            pass
+            elif key == Qt.Key_T:
+                # T for translate
+                self.axis.start_translate({Axis.X, Axis.Y, Axis.Z})
+            elif key == Qt.Key_R:
+                # R for rotate
+                pass
+            elif key == Qt.Key_S:
+                # S for scale
+                pass
 
+    def on_key_press(self, event: QtGui.QKeyEvent):
+        self.key_press_event(event.key(), ActionType.KEY_PRESS)
 
-class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setGeometry(100, 100, 1080, 720)
-        self.show()
+    def on_key_release(self, event: QtGui.QKeyEvent):
+        self.key_press_event(event.key(), ActionType.KEY_RELEASE)
 
-        self.dock = QDockWidget("Scene Viewer")
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
-        self.widget = QModernGLWidget(
-            self.dock,
-            on_gl_init=lambda: global_om.add_obj(
-                "Cube", Model(global_sm["viewport"], Cube())
-            ),
-        )
-        self.dock.setWidget(self.widget)
-        self.dock.setMinimumWidth(300)
-
-        self.last_mouse_button = None
-
-        self.mouse = (0, 0)
-
-        self.shift = False
-        self.did_drag = False
-        self.open_context = None
-        self.context_menu_pos = (0, 0)
-        self._modifiers = mglw.context.base.KeyModifiers()
-
-    def closeEvent(self, event):
-        event.accept()
-
-    def keyPressEvent(self, event: PySide2.QtGui.QKeyEvent):
-        self.widget.key_press_event(event.key(), "ACTION_PRESS")
-
-    def keyReleaseEvent(self, event: PySide2.QtGui.QKeyEvent):
-        self.widget.key_press_event(event.key(), "ACTION_RELEASE")
-
-
-class WindowEvents(mglw.WindowConfig):
-    gl_version = (3, 3)
-    title = "Nimble Engine"
-    cursor = True
-    vsync = True
-    samples = 8
-
-    aspect_ratio = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def close(self):
-        print("Window is closing")
-
-    def mouse_position_event(self, x, y, dx, dy):
-        self.mouse = (x, y)
-        if self.axis.translating:
-            self.axis.did_drag(self.camera, x, y, dx, dy)
-
-    def mouse_drag_event(self, x, y, dx, dy):
-        self.did_drag = True
-        if self.last_mouse_button == 1:
-            self.axis.did_drag(self.camera, x, y, dx, dy)
-        elif self.last_mouse_button == 2:
-            if self.shift:
-                self.camera.pan(dx, dy)
-            else:
-                self.camera.rotate(dx, dy)
-        self.open_context = None
-
-    def mouse_scroll_event(self, x_offset, y_offset):
-        if y_offset:
-            if y_offset > 0 or self.camera.radius < 100:
-                self.camera.zoom(y_offset * self.camera.radius / 10)
-                self.axis.set_scale(self.camera.radius * self.zoom_to_axis_ratio)
-
-    def mouse_press_event(self, x, y, button):
+    def on_mouse_press(self, event: QtGui.QMouseEvent):
+        x, y, button = event.x(), event.y(), event.button()
         self.last_mouse_button = button
-        if self.last_mouse_button == 1:
+        if self.last_mouse_button == Qt.LeftButton:
             # Maybe pressed on axis
             axis = None
 
@@ -264,17 +221,95 @@ class WindowEvents(mglw.WindowConfig):
                     self.axis.set_active(global_om.get_active(), self.camera)
                 else:
                     global_om.set_active(-1)
-        if self.last_mouse_button != 2:
+        if self.last_mouse_button != Qt.RightButton:
             self.open_context = None
+    
+    def on_mouse_move(self, event: QtGui.QMouseEvent):
+        last_pos = x, y = event.x(), event.y()
+        if self.last_mouse is not None:
+            dx, dy = x - self.last_mouse[0], y - self.last_mouse[1]
+            self.did_drag = True
+            if self.last_mouse_button == Qt.LeftButton:
+                self.axis.did_drag(self.camera, x, y, dx, dy)
+            elif self.last_mouse_button == Qt.RightButton:
+                if self.shift:
+                    self.camera.pan(dx, dy)
+                else:
+                    self.camera.rotate(dx, dy)
+            self.open_context = None
+        self.last_mouse = last_pos
 
-    def mouse_release_event(self, x: int, y: int, button: int):
-        if button == 2 and not self.did_drag:
+    def on_mouse_release(self, event: QtGui.QMouseEvent):
+        x, y, button = event.x(), event.y(), event.button()
+        if button == Qt.RightButton and not self.did_drag:
             hit_object = global_om.cast_ray(x, y, self.camera)
-            self.context_menu_pos = self.mouse
+            self.context_menu_pos = (x, y)
             if hit_object is not None:
                 self.open_context = hit_object[1]
             else:
                 # Show context menu
                 self.open_context = -1
         self.did_drag = False
+        self.last_mouse = None
+        self.last_mouse_button = None
         self.axis.stop_drag()
+
+    def on_scroll(self, event: QtGui.QWheelEvent):
+        y_offset = event.angleDelta().y()/120
+        if y_offset:
+            if y_offset > 0 or self.camera.radius < 100:
+                self.camera.zoom(y_offset * self.camera.radius / 10)
+                self.axis.set_scale(self.camera.radius * self.zoom_to_axis_ratio)
+    
+    def keyPressEvent(self, event: PySide2.QtGui.QKeyEvent):
+        super().keyPressEvent(event)
+        self.keyPressed.emit(event)
+
+    def keyReleaseEvent(self, event: QtGui.QKeyEvent):
+        super().keyReleaseEvent(event)
+        self.keyReleased.emit(event)
+    
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        super().mousePressEvent(event)
+        self.mousePressed.emit(event)
+    
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
+        super().mouseReleaseEvent(event)
+        self.mouseReleased.emit(event)
+    
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent):
+        super().mouseMoveEvent(event)
+        self.mouseMoved.emit(event)
+    
+    def wheelEvent(self, event: QtGui.QWheelEvent):
+        super().wheelEvent(event)
+        self.scrolled.emit(event)
+
+class MainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setGeometry(100, 100, 1080, 720)
+        self.show()
+
+        self.dock = QDockWidget("Scene Viewer")
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        self.widget = QModernGLWidget(
+            self.dock,
+            on_gl_init=self.init_viewport,
+        )
+        self.dock.setWidget(self.widget)
+        self.dock.setMinimumWidth(300)
+
+        self.last_mouse_button = None
+
+        self.shift = False
+        self.did_drag = False
+        self.open_context = None
+        self.context_menu_pos = (0, 0)
+        self._modifiers = mglw.context.base.KeyModifiers()
+    
+    def init_viewport(self):
+        global_om.add_obj( "Cube", Model(global_sm["viewport"], Cube()))
+
+    def closeEvent(self, event):
+        event.accept()
