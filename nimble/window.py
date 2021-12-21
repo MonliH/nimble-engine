@@ -57,23 +57,19 @@ class QModernGLWidget(QOpenGLWidget):
 
     def restart(self, w, h):
         self.resize(w, h)
-        self.resized(w, h)
+        self.resizeGL(w, h)
         self.ctx.viewport = (0, 0, w, h)
-        self.scene = self.__class__.SceneClass(self.ctx, self)
 
-    def resized(self, w: int, h: int):
+    def resizeGL(self, w: int, h: int):
         if self.camera:
             self.camera.set_window_size(w, h)
         if self.ctx:
             self.regen_active_buffer()
-
-    def resizeEvent(self, e: PySide2.QtGui.QResizeEvent):
-        size = e.size()
-        self.resized(size.width(), size.height())
+            self.ctx.viewport = (0, 0, w, h)
 
     def paintGL(self):
         mglw.activate_context(ctx=self.ctx)
-        self.screen = self.ctx.detect_framebuffer()
+        self.screen = self.ctx.detect_framebuffer(self.defaultFramebufferObject())
         self.screen.use()
         self.makeCurrent()
         self.render(self.timer.elapsed() / 1000, 0)
@@ -124,7 +120,6 @@ class QModernGLWidget(QOpenGLWidget):
         axis_rel_scale = 0.6
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
         self.axis = AxisArrows(axis_rel_scale)
-
         self.on_gl_init()
 
     def regen_active_buffer(self):
