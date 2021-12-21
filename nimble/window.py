@@ -1,6 +1,6 @@
 import math
 from typing import Callable, Optional
-from PySide2.QtGui import QSurfaceFormat
+from PySide2.QtGui import QOpenGLTexture, QSurfaceFormat
 import moderngl_window as mglw
 import moderngl as mgl
 import moderngl_window.context.pyside2
@@ -34,6 +34,7 @@ class QModernGLWidget(QOpenGLWidget):
         fmt.setVersion(4, 1)
         fmt.setProfile(QSurfaceFormat.CoreProfile)
         fmt.setSamples(0)
+
         self.setFormat(fmt)
 
         self.timer = QElapsedTimer()
@@ -48,10 +49,9 @@ class QModernGLWidget(QOpenGLWidget):
         self.camera = None
         self.ctx = None
         self.active_buffer = None
-        self.new_active_buffer = None
 
     def initializeGL(self):
-        self.ctx = mgl.create_context()
+        self.ctx = mgl.create_context(require=430)
         mglw.activate_context(ctx=self.ctx)
         self.init()
 
@@ -65,15 +65,14 @@ class QModernGLWidget(QOpenGLWidget):
         if self.camera:
             self.camera.set_window_size(w, h)
         if self.ctx:
-            self.new_active_buffer = self.ctx.framebuffer(
-                (self.ctx.texture((self.camera.width, self.camera.height), 4)),
-            )
+            self.regen_active_buffer()
 
     def resizeEvent(self, e: PySide2.QtGui.QResizeEvent):
         size = e.size()
         self.resized(size.width(), size.height())
 
     def paintGL(self):
+        mglw.activate_context(ctx=self.ctx)
         self.screen = self.ctx.detect_framebuffer()
         self.screen.use()
         self.makeCurrent()
@@ -83,28 +82,27 @@ class QModernGLWidget(QOpenGLWidget):
         mglw.activate_context(ctx=self.ctx)
         self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
-        self.active_buffer.clear()
+        self.active_buffer.use()
+        self.ctx.clear()
+        self.screen.use()
 
-        global_om.render(self.camera, self.active_buffer, self.ctx.screen)
+        global_om.render(self.camera, self.active_buffer, self.screen)
         self.grid.render(self.camera)
 
         # Draw active object outline with offscreen buffer
-        self.active_buffer.color_attachments[0].use()
+        self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False
         global_sm["outline_filter"]["kernel"].write(
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
+        self.screen.use()
         self.active_vao.render(global_sm["outline_filter"])
 
         if global_om.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
             self.axis.render(self.camera)
             self.ctx.enable(mgl.DEPTH_TEST)
-        
-        if self.new_active_buffer is not None:
-            self.active_buffer = self.new_active_buffer
-            self.new_active_buffer = None
 
     def init(self):
         init_shaders()
@@ -134,12 +132,14 @@ class QModernGLWidget(QOpenGLWidget):
         if self.active_buffer:
             self.active_buffer.color_attachments[0].release()
             self.active_buffer.release()
+            self.active_buffer = None
         self.active_buffer = self.ctx.framebuffer(
             (self.ctx.texture((self.camera.width, self.camera.height), 4)),
         )
 
     def key_press_event(self, key, action):
         keys = mglw.context.pyside2.Keys()
+        global_om.set_active(0)
         if key == 65505:
             if action == "ACTION_PRESS":
                 self.shift = True
