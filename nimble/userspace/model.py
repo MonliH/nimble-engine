@@ -13,6 +13,10 @@ from common.shader_manager import global_sm
 
 
 class Model:
+    def __del__(self):
+        if self.geometry:
+            self.geometry.vao.release()
+
     def __init__(
         self,
         shader: Program,

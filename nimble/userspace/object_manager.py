@@ -92,3 +92,6 @@ class ObjectManager:
                 return (obj_str, i)
 
         return None
+
+
+global_om = ObjectManager()

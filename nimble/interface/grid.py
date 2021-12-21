@@ -49,10 +49,12 @@ class Grid(Model):
             (grid_size, grid_size, 1),
             dtype="f4",
         )
+
         self.shader["model"].write(self.transform)
         self.shader["grid_radius"] = visible_grid_radius
         self.shader["camera_target"].write(camera.target)
 
         self.ctx.disable(mgl.CULL_FACE)
+        self.ctx.enable(mgl.BLEND)
         self.write_matrix(camera, model=False)
         self.vao.render()
