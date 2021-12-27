@@ -1,14 +1,14 @@
 import math
 from typing import Callable, Optional
 from PySide2 import QtCore
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QSurfaceFormat
+from PySide2.QtCore import SIGNAL, QFactoryInterface, QObject, QPoint, Qt
+from PySide2.QtGui import QPaintEvent, QSurfaceFormat
 import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 from pyrr import Matrix33
 from PySide2.QtCore import QElapsedTimer,  QTimer, Qt
-from PySide2.QtWidgets import QDockWidget, QMainWindow, QOpenGLWidget
+from PySide2.QtWidgets import QAction, QDockWidget, QMainWindow, QMenu, QOpenGLWidget
 from PySide2 import QtGui
 import PySide2
 
@@ -21,7 +21,7 @@ from interface.object_controls import Axis, AxisArrows
 
 from userspace.object_manager import global_om
 from userspace.model import Model
-from userspace.geometry import Cube, Cylinder, Sphere
+from userspace.geometry import Cube, Cylinder, Geometry, Sphere
 
 
 new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
@@ -74,8 +74,13 @@ class QModernGLWidget(QOpenGLWidget):
         self.active_buffer = None
 
         self.last_mouse = None
-        self.last_mouse_button = None
         self.shift = False
+
+        self.did_drag = False
+        self.open_context = None
+        self.last_mouse_button = Qt.NoButton
+
+        self.create_menu_items()
 
     def initializeGL(self):
         self.ctx = mgl.create_context(require=430)
@@ -230,7 +235,10 @@ class QModernGLWidget(QOpenGLWidget):
         last_pos = x, y = event.x(), event.y()
         if self.last_mouse is not None:
             dx, dy = x - self.last_mouse[0], y - self.last_mouse[1]
-            self.did_drag = True
+            if self.last_mouse_button != Qt.NoButton:
+                if abs(dx) > 0.1 and abs(dx) > 0.1:
+                    self.did_drag = True
+
             if self.last_mouse_button == Qt.LeftButton:
                 self.axis.did_drag(self.camera, x, y, dx, dy)
             elif self.last_mouse_button == Qt.RightButton:
@@ -251,9 +259,10 @@ class QModernGLWidget(QOpenGLWidget):
             else:
                 # Show context menu
                 self.open_context = -1
+            self.show_context(x, y)
         self.did_drag = False
         self.last_mouse = None
-        self.last_mouse_button = None
+        self.last_mouse_button = Qt.NoButton
         self.axis.stop_drag()
 
     def on_scroll(self, event: QtGui.QWheelEvent):
@@ -287,15 +296,44 @@ class QModernGLWidget(QOpenGLWidget):
         super().wheelEvent(event)
         self.scrolled.emit(event)
     
-    def contextMenuEvent(self, event: PySide2.QtGui.QContextMenuEvent):
-        print("hi")
-        super().contextMenuEvent(event)
+    def create_menu_items(self):
+        self.act_add_cube = QAction("Add Cube", self)
+        self.act_add_sphere = QAction("Add Sphere", self)
+        self.act_add_cylinder = QAction("Add Cylinder", self)
+        QObject.connect(self.act_add_cube, SIGNAL("triggered()"), lambda: self.add_obj(Cube(), "Cube"))
+        QObject.connect(self.act_add_sphere, SIGNAL("triggered()"), lambda: self.add_obj(Sphere(), "Sphere"))
+        QObject.connect(self.act_add_cylinder, SIGNAL("triggered()"), lambda: self.add_obj(Cylinder(), "Cylinder"))
 
+        self.act_delete_current = QAction("Delete", self)
+        QObject.connect(self.act_delete_current, SIGNAL("triggered()"), self.delete_current)
+    
+    def add_obj(self, geometry: Geometry, name: str ):
+        global_om.add_obj(name, Model(global_sm["viewport"], geometry))
+    
+    def delete_current(self):
+        global_om.delete_obj(self.open_context)
+    
+    def show_context(self, x:int, y:int):
+        menu = QMenu("Context Menu", self)
+        clicked_object = self.open_context
+        if clicked_object == -1:
+            # No selected object, show general menu
+            menu.addSection("General actions")
+            menu.addAction(self.act_add_cube)
+            menu.addAction(self.act_add_sphere)
+            menu.addAction(self.act_add_cylinder)
+        else:
+            menu.addSection(f'"{global_om.get_obj_name(clicked_object)}" actions')
+            menu.addAction(self.act_delete_current)
+
+        menu.popup(self.mapToGlobal(QPoint(x, y)))
+    
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setGeometry(100, 100, 1080, 720)
         self.show()
+        self.setWindowTitle("Nimble Engine")
 
         self.dock = QDockWidget("Scene Viewer")
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
