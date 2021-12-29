@@ -7,6 +7,8 @@ from math import acos, atan2, radians, sqrt, cos, sin, tan, pi
 import numpy as np
 import copy
 
+from nimble.common.event_listener import InputObserver, WindowObserver
+
 
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
@@ -43,13 +45,11 @@ class Spherical:
         )
 
 
-class OrbitCamera(Camera):
-    def __init__(self, width, height, radius=2, fov=60.0, near=1.0, far=100.0) -> None:
-        self.width = width
-        self.height = height
-        self.aspect_ratio = width / height
+class OrbitCamera(Camera, InputObserver, WindowObserver):
+    def __init__(self, size, radius=2, fov=60.0, near=1.0, far=100.0) -> None:
+        self.size = size
         self._projection = Projection3D(
-            fov=fov, aspect_ratio=self.aspect_ratio, near=near, far=far
+            fov=fov, aspect_ratio=self.size.aspect_ratio, near=near, far=far
         )
         self.up = Vector3((0, 1, 0), dtype="f4")
         self.target = Vector3((0, 0, 0), dtype="f4")
@@ -62,11 +62,8 @@ class OrbitCamera(Camera):
         self.target = copy.deepcopy(self.original_target)
         self.spherical = copy.deepcopy(self.original_spherical)
 
-    def set_window_size(self, width, height):
-        self.width = width
-        self.height = height
-        self.aspect_ratio = width / height
-        self._projection.update(aspect_ratio=self.aspect_ratio)
+    def window_resized(self):
+        self._projection.update(aspect_ratio=self.size.aspect_ratio)
 
     @property
     def viewport(self) -> typing.Tuple[float, float]:

@@ -1,14 +1,20 @@
 from typing import Optional, Dict, Tuple
 
+from PySide2.QtCore import Qt
+from PySide2 import QtGui
+
 from moderngl.framebuffer import Framebuffer
-from moderngl_window import activate_context
 from moderngl_window.scene.camera import Camera
-from userspace.model import Model
-from interface.orbit_camera import OrbitCamera
-import common.ray_cast as ray_cast
+
+from nimble.common.event_listener import InputObserver
+from nimble.common.models.size import Size
+from nimble.objects.geometry import Ray
+from nimble.objects.model import Model
+from nimble.interface.orbit_camera import OrbitCamera
+import nimble.common.models.ray_cast as ray_cast
 
 
-class ObjectManager:
+class Scene(InputObserver):
     def __init__(self) -> None:
         self.objects: Dict[str, Model] = {}
         self.objects_list = []
@@ -79,10 +85,7 @@ class ObjectManager:
             active.render(camera, bounding=False)
         screen.use()
 
-    def cast_ray(
-        self, x: int, y: int, camera: OrbitCamera
-    ) -> Optional[Tuple[str, int]]:
-        ray = ray_cast.get_ray(x, y, camera)
+    def cast_ray(self, ray: Ray) -> Optional[Tuple[str, int]]:
         for i, obj_str in enumerate(self.objects_list):
             obj = self.objects[obj_str]
             if ray_cast.does_intersect(
@@ -93,5 +96,18 @@ class ObjectManager:
 
         return None
 
+    def mouse_pressed(self, event: QtGui.QMouseEvent, size: Size):
+        if event.button() == Qt.LeftButton:
+            ray = ray_cast.get_ray(event.pos(), size)
+            hit_object = self.cast_ray(ray)
+            if hit_object is not None:
+                self.set_active(hit_object[1])
+            else:
+                self.set_active(-1)
 
-global_om = ObjectManager()
+    def key_pressed(self, event: QtGui.QKeyEvent, size: Size):
+        if event.key() == Qt.Key_Delete:
+            self.delete_obj(self.active_idx)
+
+
+active_scene = Scene()

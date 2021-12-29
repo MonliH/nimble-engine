@@ -3,13 +3,22 @@ from moderngl_window.resources.programs import Programs
 from moderngl.program import Program
 from moderngl_window.meta.program import ProgramDescription
 
-from common.resources import shader
+from nimble.common.resources import shader
+from nimble.common.singleton import Singleton
 
 
-class ShaderManager:
+class Shaders(metaclass=Singleton):
     def __init__(self):
         self.shaders = {}
         self.programs = Programs()
+
+    def load_defaults(self):
+        self.load("viewport", shader("viewport.glsl"))
+        self.load("grid", shader("grid.glsl"))
+        self.load("constant_color", shader("constant_color.glsl"))
+        self.load("bounding_box", shader("bounding_box.glsl"))
+        self.load("outline_filter", shader("outline_filter.glsl"))
+        self.load("ray", shader("ray.glsl"))
 
     def load(self, name: str, path: str) -> Program:
         if name in self.shaders:
@@ -27,15 +36,3 @@ class ShaderManager:
 
     def __getitem__(self, name: str) -> Program:
         return self._get(name)
-
-
-global_sm = ShaderManager()
-
-
-def init_shaders():
-    global_sm.load("viewport", shader("viewport.glsl"))
-    global_sm.load("grid", shader("grid.glsl"))
-    global_sm.load("constant_color", shader("constant_color.glsl"))
-    global_sm.load("bounding_box", shader("bounding_box.glsl"))
-    global_sm.load("outline_filter", shader("outline_filter.glsl"))
-    global_sm.load("ray", shader("ray.glsl"))

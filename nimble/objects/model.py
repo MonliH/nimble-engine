@@ -6,10 +6,10 @@ import moderngl as mgl
 from pyrr import Matrix44, Vector3
 from moderngl.program import Program
 
-from interface.orbit_camera import OrbitCamera
-from common.bounding_box import BoundingBox
+from nimble.interface.orbit_camera import OrbitCamera
+from nimble.common.models.bounding_box import BoundingBox
 from .geometry import Geometry
-from common.shader_manager import global_sm
+from nimble.common.shader_manager import Shaders
 
 
 class Model:
@@ -78,7 +78,7 @@ class Model:
         vbo_ind = ctx.buffer(indicies)
 
         self.bounding_box_buffer = ctx.vertex_array(
-            global_sm["bounding_box"],
+            Shaders()["bounding_box"],
             [(vbo_vert, "3f", "model_position")],
             index_buffer=vbo_ind,
         )

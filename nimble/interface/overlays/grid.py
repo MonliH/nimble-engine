@@ -1,17 +1,16 @@
 from moderngl_window.scene.camera import Camera
 import numpy as np
 from pyrr.objects.vector4 import Vector3
-from userspace.model import Model
+from nimble.objects.model import Model
 import moderngl as mgl
-from interface.orbit_camera import OrbitCamera
-from common.resources import shader
-from common.shader_manager import global_sm
+from nimble.interface.orbit_camera import OrbitCamera
+from nimble.common.shader_manager import Shaders
 from pyrr import Matrix44
 
 
 class Grid(Model):
     def __init__(self, grid_size, ctx):
-        super().__init__(global_sm["grid"])
+        super().__init__(Shaders()["grid"])
         self.grid_size = grid_size
 
         # fmt: off

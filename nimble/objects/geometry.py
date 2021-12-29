@@ -8,7 +8,11 @@ from moderngl_window.geometry.attributes import AttributeNames
 from moderngl_window.opengl.vao import VAO
 from pyrr.objects.matrix44 import Matrix44
 
-from common.bounding_box import BoundingBox, apply_world_transform, vao2bounding_box
+from nimble.common.models.bounding_box import (
+    BoundingBox,
+    apply_world_transform,
+    vao2bounding_box,
+)
 
 
 class Geometry:

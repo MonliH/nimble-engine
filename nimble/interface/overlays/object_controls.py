@@ -3,21 +3,21 @@ from typing import Optional, Set, Tuple, Union
 from numpy.lib.type_check import real
 from pyrr import Vector3
 
-from userspace.model import Model
-from userspace.geometry import Cylinder, Ray
-from userspace.object_manager import ObjectManager
-import common.bounding_box as bounding_box
-import common.ray_cast as ray_cast
+from nimble.objects.model import Model
+from nimble.objects.geometry import Cylinder, Ray
+from nimble.objects.object_manager import Scene
+import nimble.common.models.bounding_box as bounding_box
+import nimble.common.models.ray_cast as ray_cast
 
-from common.shader_manager import global_sm
-from .orbit_camera import OrbitCamera
+from nimble.common.shader_manager import Shaders
+from ..orbit_camera import OrbitCamera
 
 
 class Arrow:
     def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
-        self.axis_shader = global_sm["constant_color"]
+        self.axis_shader = Shaders()["constant_color"]
 
         line_height = 0.5
         height = line_height * 0.35
@@ -80,7 +80,7 @@ class Axis:
     Z = 2
 
 
-class AxisArrows:
+class TransformTools:
     def __init__(self, scale):
         self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, pi / 2, 0), dtype="f4"), scale)
         self.y = Arrow(Vector3((0, 1, 0)), Vector3((0, 0, 0), dtype="f4"), scale)

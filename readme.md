@@ -20,5 +20,5 @@ pip insall -r requirements.txt
 Then run:
 
 ```
-python nimble
+python -m nimble
 ```

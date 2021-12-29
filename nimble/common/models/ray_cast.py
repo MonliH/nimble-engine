@@ -1,8 +1,8 @@
 from typing import Tuple
 from pyrr import Vector3, Vector4
-from interface.orbit_camera import OrbitCamera
-from common.bounding_box import BoundingBox
-from userspace.model import Model
+from nimble.interface.orbit_camera import OrbitCamera
+from nimble.common.models.bounding_box import BoundingBox
+from nimble.objects.model import Model
 
 
 # (origin, direction, inv_direction, sign)
@@ -25,7 +25,7 @@ def get_ray(x: int, y: int, camera: OrbitCamera) -> Ray:
 
 def unproject(x: int, y: int, camera: OrbitCamera) -> Vector3:
     """Unproject a vector from the viewport to the world."""
-    width, height = camera.width, camera.height
+    width, height = camera.size.width, camera.size.height
     x = (2.0 * x) / width - 1.0
     y = 1.0 - (2.0 * y) / height
 
