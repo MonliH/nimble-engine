@@ -5,7 +5,7 @@ from pyrr import Vector3
 
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cylinder, Ray
-from nimble.objects.object_manager import Scene
+from nimble.objects.scene import Scene
 import nimble.common.models.bounding_box as bounding_box
 import nimble.common.models.ray_cast as ray_cast
 
