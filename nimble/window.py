@@ -6,7 +6,16 @@ import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window.geometry import quad_fs
 from PySide2.QtCore import QElapsedTimer, QTimer, Qt
-from PySide2.QtWidgets import QAction, QDockWidget, QMainWindow, QMenu, QOpenGLWidget
+from PySide2.QtWidgets import (
+    QAction,
+    QDockWidget,
+    QListView,
+    QListWidget,
+    QMainWindow,
+    QMenu,
+    QOpenGLWidget,
+    QWidget,
+)
 from PySide2 import QtGui
 
 from nimble.common.shader_manager import Shaders
@@ -27,15 +36,21 @@ class MainWindow(QMainWindow):
         self.show()
         self.setWindowTitle("Nimble Engine")
 
-        self.dock = QDockWidget("Scene Viewer")
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        self.isDockNestingEnabled = True
+
+        self.viewport_dock = QDockWidget("Scene Viewer")
+        self.addDockWidget(Qt.RightDockWidgetArea, self.viewport_dock)
         self.viewport = ViewportWidget(
-            self.dock,
+            self.viewport_dock,
             on_gl_init=self.init_viewport,
         )
-        self.dock.setWidget(self.viewport)
-        self.dock.setMinimumWidth(300)
-        self.dock.setMinimumHeight(300)
+        self.viewport_dock.setWidget(self.viewport)
+
+        self.outline_dock = QDockWidget("Outline")
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.outline_dock)
+        self.outline = QListView(self.outline_dock)
+        self.outline.setModel(active_scene)
+        self.outline_dock.setWidget(self.outline)
 
         self.last_mouse_button = None
 

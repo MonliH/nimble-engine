@@ -1,6 +1,7 @@
-from typing import Optional, Dict, Tuple
+from typing import Any, List, Optional, Dict, Tuple
+from PySide2 import QtCore
 
-from PySide2.QtCore import Qt
+from PySide2.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex, Qt
 from PySide2 import QtGui
 
 from moderngl.framebuffer import Framebuffer
@@ -14,10 +15,11 @@ from nimble.interface.orbit_camera import OrbitCamera
 import nimble.common.models.ray_cast as ray_cast
 
 
-class Scene(InputObserver):
+class Scene(InputObserver, QAbstractListModel):
     def __init__(self) -> None:
+        super().__init__()
         self.objects: Dict[str, Model] = {}
-        self.objects_list = []
+        self.objects_list: List[str] = []
         self.active_idx = -1
 
     def set_active(self, idx: int):
@@ -41,6 +43,7 @@ class Scene(InputObserver):
             self.objects[self.objects_list[idx]].geometry.vao.release()
             del self.objects[self.objects_list[idx]]
             del self.objects_list[idx]
+            self.emit_changed(idx)
 
     def get_obj_from_idx(self, idx: int) -> Model:
         if 0 <= idx < len(self.objects_list):
@@ -59,7 +62,15 @@ class Scene(InputObserver):
         self.objects[object_name] = obj
         idx = len(self.objects_list)
         self.objects_list.append(object_name)
+        self.emit_changed(idx)
         return idx
+
+    def emit_changed(self, start: int, end: Optional[int] = None):
+        if end is None:
+            end = start + 1
+        self.dataChanged.emit(
+            self.index(start, 0), self.index(end, 0), [Qt.DisplayRole]
+        )
 
     def get_obj(self, name: str) -> Model:
         return self.objects[name]
@@ -108,6 +119,19 @@ class Scene(InputObserver):
     def key_pressed(self, event: QtGui.QKeyEvent, size: Size):
         if event.key() == Qt.Key_Delete:
             self.delete_obj(self.active_idx)
+
+    def rowCount(self, parent: QtCore.QModelIndex) -> int:
+        return len(self.objects_list)
+
+    def data(self, index: QtCore.QModelIndex, role: int) -> Any:
+        obj_name = self.objects_list[index.row()]
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return obj_name
+
+    def headerData(
+        self, section: int, orientation: QtCore.Qt.Orientation, role: int
+    ) -> Any:
+        return "Object Name"
 
 
 active_scene = Scene()

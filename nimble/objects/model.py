@@ -13,10 +13,6 @@ from nimble.common.shader_manager import Shaders
 
 
 class Model:
-    def __del__(self):
-        if self.geometry:
-            self.geometry.vao.release()
-
     def __init__(
         self,
         shader: Program,

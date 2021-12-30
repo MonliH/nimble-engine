@@ -120,6 +120,8 @@ class Viewport(InputObserver, WindowObserver):
         elif key == Qt.Key_S:
             # S for scale
             pass
+        elif key == Qt.Key_Delete:
+            self.scene.delete_obj(self.scene.active_idx)
 
     def mouse_pressed(self, event: QtGui.QMouseEvent):
         x, y, button = event.x(), event.y(), event.button()
