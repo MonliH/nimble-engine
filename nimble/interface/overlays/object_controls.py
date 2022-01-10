@@ -5,7 +5,7 @@ from pyrr import Vector3
 
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cylinder, Ray
-from nimble.objects.scene import Scene
+from nimble.objects.scene import Scene, SceneObserver
 import nimble.common.models.bounding_box as bounding_box
 import nimble.common.models.ray_cast as ray_cast
 
@@ -80,8 +80,8 @@ class Axis:
     Z = 2
 
 
-class TransformTools:
-    def __init__(self, scale):
+class TransformTools(SceneObserver):
+    def __init__(self, scale, camera: OrbitCamera):
         self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, pi / 2, 0), dtype="f4"), scale)
         self.y = Arrow(Vector3((0, 1, 0)), Vector3((0, 0, 0), dtype="f4"), scale)
         self.z = Arrow(Vector3((0, 0, 1)), Vector3((-pi / 2, 0, 0), dtype="f4"), scale)
@@ -90,11 +90,15 @@ class TransformTools:
         self.active: Optional[Model] = None
         self.translating = False
         self.plane = None
+        self.camera = camera
 
-    def render(self, camera: OrbitCamera):
-        self.x.render(camera)
-        self.y.render(camera)
-        self.z.render(camera)
+    def select_changed(self, idx: int, object: Model) -> None:
+        self.set_active(object)
+
+    def render(self):
+        self.x.render(self.camera)
+        self.y.render(self.camera)
+        self.z.render(self.camera)
 
     def set_scale(self, scale: float):
         scale = Vector3((scale,) * 3, dtype="f4")
@@ -114,14 +118,14 @@ class TransformTools:
         self.translating = False
         self.length = None
 
-    def set_active(self, active: Optional[Model], camera):
+    def set_active(self, active: Optional[Model]):
         if active is not None:
             self.active = active
             self.x.set_position(active.position)
             self.y.set_position(active.position)
             self.z.set_position(active.position)
 
-            normal = camera.position - self.active.position
+            normal = self.camera.position - self.active.position
             self.plane = (normal, self.active.position)
 
     @staticmethod
@@ -140,7 +144,6 @@ class TransformTools:
 
     def did_drag(
         self,
-        camera: OrbitCamera,
         x: int,
         y: int,
         dx: int,
@@ -151,15 +154,15 @@ class TransformTools:
 
         if self.dragged is not None:
             normal, _ = self.plane
-            real_model = ray_cast.get_pos(x, y, camera)
+            real_model = ray_cast.get_pos(x, y, self.camera)
             model = real_model.normalised * normal.length
 
             real_diff = self.project_point_on_plane(
-                ray_cast.get_pos(x + dx, y + dy, camera), self.plane, camera
+                ray_cast.get_pos(x + dx, y + dy, self.camera), self.plane, self.camera
             )
             new_vector = real_diff.normalised * normal.length
             diff = new_vector - model
-            diff *= camera.radius / 3
+            diff *= self.camera.radius / 3
 
             translation = (
                 diff.x if Axis.X in self.dragged else 0,

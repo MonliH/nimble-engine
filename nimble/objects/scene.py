@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Any, List, Optional, Dict, Tuple
 from PyQt5 import QtCore
 
@@ -15,6 +16,14 @@ from nimble.interface.orbit_camera import OrbitCamera
 import nimble.common.models.ray_cast as ray_cast
 
 
+class SceneObserver:
+    def select_changed(self, idx: int, obj: Optional[Model]) -> None:
+        pass
+
+    def obj_deleted(self, deleted_idx: int) -> None:
+        pass
+
+
 class Scene(InputObserver, QAbstractListModel):
     def __init__(self) -> None:
         super().__init__()
@@ -22,8 +31,17 @@ class Scene(InputObserver, QAbstractListModel):
         self.objects_list: List[str] = []
         self.active_idx = -1
 
+        self.observers: List[SceneObserver] = []
+
+    def register_observer(self, observer: SceneObserver):
+        self.observers.append(observer)
+
     def set_active(self, idx: int):
         self.active_idx = idx
+
+        active = self.get_active()
+        for observer in self.observers:
+            observer.select_changed(self.active_idx, active)
 
     @property
     def active(self) -> Optional[str]:
@@ -44,6 +62,9 @@ class Scene(InputObserver, QAbstractListModel):
             del self.objects[self.objects_list[idx]]
             del self.objects_list[idx]
             self.emit_changed(idx)
+
+            for observer in self.observers:
+                observer.obj_deleted(idx)
 
     def get_obj_from_idx(self, idx: int) -> Model:
         if 0 <= idx < len(self.objects_list):

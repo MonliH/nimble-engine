@@ -49,7 +49,8 @@ class Viewport(InputObserver, WindowObserver):
         self.grid = Grid(1, self.ctx)
         axis_rel_scale = 0.6
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
-        self.active_tools = TransformTools(0.6)
+        self.active_tools = TransformTools(0.6, self.camera)
+        self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
 
     def render(self, screen: mgl.Framebuffer):
@@ -77,7 +78,7 @@ class Viewport(InputObserver, WindowObserver):
 
         if self.scene.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
-            self.active_tools.render(self.camera)
+            self.active_tools.render()
             self.ctx.enable(mgl.DEPTH_TEST)
 
     def regen_active_buffer(self):
@@ -146,7 +147,6 @@ class Viewport(InputObserver, WindowObserver):
                 hit_object = self.scene.cast_ray(ray)
                 if hit_object is not None:
                     self.scene.set_active(hit_object[1])
-                    self.active_tools.set_active(self.scene.get_active(), self.camera)
                 else:
                     self.scene.set_active(-1)
         if self.last_mouse_button != Qt.RightButton:
@@ -162,7 +162,7 @@ class Viewport(InputObserver, WindowObserver):
                     self.did_drag = True
 
             if button == Qt.LeftButton:
-                self.active_tools.did_drag(self.camera, x, y, dx, dy)
+                self.active_tools.did_drag(x, y, dx, dy)
             elif button == Qt.RightButton:
                 if event.modifiers() == Qt.ShiftModifier:
                     self.camera.pan(dx, dy)
@@ -204,7 +204,9 @@ class Viewport(InputObserver, WindowObserver):
         for disp_name, obj in new_obj_menu.items():
             action = QAction(disp_name, parent)
             self.general_actions.append(action)
-            action.triggered.connect(lambda: self.add_obj(disp_name, obj))
+            action.triggered.connect(
+                lambda state, disp_name=disp_name, obj=obj: self.add_obj(disp_name, obj)
+            )
 
         delete = QAction("Delete", parent)
         self.obj_selected_actions.append(delete)

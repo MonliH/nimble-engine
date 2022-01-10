@@ -1,14 +1,9 @@
-from PyQt5.QtCore import Qt
 import moderngl_window as mglw
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QDockWidget,
-    QListView,
-    QMainWindow,
-)
+from PyQt5.QtWidgets import QMainWindow
 from PyQtAds.QtAds import ads
 
 from nimble.common.shader_manager import Shaders
+from nimble.interface.outline import OutlineWidget
 
 from nimble.interface.viewport import ViewportWidget
 
@@ -36,8 +31,7 @@ class MainWindow(QMainWindow):
 
         self.outline_dock = ads.CDockWidget("Outline")
         self.dock_manager.addDockWidget(ads.LeftDockWidgetArea, self.outline_dock)
-        self.outline = QListView(self.outline_dock)
-        self.outline.setModel(active_scene)
+        self.outline = OutlineWidget(self.outline_dock)
         self.outline_dock.setWidget(self.outline)
 
         self.last_mouse_button = None
