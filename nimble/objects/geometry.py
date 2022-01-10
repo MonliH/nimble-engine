@@ -220,3 +220,13 @@ class Cylinder(Geometry):
                 ),
             ),
         )
+
+
+class Plane(Geometry):
+    def __init__(self):
+        vao = VAO()
+        indicies = np.array(indicies, dtype="i4")
+        verticies = np.array(verticies, dtype="f4")
+        normals = np.array(normals, dtype="f4")
+        uvs = np.array(uvs, dtype="f4")
+        super()

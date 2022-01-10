@@ -49,7 +49,7 @@ def get_pos(x: int, y: int, camera: OrbitCamera) -> Vector3:
 
 def get_ray_between(camera: OrbitCamera, obj: Model) -> Ray:
     """Get the ray between the camera and an object in the global axes."""
-    direction = (obj.model * obj.position) - camera.position
+    direction = (obj.model_matrix * obj.position) - camera.position
     return create_ray(camera.position, direction)
 
 

@@ -2,6 +2,7 @@ from math import dist, pi
 from typing import Optional, Set, Tuple, Union
 from numpy.lib.type_check import real
 from pyrr import Vector3
+from nimble.objects.material import Material
 
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cylinder, Ray
@@ -17,14 +18,15 @@ class Arrow:
     def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
-        self.axis_shader = Shaders()["constant_color"]
+        material = Material(Shaders()["constant_color"], pass_mvp=True)
+        self.axis_shader = material.shader
 
         line_height = 0.5
         height = line_height * 0.35
         line_radius = 0.015
 
         self.line = Model(
-            self.axis_shader,
+            material,
             Cylinder(
                 height=line_height,
                 radius_top=line_radius,
@@ -35,7 +37,7 @@ class Arrow:
             scale=Vector3((scale,) * 3, dtype="f4"),
         )
         self.point = Model(
-            self.axis_shader,
+            material,
             Cylinder(
                 height=height,
                 radius_top=0,
@@ -55,8 +57,8 @@ class Arrow:
 
     def render(self, camera: OrbitCamera):
         self.axis_shader["color"].write(self.color)
-        self.line.render(camera, mvp=True)
-        self.point.render(camera, mvp=True)
+        self.line.render(camera)
+        self.point.render(camera)
 
     def set_scale(self, scale: Vector3):
         self.line.set_scale(scale)

@@ -6,6 +6,7 @@ from nimble.common.shader_manager import Shaders
 from nimble.interface.outline import OutlineWidget
 
 from nimble.interface.viewport import ViewportWidget
+from nimble.objects.material import Material
 
 from nimble.objects.scene import active_scene
 from nimble.objects.model import Model
@@ -43,7 +44,7 @@ class MainWindow(QMainWindow):
         self._modifiers = mglw.context.base.KeyModifiers()
 
     def init_viewport(self):
-        active_scene.add_obj("Cube", Model(Shaders()["viewport"], Cube()))
+        active_scene.add_obj("Cube", Model(Material(Shaders()["viewport"]), Cube()))
 
     def closeEvent(self, event):
         event.accept()

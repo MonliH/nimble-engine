@@ -114,7 +114,7 @@ class Scene(InputObserver, QAbstractListModel):
         active = self.get_active()
         if active:
             active_fbo.use()
-            active.render(camera, bounding=False)
+            active.render(camera)
         screen.use()
 
     def cast_ray(self, ray: Ray) -> Optional[Tuple[str, int]]:

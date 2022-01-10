@@ -1,6 +1,7 @@
 from moderngl_window.scene.camera import Camera
 import numpy as np
 from pyrr.objects.vector4 import Vector3
+from nimble.objects.material import Material
 from nimble.objects.model import Model
 import moderngl as mgl
 from nimble.interface.orbit_camera import OrbitCamera
@@ -10,8 +11,9 @@ from pyrr import Matrix44
 
 class Grid(Model):
     def __init__(self, grid_size, ctx):
-        super().__init__(Shaders()["grid"])
+        super().__init__(Material(Shaders()["grid"], pass_model_matrix=False))
         self.grid_size = grid_size
+        self.shader = self.material.shader
 
         # fmt: off
         plane = np.array(
@@ -54,5 +56,5 @@ class Grid(Model):
         self.shader["camera_target"].write(camera.target)
 
         self.ctx.disable(mgl.CULL_FACE)
-        self.write_matrix(camera, model=False)
+        self.material.write_matrix(camera)
         self.vao.render()

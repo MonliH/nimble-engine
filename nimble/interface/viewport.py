@@ -15,6 +15,7 @@ from nimble.common.event_listener import InputObserver, WindowObserver
 from nimble.common.models.size import ViewportSize
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.objects.geometry import Cube, Cylinder, Geometry, Sphere
+from nimble.objects.material import Material
 from nimble.objects.model import Model
 from nimble.objects.scene import Scene, active_scene
 from nimble.interface.overlays.grid import Grid
@@ -75,6 +76,7 @@ class Viewport(InputObserver, WindowObserver):
         )
         screen.use()
         self.active_vao.render(Shaders()["outline_filter"])
+        self.viewport_material = Material(Shaders()["viewport"])
 
         if self.scene.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
@@ -213,7 +215,7 @@ class Viewport(InputObserver, WindowObserver):
         delete.triggered.connect(self.delete_current)
 
     def add_obj(self, name: str, cons: Type[Geometry]):
-        self.scene.add_obj(name, Model(Shaders()["viewport"], cons()))
+        self.scene.add_obj(name, Model(self.viewport_material, cons()))
 
     def delete_current(self):
         self.scene.delete_obj(self.open_context)

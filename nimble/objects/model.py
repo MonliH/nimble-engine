@@ -8,6 +8,7 @@ from moderngl.program import Program
 
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
+from nimble.objects.material import Material
 from .geometry import Geometry
 from nimble.common.shader_manager import Shaders
 
@@ -15,16 +16,16 @@ from nimble.common.shader_manager import Shaders
 class Model:
     def __init__(
         self,
-        shader: Program,
+        material: Material,
         geometry: Optional[Geometry] = None,
         rotation: Optional[Vector3] = None,
         position: Optional[Vector3] = None,
         scale: Optional[Vector3] = None,
-        draw_bounding_box: bool = False,
-        model: bool = True,
-        lines: bool = False,
     ):
-        self.shader = shader
+        if not isinstance(material, Material):
+            raise TypeError("`material` must be of type Material")
+
+        self.material = material
 
         self.rotation = Vector3((0, 0, 0), dtype="f4")
         self.position = Vector3((0, 0, 0), dtype="f4")
@@ -37,16 +38,13 @@ class Model:
         if scale is not None:
             self.scale = scale
 
+        self.model_matrix: Optional[Matrix44] = None
         self.bounding_box_world: BoundingBox = None
-        self.model: Optional[Matrix44] = None
         self.bounding_box_buffer = None
-        self.draw_bounding_box = draw_bounding_box
 
         self.geometry = geometry
 
         self.transform_changed()
-        self.pass_model = model
-        self.draw_lines = lines
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]
@@ -69,7 +67,7 @@ class Model:
             [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="i4"
         )
 
-        ctx = mglw.ctx()
+        ctx: mgl.Context = mglw.ctx()
         vbo_vert = ctx.buffer(verts)
         vbo_ind = ctx.buffer(indicies)
 
@@ -95,40 +93,19 @@ class Model:
         self.position = position
         self.transform_changed()
 
-    def write_matrix(self, camera: OrbitCamera, model: bool = True, mvp: bool = False):
-        if mvp:
-            self.shader["mvp"].write(camera.proj * camera.view * self.model)
-            return
-
-        self.shader["view"].write(camera.view)
-        self.shader["proj"].write(camera.proj)
-
-        if model and self.pass_model:
-            self.shader["model"].write(self.model)
-
     def transform_changed(self):
-        self.model = (
+        self.model_matrix = (
             Matrix44.from_translation(self.position, dtype="f4")
             * Matrix44.from_eulers(self.rotation, dtype="f4")
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
         if self.geometry is not None:
-            self.bounding_box_world = self.geometry.get_world_bounding_box(self.model)
+            self.bounding_box_world = self.geometry.get_world_bounding_box(
+                self.model_matrix
+            )
             self.update_bounding_render()
 
-    def render(self, camera: OrbitCamera, mvp: bool = False, bounding: bool = True):
-        self.write_matrix(camera, mvp=mvp)
-        self.geometry.vao.render(
-            self.shader, mode=mgl.TRIANGLES if not self.draw_lines else mgl.LINES
+    def render(self, camera: OrbitCamera):
+        self.material.render(
+            camera, self.geometry, self.model_matrix, self.bounding_box_buffer
         )
-        if self.draw_bounding_box and self.bounding_box_buffer is not None and bounding:
-            self.render_bounding_box(camera)
-
-    def render_bounding_box(
-        self,
-        camera: OrbitCamera,
-        color: Tuple[float, float, float] = (1, 1, 1),
-    ):
-        self.bounding_box_buffer.program["color"] = color
-        self.bounding_box_buffer.program["vp"].write(camera.proj * camera.view)
-        self.bounding_box_buffer.render(mgl.LINE_LOOP)
