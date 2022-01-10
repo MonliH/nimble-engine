@@ -44,7 +44,10 @@ class MainWindow(QMainWindow):
         self._modifiers = mglw.context.base.KeyModifiers()
 
     def init_viewport(self):
-        active_scene.add_obj("Cube", Model(Material(Shaders()["viewport"]), Cube()))
+        active_scene.add_obj(
+            "Cube",
+            Model(Material(Shaders()["viewport"], draw_bounding_box=True), Cube()),
+        )
 
     def closeEvent(self, event):
         event.accept()

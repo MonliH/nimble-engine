@@ -8,6 +8,7 @@ import numpy as np
 import copy
 
 from nimble.common.event_listener import InputObserver, WindowObserver
+from nimble.common.models.size import Size
 
 
 def clamp(n, smallest, largest):
@@ -46,7 +47,7 @@ class Spherical:
 
 
 class OrbitCamera(Camera, InputObserver, WindowObserver):
-    def __init__(self, size, radius=2, fov=60.0, near=1.0, far=100.0) -> None:
+    def __init__(self, size: Size, radius=2, fov=60.0, near=1.0, far=100.0) -> None:
         self.size = size
         self._projection = Projection3D(
             fov=fov, aspect_ratio=self.size.aspect_ratio, near=near, far=far
@@ -67,7 +68,7 @@ class OrbitCamera(Camera, InputObserver, WindowObserver):
 
     @property
     def viewport(self) -> typing.Tuple[float, float]:
-        return (self.width, self.height)
+        return (self.size.width, self.szie.height)
 
     @property
     def radius(self):
@@ -108,8 +109,8 @@ class OrbitCamera(Camera, InputObserver, WindowObserver):
         offset = self.position - self.target
         distance = offset.length
         distance *= tan(self._projection.fov / 2 * pi / 180)
-        self.pan_left(2 * dx * distance / self.height)
-        self.pan_up(2 * dy * distance / self.height)
+        self.pan_left(2 * dx * distance / self.size.height)
+        self.pan_up(2 * dy * distance / self.size.height)
 
     def pan_left(self, distance):
         vector = np.array(self.view.c1)[:-1] * (-distance)

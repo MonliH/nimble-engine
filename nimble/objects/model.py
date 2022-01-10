@@ -39,11 +39,19 @@ class Model:
             self.scale = scale
 
         self.model_matrix: Optional[Matrix44] = None
+
         self.bounding_box_world: BoundingBox = None
         self.bounding_box_buffer = None
+        self.vbo_vert = None
 
         self.geometry = geometry
 
+        indicies = np.array(
+            [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="i4"
+        )
+
+        ctx: mgl.Context = mglw.ctx()
+        self.verts = ctx.buffer(indicies)
         self.transform_changed()
 
     def update_bounding_render(self):
@@ -63,19 +71,18 @@ class Model:
         ], dtype="f4")
         # fmt: on
 
-        indicies = np.array(
-            [0, 1, 2, 3, 0, 7, 6, 1, 6, 5, 2, 5, 4, 3, 4, 7], dtype="i4"
-        )
-
         ctx: mgl.Context = mglw.ctx()
-        vbo_vert = ctx.buffer(verts)
-        vbo_ind = ctx.buffer(indicies)
+        if self.vbo_vert is None:
+            self.vbo_vert = ctx.buffer(verts)
+        else:
+            self.vbo_vert.write(verts)
 
-        self.bounding_box_buffer = ctx.vertex_array(
-            Shaders()["bounding_box"],
-            [(vbo_vert, "3f", "model_position")],
-            index_buffer=vbo_ind,
-        )
+        if self.bounding_box_buffer is None:
+            self.bounding_box_buffer = ctx.vertex_array(
+                Shaders()["bounding_box"],
+                [(self.vbo_vert, "3f", "model_position")],
+                index_buffer=self.verts,
+            )
 
     def translate(self, translation: Vector3):
         self.position += translation

@@ -2,6 +2,7 @@ from typing import Optional
 from moderngl.program import Program
 import moderngl as mgl
 from pyrr.objects.matrix44 import Matrix44
+from nimble.common.shader_manager import Shaders
 from nimble.interface.orbit_camera import OrbitCamera
 
 from nimble.objects.geometry import Geometry
@@ -17,10 +18,15 @@ class Material:
         pass_model_matrix: bool = True,
     ):
         self.shader = shader
-        self.pass_mvp = pass_mvp
+
         self.wireframe = draw_wireframe
-        self.pass_model_matrix = pass_model_matrix
+        self.wireframe_shader = Shaders()["constant_color"]
+        self.wireframe_shader["color"] = (1, 1, 1)
+
         self.draw_bounding_box = draw_bounding_box
+
+        self.pass_mvp = pass_mvp
+        self.pass_model_matrix = pass_model_matrix
 
     def write_matrix(self, camera: OrbitCamera, model: Optional[Matrix44] = None):
         if self.pass_mvp:
@@ -44,7 +50,8 @@ class Material:
         geometry.vao.render(self.shader, mode=mgl.TRIANGLES)
 
         if self.wireframe:
-            geometry.vao.render(self.shader, mode=mgl.LINES)
+            self.wireframe_shader["mvp"].write(camera.proj * camera.view * model)
+            geometry.vao.render(self.wireframe_shader, mode=mgl.LINES)
 
         if self.draw_bounding_box and bounding_box_buffer is not None:
             bounding_box_buffer.program["color"] = (1, 1, 1)
