@@ -1,28 +1,15 @@
-import math
-from typing import Callable, Optional
-from PySide2.QtCore import SIGNAL, QObject, QPoint, Qt
-from PySide2.QtGui import QSurfaceFormat
+from PyQt5.QtCore import Qt
 import moderngl_window as mglw
-import moderngl as mgl
-from moderngl_window.geometry import quad_fs
-from PySide2.QtCore import QElapsedTimer, QTimer, Qt
-from PySide2.QtWidgets import (
-    QAction,
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
     QDockWidget,
     QListView,
-    QListWidget,
     QMainWindow,
-    QMenu,
-    QOpenGLWidget,
-    QWidget,
 )
-from PySide2 import QtGui
 
 from nimble.common.shader_manager import Shaders
-import nimble.common.models.ray_cast as ray_cast
 
-from nimble.interface.overlays.object_controls import Axis
-from nimble.interface.viewport import Viewport, ViewportWidget
+from nimble.interface.viewport import ViewportWidget
 
 from nimble.objects.scene import active_scene
 from nimble.objects.model import Model

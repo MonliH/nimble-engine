@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PySide2 import QtGui
+from PyQt5 import QtGui
 
 
 class InputObserver:

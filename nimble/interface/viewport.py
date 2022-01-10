@@ -1,13 +1,13 @@
 import math
-from typing import Callable, Optional
-from PySide2 import QtWidgets
-from PySide2.QtCore import SIGNAL, QElapsedTimer, QObject, QPoint, QTimer, Qt
-from PySide2.QtWidgets import QAction, QMenu, QOpenGLWidget
+from typing import Callable, Optional, Type
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QElapsedTimer, QObject, QPoint, QTimer, Qt, pyqtSignal
+from PyQt5.QtWidgets import QAction, QMenu, QOpenGLWidget
+from PyQt5 import QtGui
 import moderngl_window as mglw
 import moderngl as mgl
 from moderngl_window.geometry.quad import quad_fs
 from pyrr.objects.matrix33 import Matrix33
-from PySide2 import QtGui
 
 from nimble.common.models import ray_cast
 from nimble.common.shader_manager import Shaders
@@ -20,7 +20,7 @@ from nimble.objects.scene import Scene, active_scene
 from nimble.interface.overlays.grid import Grid
 from nimble.interface.overlays.object_controls import Axis, TransformTools
 
-new_obj_menu = [("Cube", Cube), ("Sphere", Sphere), ("Cylinder", Cylinder)]
+new_obj_menu = {"Cube": Cube, "Sphere": Sphere, "Cylinder": Cylinder}
 
 
 class Viewport(InputObserver, WindowObserver):
@@ -198,32 +198,20 @@ class Viewport(InputObserver, WindowObserver):
                 )
 
     def create_menu_items(self, parent: QtWidgets.QWidget):
-        self.act_add_cube = QAction("Add Cube", parent)
-        self.act_add_sphere = QAction("Add Sphere", parent)
-        self.act_add_cylinder = QAction("Add Cylinder", parent)
-        QObject.connect(
-            self.act_add_cube,
-            SIGNAL("triggered()"),
-            lambda: self.add_obj(Cube(), "Cube"),
-        )
-        QObject.connect(
-            self.act_add_sphere,
-            SIGNAL("triggered()"),
-            lambda: self.add_obj(Sphere(), "Sphere"),
-        )
-        QObject.connect(
-            self.act_add_cylinder,
-            SIGNAL("triggered()"),
-            lambda: self.add_obj(Cylinder(), "Cylinder"),
-        )
+        self.general_actions = []
+        self.obj_selected_actions = []
 
-        self.act_delete_current = QAction("Delete", parent)
-        QObject.connect(
-            self.act_delete_current, SIGNAL("triggered()"), self.delete_current
-        )
+        for disp_name, obj in new_obj_menu.items():
+            action = QAction(disp_name, parent)
+            self.general_actions.append(action)
+            action.triggered.connect(lambda: self.add_obj(disp_name, obj))
 
-    def add_obj(self, geometry: Geometry, name: str):
-        self.scene.add_obj(name, Model(Shaders()["viewport"], geometry))
+        delete = QAction("Delete", parent)
+        self.obj_selected_actions.append(delete)
+        delete.triggered.connect(self.delete_current)
+
+    def add_obj(self, name: str, cons: Type[Geometry]):
+        self.scene.add_obj(name, Model(Shaders()["viewport"], cons()))
 
     def delete_current(self):
         self.scene.delete_obj(self.open_context)
@@ -234,12 +222,12 @@ class Viewport(InputObserver, WindowObserver):
         if clicked_object == -1:
             # No selected object, show general menu
             menu.addSection("General actions")
-            menu.addAction(self.act_add_cube)
-            menu.addAction(self.act_add_sphere)
-            menu.addAction(self.act_add_cylinder)
+            for action in self.general_actions:
+                menu.addAction(action)
         else:
             menu.addSection(f'"{self.scene.get_obj_name(clicked_object)}" actions')
-            menu.addAction(self.act_delete_current)
+            for action in self.obj_selected_actions:
+                menu.addAction(action)
 
         menu.popup(parent.mapToGlobal(QPoint(x, y)))
 

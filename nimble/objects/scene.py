@@ -1,8 +1,8 @@
 from typing import Any, List, Optional, Dict, Tuple
-from PySide2 import QtCore
+from PyQt5 import QtCore
 
-from PySide2.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex, Qt
-from PySide2 import QtGui
+from PyQt5.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex, Qt
+from PyQt5 import QtGui
 
 from moderngl.framebuffer import Framebuffer
 from moderngl_window.scene.camera import Camera
