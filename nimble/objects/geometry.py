@@ -225,8 +225,28 @@ class Cylinder(Geometry):
 class Plane(Geometry):
     def __init__(self):
         vao = VAO()
-        indicies = np.array(indicies, dtype="i4")
-        verticies = np.array(verticies, dtype="f4")
-        normals = np.array(normals, dtype="f4")
-        uvs = np.array(uvs, dtype="f4")
-        super()
+        # fmt: off
+        verticies = np.array([
+            -1, 0, -1,
+            -1, 0, 1,
+            1, 0, 1,
+            1, 0, -1,
+        ], dtype="f4")
+        normals = np.array([0, 1, 0] * 4, dtype="f4")
+        uvs = np.array([
+            0, 1,
+            0, 0,
+            1, 0,
+            1, 1,
+        ], dtype="f4")
+        # fmt: on
+
+        vao.buffer(verticies, "3f", [AttributeNames.POSITION])
+        vao.buffer(normals, "3f", [AttributeNames.NORMAL])
+        vao.buffer(uvs, "2f", [AttributeNames.TEXCOORD_0])
+
+        vao.index_buffer(np.array([(0, 1, 2, 0, 2, 3)], dtype="i4"))
+
+        super().__init__(
+            vao, (Vector3((-1, 0, -1), dtype="f4"), Vector3((1, 0, 1), dtype="f4"))
+        )

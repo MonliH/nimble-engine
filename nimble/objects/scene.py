@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, List, Optional, Dict, Tuple
+from typing import Any, List, Optional, Dict, Tuple, Union
 from PyQt5 import QtCore
 
 from PyQt5.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex, Qt
@@ -11,7 +11,7 @@ from moderngl_window.scene.camera import Camera
 from nimble.common.event_listener import InputObserver
 from nimble.common.models.size import Size
 from nimble.objects.geometry import Ray
-from nimble.objects.model import Model
+from nimble.objects.model import Model, ModelObserver
 from nimble.interface.orbit_camera import OrbitCamera
 import nimble.common.models.ray_cast as ray_cast
 
@@ -23,6 +23,9 @@ class SceneObserver:
     def obj_deleted(self, deleted_idx: int) -> None:
         pass
 
+    def obj_name_changed(self, idx: int, obj: Model) -> None:
+        pass
+
 
 class Scene(InputObserver, QAbstractListModel):
     def __init__(self) -> None:
@@ -32,14 +35,28 @@ class Scene(InputObserver, QAbstractListModel):
         self.active_idx = -1
 
         self.observers: List[SceneObserver] = []
+        self.active_obj_observers: Dict[str, ModelObserver] = {}
 
     def register_observer(self, observer: SceneObserver):
         self.observers.append(observer)
 
-    def set_active(self, idx: int):
-        self.active_idx = idx
+    def register_active_obj_observer(self, observer: ModelObserver, key: str):
+        self.active_obj_observers[key] = observer
 
+    def unregister_active_obj_observer(self, key: str):
+        del self.active_obj_observers[key]
+
+    def set_active(self, idx: int):
+        old_obj = self.get_active()
+        if old_obj is not None:
+            old_obj.remove_all_observers()
+
+        self.active_idx = idx
         active = self.get_active()
+
+        if active is not None:
+            active.set_all_observers(self.active_obj_observers)
+
         for observer in self.observers:
             observer.select_changed(self.active_idx, active)
 
@@ -51,6 +68,18 @@ class Scene(InputObserver, QAbstractListModel):
     @property
     def has_object_selected(self) -> bool:
         return self.active_idx != -1
+
+    def rename_obj(self, idx: int, new_name: str):
+        old_name = self.get_obj_name(idx)
+        obj = self.get_obj_from_idx(idx)
+        if obj is not None:
+            obj.set_name(new_name)
+            self.objects_list[idx] = new_name
+            del self.objects[old_name]
+            self.objects[new_name] = obj
+            self.emit_changed(idx)
+            for observer in self.observers:
+                observer.obj_name_changed(idx, obj)
 
     def delete_obj(self, idx: int) -> None:
         if 0 <= idx < len(self.objects_list):
@@ -66,7 +95,7 @@ class Scene(InputObserver, QAbstractListModel):
             for observer in self.observers:
                 observer.obj_deleted(idx)
 
-    def get_obj_from_idx(self, idx: int) -> Model:
+    def get_obj_from_idx(self, idx: int) -> Optional[Model]:
         if 0 <= idx < len(self.objects_list):
             return self.objects[self.objects_list[idx]]
 
@@ -78,7 +107,8 @@ class Scene(InputObserver, QAbstractListModel):
         if self.active in self.objects:
             return self.objects[self.active]
 
-    def add_obj(self, name: str, obj: object) -> int:
+    def add_obj(self, obj: object) -> int:
+        name = obj.name
         object_name = name if name not in self.objects else self.get_new_name(name)
         self.objects[object_name] = obj
         idx = len(self.objects_list)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 import moderngl_window as mglw
 import moderngl as mgl
 from pyrr import Matrix44, Vector3
@@ -13,11 +13,23 @@ from .geometry import Geometry
 from nimble.common.shader_manager import Shaders
 
 
+class ModelObserver:
+    def translation_changed(self, obj: Model) -> None:
+        pass
+
+    def scale_changed(self, obj: Model) -> None:
+        pass
+
+    def rotation_changed(self, obj: Model) -> None:
+        pass
+
+
 class Model:
     def __init__(
         self,
         material: Material,
         geometry: Optional[Geometry] = None,
+        name: Optional[str] = None,
         rotation: Optional[Vector3] = None,
         position: Optional[Vector3] = None,
         scale: Optional[Vector3] = None,
@@ -26,6 +38,7 @@ class Model:
             raise TypeError("`material` must be of type Material")
 
         self.material = material
+        self.name = name
 
         self.rotation = Vector3((0, 0, 0), dtype="f4")
         self.position = Vector3((0, 0, 0), dtype="f4")
@@ -53,6 +66,23 @@ class Model:
         ctx: mgl.Context = mglw.ctx()
         self.verts = ctx.buffer(indicies)
         self.transform_changed()
+
+        self.observers: Dict[str, ModelObserver] = {}
+
+    def set_name(self, new_name: str):
+        self.name = new_name
+
+    def register_observer(self, observer: ModelObserver, idx: str):
+        self.observers[idx] = observer
+
+    def unregister_observer(self, idx: str):
+        del self.observers[idx]
+
+    def set_all_observers(self, observers: Dict[str, ModelObserver]):
+        self.observers = observers
+
+    def remove_all_observers(self):
+        self.observers = {}
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]
@@ -84,17 +114,32 @@ class Model:
                 index_buffer=self.verts,
             )
 
+    def position_changed(self):
+        for observer in self.observers.values():
+            observer.translation_changed(self)
+        self.transform_changed()
+
     def translate(self, translation: Vector3):
         self.position += translation
+        self.position_changed()
+
+    def rotation_changed(self):
+        for observer in self.observers.values():
+            observer.rotation_changed(self)
         self.transform_changed()
 
     def rotate(self, rotation: Vector3):
         self.rotation += rotation
+        self.rotation_changed()
+
+    def scale_changed(self):
+        for observer in self.observers.values():
+            observer.scale_changed(self)
         self.transform_changed()
 
     def set_scale(self, scale: Vector3):
         self.scale = scale
-        self.transform_changed()
+        self.scale_changed()
 
     def set_position(self, position: Vector3):
         self.position = position

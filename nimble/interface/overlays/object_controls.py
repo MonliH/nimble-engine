@@ -4,7 +4,7 @@ from numpy.lib.type_check import real
 from pyrr import Vector3
 from nimble.objects.material import Material
 
-from nimble.objects.model import Model
+from nimble.objects.model import Model, ModelObserver
 from nimble.objects.geometry import Cylinder, Ray
 from nimble.objects.scene import Scene, SceneObserver
 import nimble.common.models.bounding_box as bounding_box
@@ -82,7 +82,7 @@ class Axis:
     Z = 2
 
 
-class TransformTools(SceneObserver):
+class TransformTools(SceneObserver, ModelObserver):
     def __init__(self, scale, camera: OrbitCamera):
         self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, pi / 2, 0), dtype="f4"), scale)
         self.y = Arrow(Vector3((0, 1, 0)), Vector3((0, 0, 0), dtype="f4"), scale)
@@ -123,12 +123,17 @@ class TransformTools(SceneObserver):
     def set_active(self, active: Optional[Model]):
         if active is not None:
             self.active = active
-            self.x.set_position(active.position)
-            self.y.set_position(active.position)
-            self.z.set_position(active.position)
-
+            self.update_position(active.position)
             normal = self.camera.position - self.active.position
             self.plane = (normal, self.active.position)
+
+    def update_position(self, position: Vector3):
+        self.x.set_position(position)
+        self.y.set_position(position)
+        self.z.set_position(position)
+
+    def translation_changed(self, obj: Model) -> None:
+        self.update_position(obj.position)
 
     @staticmethod
     def project_point_on_plane(

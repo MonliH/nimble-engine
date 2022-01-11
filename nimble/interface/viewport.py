@@ -1,7 +1,7 @@
 import math
 from typing import Callable, Optional, Type
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QElapsedTimer, QObject, QPoint, QTimer, Qt, pyqtSignal
+from PyQt5.QtCore import QElapsedTimer, QObject, QPoint, QSize, QTimer, Qt, pyqtSignal
 from PyQt5.QtWidgets import QAction, QMenu, QOpenGLWidget
 from PyQt5 import QtGui
 import moderngl_window as mglw
@@ -14,14 +14,14 @@ from nimble.common.shader_manager import Shaders
 from nimble.common.event_listener import InputObserver, WindowObserver
 from nimble.common.models.size import ViewportSize
 from nimble.interface.orbit_camera import OrbitCamera
-from nimble.objects.geometry import Cube, Cylinder, Geometry, Sphere
+from nimble.objects.geometry import Cube, Cylinder, Geometry, Plane, Sphere
 from nimble.objects.material import Material
 from nimble.objects.model import Model
 from nimble.objects.scene import Scene, active_scene
 from nimble.interface.overlays.grid import Grid
 from nimble.interface.overlays.object_controls import Axis, TransformTools
 
-new_obj_menu = {"Cube": Cube, "Sphere": Sphere, "Cylinder": Cylinder}
+new_obj_menu = {"Cube": Cube, "Sphere": Sphere, "Cylinder": Cylinder, "Plane": Plane}
 
 
 class Viewport(InputObserver, WindowObserver):
@@ -51,6 +51,7 @@ class Viewport(InputObserver, WindowObserver):
         axis_rel_scale = 0.6
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
         self.active_tools = TransformTools(0.6, self.camera)
+        active_scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
 
@@ -207,7 +208,7 @@ class Viewport(InputObserver, WindowObserver):
             action = QAction(disp_name, parent)
             self.general_actions.append(action)
             action.triggered.connect(
-                lambda state, disp_name=disp_name, obj=obj: self.add_obj(disp_name, obj)
+                lambda _, disp_name=disp_name, obj=obj: self.add_obj(disp_name, obj)
             )
 
         delete = QAction("Delete", parent)
@@ -215,7 +216,7 @@ class Viewport(InputObserver, WindowObserver):
         delete.triggered.connect(self.delete_current)
 
     def add_obj(self, name: str, cons: Type[Geometry]):
-        self.scene.add_obj(name, Model(self.viewport_material, cons()))
+        self.scene.add_obj(Model(self.viewport_material, geometry=cons(), name=name))
 
     def delete_current(self):
         self.scene.delete_obj(self.open_context)
