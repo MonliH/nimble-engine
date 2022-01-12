@@ -1,5 +1,7 @@
 # A singleton metaclass
 # Credit to: https://stackoverflow.com/a/6798042/9470078
+
+
 class Singleton(type):
     _instances = {}
 

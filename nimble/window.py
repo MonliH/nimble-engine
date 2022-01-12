@@ -3,6 +3,7 @@ from PyQt5 import uic
 import moderngl_window as mglw
 from PyQt5.QtWidgets import QAction, QMainWindow, QMenu, QSizePolicy
 from PyQt5.QtCore import QSettings, Qt
+from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
 from nimble.common.resources import ui_file
 
@@ -15,7 +16,7 @@ from nimble.objects.material import Material
 
 from nimble.objects.scene import active_scene
 from nimble.objects.model import Model
-from nimble.objects.geometry import Cube
+from nimble.objects.geometry import Cube, Plane
 
 
 class MainWindow(QMainWindow):
@@ -66,8 +67,18 @@ class MainWindow(QMainWindow):
         self.restore_perspectives()
 
     def init_viewport(self):
+        material = self.viewport.manager.viewport_material
         active_scene.add_obj(
-            Model(Material(Shaders()["viewport"]), geometry=Cube(), name="Cube")
+            Model(material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0)))
+        )
+        active_scene.add_obj(
+            Model(
+                material,
+                geometry=Plane(),
+                name="Plane",
+                scale=Vector3((3, 1, 3)),
+                position=Vector3((0, -0.001, 0)),
+            )
         )
 
     def closeEvent(self, event):

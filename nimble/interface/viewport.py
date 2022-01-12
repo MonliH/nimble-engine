@@ -31,7 +31,7 @@ class Viewport(InputObserver, WindowObserver):
         self.screen_size = ViewportSize(width, height)
         self.camera = OrbitCamera(
             self.screen_size,
-            radius=5.0,
+            radius=6.0,
             near=0.01,
             far=500.0,
         )
@@ -48,16 +48,17 @@ class Viewport(InputObserver, WindowObserver):
     def init(self, ctx: mgl.Context):
         self.ctx = ctx
         self.grid = Grid(1, self.ctx)
-        axis_rel_scale = 0.6
+        axis_rel_scale = 0.7
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
-        self.active_tools = TransformTools(0.6, self.camera)
+        self.active_tools = TransformTools(axis_rel_scale, self.camera)
         active_scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
+        self.viewport_material = Material(Shaders()["viewport"])
 
     def render(self, screen: mgl.Framebuffer):
         mglw.activate_context(ctx=self.ctx)
-        self.ctx.enable_only(mgl.CULL_FACE | mgl.DEPTH_TEST | mgl.BLEND)
+        self.ctx.enable_only(mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)
         self.active_buffer.use()
         self.ctx.clear()
@@ -77,7 +78,6 @@ class Viewport(InputObserver, WindowObserver):
         )
         screen.use()
         self.active_vao.render(Shaders()["outline_filter"])
-        self.viewport_material = Material(Shaders()["viewport"])
 
         if self.scene.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
