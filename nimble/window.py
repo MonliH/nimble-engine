@@ -1,6 +1,7 @@
+from typing import cast
 from PyQt5 import uic
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QMainWindow, QSizePolicy
+from PyQt5.QtWidgets import QAction, QMainWindow, QMenu, QSizePolicy
 from PyQt5.QtCore import QSettings, Qt
 from PyQtAds.QtAds import ads
 from nimble.common.resources import ui_file
@@ -41,7 +42,7 @@ class MainWindow(QMainWindow):
         self.outline = OutlineWidget(self.outline_dock)
         self.outline_dock.setWidget(self.outline)
 
-        self.entity_dock = ads.CDockWidget("Entity")
+        self.entity_dock = ads.CDockWidget("Entity Inspector")
         self.dock_manager.addDockWidget(ads.RightDockWidgetArea, self.entity_dock)
         self.entity = ModelWidget()
         self.entity_dock.setWidget(self.entity)
@@ -55,6 +56,12 @@ class MainWindow(QMainWindow):
         self._modifiers = mglw.context.base.KeyModifiers()
 
         self.actionSave_Layout.triggered.connect(self.save_perspectives)
+        self.actionReset_Layout.triggered.connect(self.restore_perspectives)
+
+        self.menuWindow = cast(QMenu, self.menuWindow)
+        self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
+        self.menuWindow.addAction(self.outline_dock.toggleViewAction())
+        self.menuWindow.addAction(self.entity_dock.toggleViewAction())
 
         self.restore_perspectives()
 
@@ -68,6 +75,7 @@ class MainWindow(QMainWindow):
 
     def save_perspectives(self):
         settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
+        self.dock_manager.addPerspective("default")
         self.dock_manager.savePerspectives(settings)
 
     def restore_perspectives(self):

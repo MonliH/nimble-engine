@@ -54,7 +54,7 @@ class OrbitCamera(Camera, InputObserver, WindowObserver):
         )
         self.up = Vector3((0, 1, 0), dtype="f4")
         self.target = Vector3((0, 0, 0), dtype="f4")
-        self.spherical = Spherical(radius, radians(60), radians(45))
+        self.spherical = Spherical(radius, radians(65), radians(45))
 
         self.original_target = copy.deepcopy(self.target)
         self.original_spherical = copy.deepcopy(self.spherical)

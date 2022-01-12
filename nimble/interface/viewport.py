@@ -31,7 +31,7 @@ class Viewport(InputObserver, WindowObserver):
         self.screen_size = ViewportSize(width, height)
         self.camera = OrbitCamera(
             self.screen_size,
-            radius=3.0,
+            radius=5.0,
             near=0.01,
             far=500.0,
         )
