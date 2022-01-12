@@ -287,9 +287,6 @@
           <property name="currentText">
            <string/>
           </property>
-          <property name="placeholderText">
-           <string>Select a component to add...</string>
-          </property>
          </widget>
         </item>
         <item>

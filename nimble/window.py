@@ -1,7 +1,9 @@
-from PyQt5.QtCore import QSize
+from PyQt5 import uic
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QSizePolicy
+from PyQt5.QtCore import QSettings, Qt
 from PyQtAds.QtAds import ads
+from nimble.common.resources import ui_file
 
 from nimble.common.shader_manager import Shaders
 from nimble.interface.entity_inspector import ModelWidget
@@ -18,9 +20,11 @@ from nimble.objects.geometry import Cube
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setGeometry(100, 100, 1600, 900)
+        self.setWindowState(Qt.WindowMaximized)
         self.show()
         self.setWindowTitle("Nimble Engine")
+
+        uic.loadUi(ui_file("main_window.ui"), self)
 
         self.dock_manager = ads.CDockManager(self)
 
@@ -50,6 +54,10 @@ class MainWindow(QMainWindow):
         self.context_menu_pos = (0, 0)
         self._modifiers = mglw.context.base.KeyModifiers()
 
+        self.actionSave_Layout.triggered.connect(self.save_perspectives)
+
+        self.restore_perspectives()
+
     def init_viewport(self):
         active_scene.add_obj(
             Model(Material(Shaders()["viewport"]), geometry=Cube(), name="Cube")
@@ -57,3 +65,12 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         event.accept()
+
+    def save_perspectives(self):
+        settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
+        self.dock_manager.savePerspectives(settings)
+
+    def restore_perspectives(self):
+        settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
+        self.dock_manager.loadPerspectives(settings)
+        self.dock_manager.openPerspective("default")

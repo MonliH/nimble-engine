@@ -148,15 +148,20 @@ class Scene(InputObserver, QAbstractListModel):
         screen.use()
 
     def cast_ray(self, ray: Ray) -> Optional[Tuple[str, int]]:
+        min_dist = float("inf")
+        min_dist_obj = None
         for i, obj_str in enumerate(self.objects_list):
             obj = self.objects[obj_str]
-            if ray_cast.does_intersect(
+            dist = ray_cast.ray_intersect(
                 obj.bounding_box_world,
                 ray,
-            ):
-                return (obj_str, i)
+            )
+            if dist is not None:
+                if dist[0] < min_dist:
+                    min_dist_obj = (obj_str, i)
+                    min_dist = dist[0]
 
-        return None
+        return min_dist_obj
 
     def mouse_pressed(self, event: QtGui.QMouseEvent, size: Size):
         if event.button() == Qt.LeftButton:

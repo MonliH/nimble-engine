@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 from pyrr import Vector3, Vector4
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
@@ -57,7 +57,11 @@ def does_intersect(
     bounds: BoundingBox,
     r: Ray,
 ) -> bool:
-    (orig, dir, invdir, sign) = r
+    return ray_intersect(bounds, r) is not None
+
+
+def ray_intersect(bounds: BoundingBox, r: Ray) -> Optional[Tuple[float, float]]:
+    (orig, _dir, invdir, sign) = r
 
     tmin = (bounds[sign[0]].x - orig.x) * invdir.x
     tmax = (bounds[1 - sign[0]].x - orig.x) * invdir.x
@@ -66,7 +70,7 @@ def does_intersect(
     tymax = (bounds[1 - sign[1]].y - orig.y) * invdir.y
 
     if (tmin > tymax) or (tymin > tmax):
-        return False
+        return None
     if tymin > tmin:
         tmin = tymin
     if tymax < tmax:
@@ -76,10 +80,10 @@ def does_intersect(
     tzmax = (bounds[1 - sign[2]].z - orig.z) * invdir.z
 
     if (tmin > tzmax) or (tzmin > tmax):
-        return False
+        return None
     if tzmin > tmin:
         tmin = tzmin
     if tzmax < tmax:
         tmax = tzmax
 
-    return True
+    return (tmin, tmax)
