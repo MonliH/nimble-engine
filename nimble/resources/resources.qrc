@@ -5,6 +5,7 @@
     <file alias="component.ui">ui/component.ui</file>
     <file alias="file_explorer.ui">ui/file_explorer.ui</file>
     <file alias="save_project_as.ui">ui/save_project_as.ui</file>
+    <file alias="overwrite_warning.ui">ui/overwrite_warning.ui</file>
   </qresource>
   <qresource prefix="fonts">
     <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>

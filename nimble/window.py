@@ -1,7 +1,7 @@
-from typing import Optional, cast
+from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog
 from PyQt5.QtCore import QSettings, Qt
 from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
@@ -10,18 +10,20 @@ from nimble.common.resources import load_ui
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
 from nimble.interface.outline import OutlineWidget
-from nimble.interface.project_ui import SaveProjectAs
+from nimble.interface.project_ui import OverwriteWarning, SaveProjectAs
 
 from nimble.interface.viewport import ViewportWidget
 
 from nimble.objects.scene import active_scene
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cube, Plane
+from nimble.objects.project import ProjectObserver, current_project
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, ProjectObserver):
     def __init__(self, parent=None):
         super().__init__(parent)
+        current_project.add_observer("main_window", self)
         font_id = QFontDatabase().addApplicationFont(":/fonts/OpenSans-Regular.ttf")
         family = QFontDatabase().applicationFontFamilies(font_id)[0]
         QApplication.setFont(QFont(family))
@@ -78,6 +80,10 @@ class MainWindow(QMainWindow):
         self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
 
         self.restore_perspectives()
+        self.project_changed()
+
+    def project_changed(self):
+        self.setWindowTitle(current_project.get_project_display_name())
 
     def init_viewport(self):
         material = self.viewport.manager.viewport_material
@@ -108,5 +114,9 @@ class MainWindow(QMainWindow):
         self.dock_manager.openPerspective("default")
 
     def new_project(self):
-        dialog = SaveProjectAs(self, new_project=True)
-        dialog.exec()
+        overwrite = OverwriteWarning(self)
+        res = overwrite.exec()
+        if res == QDialog.Accepted:
+            dialog = SaveProjectAs(self, new_project=True)
+            dialog.exec()
+            current_project.set_folder_and_name(dialog.folder, dialog.name)

@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QDir
 from PyQt5.QtWidgets import QDialog, QFileDialog
 
 from nimble.common.resources import load_ui
@@ -8,8 +9,11 @@ class SaveProjectAs(QDialog):
         super().__init__(parent)
         load_ui(":/ui/save_project_as.ui", self)
 
+        self.setWindowTitle("Save Project As")
+
         if new_project:
             self.title.setText("Create a New Project")
+            self.setWindowTitle("Create a New Project")
             self.create.setText("Create!")
 
         self.browse_file.clicked.connect(self.browse_file_path)
@@ -18,7 +22,12 @@ class SaveProjectAs(QDialog):
         self.create.clicked.connect(self.created)
         self.create.setEnabled(False)
 
+        self.folder = None
+        self.name = None
+
     def created(self):
+        self.folder = self.filename_editor.text()
+        self.name = self.project_name.text()
         self.accept()
 
     def check_line(self):
@@ -29,7 +38,13 @@ class SaveProjectAs(QDialog):
         fname = QFileDialog.getExistingDirectory(
             self,
             "Open folder",
-            ".",
+            QDir.homePath(),
             options=QFileDialog.DontUseNativeDialog,
         )
         self.filename_editor.setText(fname)
+
+
+class OverwriteWarning(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        load_ui(":/ui/overwrite_warning.ui", self)
