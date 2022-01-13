@@ -40,7 +40,8 @@ class SaveProjectAs(QDialog):
         fname = QFileDialog.getExistingDirectory(
             self,
             "Open folder",
-            QDir.homePath(),
+            # QDir.homePath(),
+            ".",
             options=QFileDialog.DontUseNativeDialog,
         )
         self.filename_editor.setText(fname)
@@ -50,3 +51,35 @@ class OverwriteWarning(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         load_ui(":/ui/overwrite_warning.ui", self)
+
+
+class OpenProject(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        load_ui(":/ui/open_project.ui", self)
+        self.open.setEnabled(False)
+        self.open.clicked.connect(self.open_project)
+        self.browse_file.clicked.connect(self.browse_file_path)
+
+        self.filename = ""
+
+        self.cancel.clicked.connect(self.reject)
+        self.filename_editor.textChanged.connect(self.check_line)
+
+    def check_line(self):
+        ok = self.filename_editor.text() != ""
+        self.open.setEnabled(ok)
+
+    def open_project(self):
+        self.filename = self.filename_editor.text()
+        self.accept()
+
+    def browse_file_path(self):
+        fname = QFileDialog.getOpenFileName(
+            self,
+            "Open project file",
+            QDir.homePath(),
+            "Project files (*.nimproj)",
+            options=QFileDialog.DontUseNativeDialog,
+        )
+        self.filename_editor.setText(fname[0])

@@ -3,8 +3,8 @@ from typing import Dict, Optional
 from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QDir
 import json
-from nimble.common.serialize import serialize_scene
 
+from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.objects.component import PathLike
 from nimble.objects.scene import Scene
 
@@ -44,12 +44,12 @@ class Project(QFileSystemModel):
 
     def save_scene(self):
         scene_dict = serialize_scene(current_project.scene)
-        print(scene_dict)
-        json.dump(self.scene, open(self.get_scene_file(self.folder), "wb"))
+        json.dump(scene_dict, open(self.get_scene_file(self.folder), "w"))
 
     def _load_scene(self, filename: PathLike):
-        scene_dict = json.load(open(filename, "rb"))
-        # self._scene.replace(scene)
+        scene_dict = json.load(open(filename, "r"))
+        scene = unserialize_scene(scene_dict)
+        self._scene.replace(scene)
 
     def save_project(self):
         json.dump({"name": self.name}, open(self.get_project_file(self.folder), "w"))
@@ -58,10 +58,20 @@ class Project(QFileSystemModel):
         proj_info = json.load(open(filename, "r"))
         self.name = proj_info["name"]
 
-    def load_project(self, folder: PathLike):
-        self.folder = folder
-        self._load_scene(self.get_scene_file(folder))
-        self._load_project(self.get_project_file(folder))
+    def load_project(self, file: PathLike):
+        file = pathlib.Path(file)
+        self.folder = file.parent
+        self._load_scene(self.get_scene_file(self.folder))
+        self._load_project(file)
+
+        for observer in self.observers.values():
+            observer.project_changed()
+
+    def set_project_name(self, folder: PathLike, name: str):
+        self.folder = pathlib.Path(folder) / f"{name}/"
+        self.name = name
+        for observer in self.observers.values():
+            observer.project_changed()
 
     def new_project(self, folder: PathLike, name: str):
         self.setRootPath(QDir.rootPath())

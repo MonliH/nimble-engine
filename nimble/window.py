@@ -12,7 +12,7 @@ from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
 from nimble.interface.outline import OutlineWidget
-from nimble.interface.project_ui import OverwriteWarning, SaveProjectAs
+from nimble.interface.project_ui import OpenProject, OverwriteWarning, SaveProjectAs
 
 from nimble.interface.viewport import ViewportWidget
 from nimble.objects.component import CustomComponent
@@ -74,6 +74,9 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.actionSave_Layout.triggered.connect(self.save_perspectives)
         self.actionReset_Layout.triggered.connect(self.restore_perspectives)
+        self.actionOpen.triggered.connect(self.open_project)
+
+        self.actionSave.triggered.connect(self.save_project)
 
         self.menuWindow = cast(QMenu, self.menuWindow)
         self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
@@ -124,3 +127,26 @@ class MainWindow(QMainWindow, ProjectObserver):
             res = dialog.exec()
             if res == QDialog.Accepted:
                 current_project.new_project(dialog.folder, dialog.name)
+
+    def open_project(self):
+        overwrite = OverwriteWarning(self)
+        res = overwrite.exec()
+        if res == QDialog.Accepted:
+            dialog = OpenProject(self)
+            res = dialog.exec()
+            if res == QDialog.Accepted:
+                current_project.load_project(dialog.filename)
+
+    def save_project_as(self):
+        dialog = SaveProjectAs(self)
+        res = dialog.exec()
+        if res == QDialog.Accepted:
+            current_project.set_project_name(dialog.folder, dialog.name)
+            current_project.save_project()
+            current_project.save_scene()
+
+    def save_project(self):
+        if not current_project.saved_project_is_open():
+            self.save_project_as()
+        else:
+            current_project.save_scene()
