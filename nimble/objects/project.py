@@ -1,11 +1,13 @@
+import pathlib
 from typing import Dict, Optional
 from PyQt5.QtWidgets import QFileSystemModel
+from PyQt5.QtCore import QDir
 
 from nimble.objects.component import PathLike
 
 
 class ProjectObserver:
-    def project_changed():
+    def project_changed(self):
         pass
 
 
@@ -25,7 +27,9 @@ class Project(QFileSystemModel):
         return self.folder is not None and self.name is not None
 
     def set_folder_and_name(self, folder: PathLike, name: str):
-        self.folder = folder
+        self.setRootPath(QDir.rootPath())
+        self.folder = pathlib.Path(folder) / f"{name}/"
+        self.folder.mkdir(parents=True, exist_ok=True)
         self.name = name
         for observer in self.observers.values():
             observer.project_changed()
