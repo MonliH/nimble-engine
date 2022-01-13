@@ -1,7 +1,9 @@
 import os
+from enum import Enum
 from abc import ABC, abstractmethod
 import itertools
 from typing import Any, Generic, List, TypeVar, Union
+from dataclasses import dataclass
 
 from nimble.objects.model import Model
 
@@ -10,6 +12,23 @@ ComponentId = str
 
 PathLike = Union[str, bytes, os.PathLike]
 T = TypeVar("T")
+
+
+class FileType(Enum):
+    CODE = 1
+
+
+@dataclass
+class FileSlot:
+    file_type: FileType
+
+
+@dataclass
+class ModelSlot:
+    pass
+
+
+SlotType = Union[FileSlot, ModelSlot]
 
 
 class ComponentSlot(ABC, Generic[T]):
@@ -25,8 +44,14 @@ class ComponentSlot(ABC, Generic[T]):
     def get_value(self) -> T:
         pass
 
+    @abstractmethod
+    def slot_type(self) -> SlotType:
+        pass
+
 
 class ScriptSlot(ComponentSlot[PathLike]):
+    ty = FileSlot(file_type=FileType.CODE)
+
     def __init__(self):
         self.filename: PathLike = ""
 
@@ -41,6 +66,9 @@ class ScriptSlot(ComponentSlot[PathLike]):
 
     def get_value(self) -> PathLike:
         return self.filename
+
+    def slot_type(self) -> SlotType:
+        return self.ty
 
 
 class Component:

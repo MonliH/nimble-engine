@@ -48,17 +48,20 @@ class Scene(InputObserver, QAbstractListModel):
 
     def set_active(self, idx: int):
         old_obj = self.get_active()
-        if old_obj is not None:
-            old_obj.remove_all_observers()
+        new_obj = self.get_obj_from_idx(idx)
 
-        self.active_idx = idx
-        active = self.get_active()
+        if old_obj is not new_obj:
+            if old_obj is not None:
+                old_obj.remove_all_observers()
 
-        if active is not None:
-            active.set_all_observers(self.active_obj_observers)
+            self.active_idx = idx
+            active = self.get_active()
 
-        for observer in self.observers:
-            observer.select_changed(self.active_idx, active)
+            if active is not None:
+                active.set_all_observers(self.active_obj_observers)
+
+            for observer in self.observers:
+                observer.select_changed(self.active_idx, active)
 
     @property
     def active(self) -> Optional[str]:

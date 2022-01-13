@@ -1,17 +1,18 @@
 import math
 from typing import List, Optional, Tuple, cast
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QComboBox,
     QDoubleSpinBox,
     QLabel,
-    QLayoutItem,
     QLineEdit,
     QListWidget,
+    QListWidgetItem,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
-    QWidgetItem,
 )
 from pyrr.objects.vector3 import Vector3
 
@@ -31,6 +32,7 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         load_ui(":/ui/entity_inspector.ui", self)
 
         self.object_name_title = cast(QLabel, self.object_name_title)
+        self.object_name_title.setMargin(10)
         self.object_name_input = cast(QLineEdit, self.object_name_input)
         self.entity_info = cast(QWidget, self.entity_info)
 
@@ -76,7 +78,9 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         self.add_component.setEnabled(False)
         self.add_component.clicked.connect(self.add_component_clicked)
 
-        self.components_list = cast(QListWidget, self.components_list)
+        self.components_list = cast(QVBoxLayout, self.components_list)
+        self.scroll_area = cast(QScrollArea, self.scroll_area)
+        self.scroll_area.setFrameShape(QAbstractItemView.NoFrame)
 
     def component_changed(self, idx: int):
         if self.components_types_list[idx] is None:
@@ -85,7 +89,10 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.add_component.setEnabled(True)
 
     def add_component_to_list(self, idx: int, component: Component):
-        self.components_list.insertItem(idx, component.display_name)
+        self.components_list.insertWidget(idx, ComponentWidget(component, self))
+
+    def remove_component(self, idx: int):
+        self.components_list.itemAt(idx).widget().setParent(None)
 
     def add_component_clicked(self):
         ComponentCons = self.components_types_list[self.component_type.currentIndex()]
@@ -97,7 +104,8 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.active = obj
             self.active_idx = idx
 
-            self.components_list.clear()
+            for i in reversed(range(self.components_list.count())):
+                self.components_list.itemAt(i).widget().setParent(None)
 
             if self.active is not None:
                 for component in self.active.components:
@@ -105,8 +113,8 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
 
             self.update_view()
 
-    def component_removed(self, _obj: Model, _component_id: int) -> None:
-        pass
+    def component_removed(self, _obj: Model, component_id: int) -> None:
+        self.remove_component(component_id)
 
     def component_added(self, obj: Model, component_id: int) -> None:
         self.add_component_to_list(-1, obj.components[component_id])

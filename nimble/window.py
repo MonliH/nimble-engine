@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Optional, cast
 from PyQt5.QtGui import QFont, QFontDatabase
 import moderngl_window as mglw
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
@@ -8,7 +8,9 @@ from PyQtAds.QtAds import ads
 from nimble.common.resources import load_ui
 
 from nimble.interface.entity_inspector import EntityInspector
+from nimble.interface.file_explorer import FileExplorer
 from nimble.interface.outline import OutlineWidget
+from nimble.interface.project_ui import SaveProjectAs
 
 from nimble.interface.viewport import ViewportWidget
 
@@ -29,6 +31,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Nimble Engine")
 
         load_ui(":/ui/main_window.ui", self)
+        self.actionNew.triggered.connect(self.new_project)
 
         self.dock_manager = ads.CDockManager(self)
 
@@ -50,6 +53,13 @@ class MainWindow(QMainWindow):
         self.entity = EntityInspector()
         self.entity_dock.setWidget(self.entity)
 
+        self.file_explorer_dock = ads.CDockWidget("File Explorer")
+        self.file_explorer = FileExplorer()
+        self.file_explorer_dock.setWidget(self.file_explorer)
+        self.dock_manager.addDockWidget(
+            ads.RightDockWidgetArea, self.file_explorer_dock
+        )
+
         self.last_mouse_button = None
 
         self.shift = False
@@ -65,6 +75,7 @@ class MainWindow(QMainWindow):
         self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
         self.menuWindow.addAction(self.outline_dock.toggleViewAction())
         self.menuWindow.addAction(self.entity_dock.toggleViewAction())
+        self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
 
         self.restore_perspectives()
 
@@ -95,3 +106,7 @@ class MainWindow(QMainWindow):
         settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
         self.dock_manager.loadPerspectives(settings)
         self.dock_manager.openPerspective("default")
+
+    def new_project(self):
+        dialog = SaveProjectAs(self, new_project=True)
+        dialog.exec()

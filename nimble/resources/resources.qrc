@@ -3,6 +3,8 @@
     <file alias="main_window.ui">ui/main_window.ui</file>
     <file alias="entity_inspector.ui">ui/entity_inspector.ui</file>
     <file alias="component.ui">ui/component.ui</file>
+    <file alias="file_explorer.ui">ui/file_explorer.ui</file>
+    <file alias="save_project_as.ui">ui/save_project_as.ui</file>
   </qresource>
   <qresource prefix="fonts">
     <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>
