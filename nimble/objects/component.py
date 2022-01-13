@@ -2,8 +2,9 @@ import os
 from enum import Enum
 from abc import ABC, abstractmethod
 import itertools
-from typing import Any, Generic, List, TypeVar, Union
+from typing import Any, Generic, List, Optional, TypeVar, Union
 from dataclasses import dataclass
+from pathlib import Path
 
 from nimble.objects.model import Model
 
@@ -45,6 +46,10 @@ class ComponentSlot(ABC, Generic[T]):
         pass
 
     @abstractmethod
+    def get_jsonable(self) -> Any:
+        pass
+
+    @abstractmethod
     def slot_type(self) -> SlotType:
         pass
 
@@ -52,17 +57,20 @@ class ComponentSlot(ABC, Generic[T]):
 class ScriptSlot(ComponentSlot[PathLike]):
     ty = FileSlot(file_type=FileType.CODE)
 
-    def __init__(self):
-        self.filename: PathLike = ""
+    def __init__(self, filename: PathLike = ""):
+        self.filename: PathLike = Path(filename)
 
     def validate(self, value: Any) -> bool:
         return isinstance(value, PathLike)
 
     def insert_in_slot(self, value: PathLike) -> bool:
-        if isinstance(value, PathLike):
-            self.filename = value
+        if isinstance(value, (str, bytes, os.PathLike)):
+            self.filename = Path(value)
             return True
         return False
+
+    def get_jsonable(self) -> Any:
+        return str(self.filename)
 
     def get_value(self) -> PathLike:
         return self.filename
@@ -72,7 +80,12 @@ class ScriptSlot(ComponentSlot[PathLike]):
 
 
 class Component:
-    def __init__(self, model: Model):
+    def __init__(
+        self,
+        _model: Model,
+        _id: Optional[int] = None,
+        slot_params: Optional[List[Any]] = None,
+    ):
         raise NotImplementedError("Component.__init__ not implemented")
 
     def update(self):
@@ -94,11 +107,16 @@ class Component:
 class CustomComponent(Component):
     _unique_id = itertools.count()
 
-    def __init__(self, model: Model):
+    def __init__(
+        self,
+        model: Model,
+        _id: Optional[int] = None,
+        slot_params: Optional[List[Any]] = None,
+    ):
         self.model = model
-        self._id = next(self._unique_id)
+        self._id = next(self._unique_id) if _id is None else _id
 
-        self.script_slot = ScriptSlot()
+        self.script_slot = ScriptSlot("" if slot_params is None else slot_params[0])
 
     display_name = "Custom Script"
 

@@ -11,7 +11,7 @@ from pyrr import Matrix44
 
 class Grid(Model):
     def __init__(self, grid_size, ctx):
-        super().__init__(Material(Shaders()["grid"], pass_model_matrix=False))
+        super().__init__(Material("grid", pass_model_matrix=False))
         self.grid_size = grid_size
         self.shader = self.material.shader
 

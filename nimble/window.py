@@ -1,11 +1,13 @@
 from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
+import json
 import moderngl_window as mglw
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog
 from PyQt5.QtCore import QSettings, Qt
 from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
 from nimble.common.resources import load_ui
+from nimble.common.serialize import serialize_scene, unserialize_scene
 
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
@@ -13,6 +15,7 @@ from nimble.interface.outline import OutlineWidget
 from nimble.interface.project_ui import OverwriteWarning, SaveProjectAs
 
 from nimble.interface.viewport import ViewportWidget
+from nimble.objects.component import CustomComponent
 
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cube, Plane
@@ -86,9 +89,10 @@ class MainWindow(QMainWindow, ProjectObserver):
 
     def init_viewport(self):
         material = self.viewport.manager.viewport_material
-        current_project.scene.add_obj(
-            Model(material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0)))
+        cube = Model(
+            material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0))
         )
+        current_project.scene.add_obj(cube)
         current_project.scene.add_obj(
             Model(
                 material,
@@ -119,4 +123,4 @@ class MainWindow(QMainWindow, ProjectObserver):
             dialog = SaveProjectAs(self, new_project=True)
             res = dialog.exec()
             if res == QDialog.Accepted:
-                current_project.set_folder_and_name(dialog.folder, dialog.name)
+                current_project.new_project(dialog.folder, dialog.name)

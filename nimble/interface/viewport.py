@@ -55,7 +55,7 @@ class Viewport(InputObserver, WindowObserver):
         self.scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
-        self.viewport_material = Material(Shaders()["viewport"])
+        self.viewport_material = Material("viewport")
 
     def render(self, screen: mgl.Framebuffer):
         mglw.activate_context(ctx=self.ctx)

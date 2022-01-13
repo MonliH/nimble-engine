@@ -42,6 +42,7 @@ class Model:
         rotation: Optional[Vector3] = None,
         position: Optional[Vector3] = None,
         scale: Optional[Vector3] = None,
+        components: Optional[List[Component]] = None,
     ):
         if not isinstance(material, Material):
             raise TypeError("`material` must be of type Material")
@@ -79,6 +80,8 @@ class Model:
         self.observers: Dict[str, ModelObserver] = {}
 
         self.components: List[Component] = []
+        if components is not None:
+            self.components.extend(components)
 
     def add_component(self, component: Component) -> int:
         insert_idx = len(self.components)

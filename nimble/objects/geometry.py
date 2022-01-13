@@ -42,6 +42,7 @@ class Cube(Geometry):
             kwargs["size"] = (1, 1, 1)
 
         size = kwargs["size"]
+        self.kwargs = kwargs
 
         super().__init__(
             mglw.geometry.cube(**kwargs),
@@ -58,6 +59,7 @@ class Sphere(Geometry):
             kwargs["radius"] = 0.5
 
         radius = kwargs["radius"]
+        self.kwargs = kwargs
 
         super().__init__(
             mglw.geometry.sphere(**kwargs),
@@ -84,7 +86,13 @@ class Sphere(Geometry):
 
 class Ray(Geometry):
     def __init__(self, start: Vector3, ray: Vector3):
+        if not isinstance(start, Vector3):
+            start = Vector3(start)
+        if not isinstance(ray, Vector3):
+            ray = Vector3(ray)
+
         self.ray = ray
+        self.kwargs = {"start": start, "ray": ray}
         vao = VAO()
         vao.buffer(
             np.array([start, start + ray]),
@@ -106,6 +114,17 @@ class Cylinder(Geometry):
         theta_length: float = 2 * pi,
         height_offset: float = 0.0,
     ):
+        self.kwargs = {
+            "radial_segments": radial_segments,
+            "height_segments": height_segments,
+            "height": height,
+            "radius_top": radius_top,
+            "radius_bottom": radius_bottom,
+            "theta_start": theta_start,
+            "theta_length": theta_length,
+            "height_offset": height_offset,
+        }
+
         half_height = height / 2
 
         slope = (radius_bottom - radius_top) / height
@@ -224,6 +243,8 @@ class Cylinder(Geometry):
 
 class Plane(Geometry):
     def __init__(self):
+        self.kwargs = {}
+
         vao = VAO()
         # fmt: off
         verticies = np.array([

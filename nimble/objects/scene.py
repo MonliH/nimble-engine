@@ -1,8 +1,8 @@
-from abc import ABC
-from typing import Any, List, Optional, Dict, Tuple, Union
+from __future__ import annotations
+from typing import Any, List, Optional, Dict, Tuple
 from PyQt5 import QtCore
 
-from PyQt5.QtCore import QAbstractItemModel, QAbstractListModel, QModelIndex, Qt
+from PyQt5.QtCore import QAbstractListModel, Qt
 from PyQt5 import QtGui
 
 from moderngl.framebuffer import Framebuffer
@@ -12,7 +12,6 @@ from nimble.common.event_listener import InputObserver
 from nimble.common.models.size import Size
 from nimble.objects.geometry import Ray
 from nimble.objects.model import Model, ModelObserver
-from nimble.interface.orbit_camera import OrbitCamera
 import nimble.common.models.ray_cast as ray_cast
 
 
@@ -36,6 +35,20 @@ class Scene(InputObserver, QAbstractListModel):
 
         self.observers: List[SceneObserver] = []
         self.active_obj_observers: Dict[str, ModelObserver] = {}
+
+    def replace(self, new_model: Scene):
+        for observer in self.observers:
+            for i in self.objects:
+                observer.obj_deleted(i)
+
+        self.objects = new_model.objects
+        self.objects_list = new_model.objects_list
+        self.active_idx = new_model.active_idx
+
+        self.emit_changed(0, len(self.objects_list))
+
+        for observer in self.observers:
+            observer.select_changed(self.active_idx, self.get_active())
 
     def register_observer(self, observer: SceneObserver):
         self.observers.append(observer)

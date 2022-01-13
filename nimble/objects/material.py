@@ -11,13 +11,20 @@ from nimble.objects.geometry import Geometry
 class Material:
     def __init__(
         self,
-        shader: Program,
+        shader: str,
         pass_mvp: bool = False,
         draw_wireframe: bool = False,
         draw_bounding_box: bool = False,
         pass_model_matrix: bool = True,
     ):
-        self.shader = shader
+        self.shader = Shaders()[shader]
+        self.shader_name = shader
+        self.params = {
+            "pass_mvp": pass_mvp,
+            "draw_wireframe": draw_wireframe,
+            "draw_bounding_box": draw_bounding_box,
+            "pass_model_matrix": pass_model_matrix,
+        }
 
         self.wireframe = draw_wireframe
         self.wireframe_shader = Shaders()["constant_color"]

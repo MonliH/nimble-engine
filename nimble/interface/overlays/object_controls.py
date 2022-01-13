@@ -18,7 +18,7 @@ class Arrow:
     def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
-        material = Material(Shaders()["constant_color"], pass_mvp=True)
+        material = Material("constant_color", pass_mvp=True)
         self.axis_shader = material.shader
 
         line_height = 0.5
@@ -123,7 +123,6 @@ class TransformTools(SceneObserver, ModelObserver):
     def set_active(self, active: Optional[Model]):
         if active is not None:
             self.active = active
-            self.update_position(active.position)
             normal = self.camera.position - self.active.position
             self.plane = (normal, self.active.position)
 

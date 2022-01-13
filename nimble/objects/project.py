@@ -2,6 +2,8 @@ import pathlib
 from typing import Dict, Optional
 from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QDir
+import json
+from nimble.common.serialize import serialize_scene
 
 from nimble.objects.component import PathLike
 from nimble.objects.scene import Scene
@@ -25,23 +27,54 @@ class Project(QFileSystemModel):
         self.observers: Dict[str, ProjectObserver] = {}
         self._scene = Scene()
 
+    @staticmethod
+    def get_scene_file(folder: PathLike) -> pathlib.Path:
+        return folder / "scene.nimscn"
+
+    @staticmethod
+    def get_project_file(folder: PathLike) -> pathlib.Path:
+        return folder / "project.nimproj"
+
     @property
     def scene(self):
         return self._scene
 
-    def project_is_saved(self) -> bool:
+    def saved_project_is_open(self) -> bool:
         return self.folder is not None and self.name is not None
 
-    def set_folder_and_name(self, folder: PathLike, name: str):
+    def save_scene(self):
+        scene_dict = serialize_scene(current_project.scene)
+        print(scene_dict)
+        json.dump(self.scene, open(self.get_scene_file(self.folder), "wb"))
+
+    def _load_scene(self, filename: PathLike):
+        scene_dict = json.load(open(filename, "rb"))
+        # self._scene.replace(scene)
+
+    def save_project(self):
+        json.dump({"name": self.name}, open(self.get_project_file(self.folder), "w"))
+
+    def _load_project(self, filename: PathLike):
+        proj_info = json.load(open(filename, "r"))
+        self.name = proj_info["name"]
+
+    def load_project(self, folder: PathLike):
+        self.folder = folder
+        self._load_scene(self.get_scene_file(folder))
+        self._load_project(self.get_project_file(folder))
+
+    def new_project(self, folder: PathLike, name: str):
         self.setRootPath(QDir.rootPath())
         self.folder = pathlib.Path(folder) / f"{name}/"
         self.folder.mkdir(parents=True, exist_ok=True)
         self.name = name
+        self.save_project()
+        self.save_scene()
         for observer in self.observers.values():
             observer.project_changed()
 
     def get_project_display_name(self) -> str:
-        if self.project_is_saved():
+        if self.saved_project_is_open():
             return f"{self.name} - {self.folder}"
         else:
             return "Untitled Project"
