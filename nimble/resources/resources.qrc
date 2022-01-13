@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="ui">
+    <file alias="main_window.ui">ui/main_window.ui</file>
+    <file alias="entity_inspector.ui">ui/entity_inspector.ui</file>
+    <file alias="component.ui">ui/component.ui</file>
+  </qresource>
+  <qresource prefix="fonts">
+    <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>
+  </qresource>
+</RCC>

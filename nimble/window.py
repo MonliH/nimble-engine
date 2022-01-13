@@ -1,18 +1,16 @@
 from typing import cast
-from PyQt5 import uic
+from PyQt5.QtGui import QFont, QFontDatabase
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QAction, QMainWindow, QMenu, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
 from PyQt5.QtCore import QSettings, Qt
 from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
-from nimble.common.resources import ui_file
+from nimble.common.resources import load_ui
 
-from nimble.common.shader_manager import Shaders
-from nimble.interface.entity_inspector import ModelWidget
+from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.outline import OutlineWidget
 
 from nimble.interface.viewport import ViewportWidget
-from nimble.objects.material import Material
 
 from nimble.objects.scene import active_scene
 from nimble.objects.model import Model
@@ -22,11 +20,15 @@ from nimble.objects.geometry import Cube, Plane
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        font_id = QFontDatabase().addApplicationFont(":/fonts/OpenSans-Regular.ttf")
+        family = QFontDatabase().applicationFontFamilies(font_id)[0]
+        QApplication.setFont(QFont(family))
+
         self.setWindowState(Qt.WindowMaximized)
         self.show()
         self.setWindowTitle("Nimble Engine")
 
-        uic.loadUi(ui_file("main_window.ui"), self)
+        load_ui(":/ui/main_window.ui", self)
 
         self.dock_manager = ads.CDockManager(self)
 
@@ -45,7 +47,7 @@ class MainWindow(QMainWindow):
 
         self.entity_dock = ads.CDockWidget("Entity Inspector")
         self.dock_manager.addDockWidget(ads.RightDockWidgetArea, self.entity_dock)
-        self.entity = ModelWidget()
+        self.entity = EntityInspector()
         self.entity_dock.setWidget(self.entity)
 
         self.last_mouse_button = None

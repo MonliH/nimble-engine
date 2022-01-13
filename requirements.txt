@@ -3,3 +3,4 @@ numpy==1.21.4
 moderngl==5.6.4
 moderngl_window==2.4.0
 pyrr==0.10.3
+qscintilla==2.13.1

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>382</width>
-    <height>388</height>
+    <height>428</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,11 +33,35 @@
        <widget class="QLineEdit" name="object_name_input"/>
       </item>
       <item>
+       <spacer name="verticalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>5</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="position_group">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QLabel" name="label_x">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>X Position</string>
             </property>
@@ -62,6 +86,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Y Position</string>
             </property>
@@ -86,6 +118,14 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Z Position</string>
             </property>
@@ -114,6 +154,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QLabel" name="label_x_2">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>X Rotation</string>
             </property>
@@ -138,6 +186,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
            <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Y Rotation</string>
             </property>
@@ -162,6 +218,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
            <widget class="QLabel" name="label_4">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Z Rotation</string>
             </property>
@@ -190,6 +254,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
            <widget class="QLabel" name="label_x_3">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>X Scale</string>
             </property>
@@ -214,6 +286,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
            <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Y Scale</string>
             </property>
@@ -238,6 +318,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
            <widget class="QLabel" name="label_6">
+            <property name="font">
+             <font>
+              <family>Open Sans</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Z Scale</string>
             </property>
@@ -261,6 +349,22 @@
        </layout>
       </item>
       <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="component_label">
         <property name="font">
          <font>
@@ -271,6 +375,16 @@
         </property>
         <property name="text">
          <string>Components</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListWidget" name="components_list"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="new_component_label">
+        <property name="text">
+         <string>Add a component</string>
         </property>
        </widget>
       </item>
@@ -291,6 +405,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="add_component">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>Add Component</string>
           </property>
@@ -316,6 +433,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

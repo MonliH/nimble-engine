@@ -12,6 +12,7 @@ class OutlineWidget(QListView, SceneObserver):
         self.setModel(active_scene)
         self.selection_model = self.selectionModel()
         self.selection_model.selectionChanged.connect(self.on_selection_changed)
+        self.setAlternatingRowColors(True)
         active_scene.register_observer(self)
 
     @pyqtSlot(QItemSelection, QItemSelection)

@@ -1,16 +1,19 @@
 from __future__ import annotations
 import numpy as np
-from typing import Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional
 import moderngl_window as mglw
 import moderngl as mgl
 from pyrr import Matrix44, Vector3
-from moderngl.program import Program
 
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
 from nimble.objects.material import Material
 from .geometry import Geometry
 from nimble.common.shader_manager import Shaders
+from nimble.utils import custom_index
+
+if TYPE_CHECKING:
+    from .component import Component, ComponentId
 
 
 class ModelObserver:
@@ -21,6 +24,12 @@ class ModelObserver:
         pass
 
     def rotation_changed(self, obj: Model) -> None:
+        pass
+
+    def component_added(self, obj: Model, component_id: int) -> None:
+        pass
+
+    def component_removed(self, obj: Model, component_id: int) -> None:
         pass
 
 
@@ -68,6 +77,23 @@ class Model:
         self.transform_changed()
 
         self.observers: Dict[str, ModelObserver] = {}
+
+        self.components: List[Component] = []
+
+    def add_component(self, component: Component) -> int:
+        insert_idx = len(self.components)
+        self.components.append(component)
+        for observer in self.observers.values():
+            observer.component_added(self, insert_idx)
+        return insert_idx
+
+    def remove_component(self, component_id: ComponentId):
+        idx = custom_index(self.components, lambda c: c.id == component_id)
+
+        del self.components[idx]
+
+        for observer in self.observers.values():
+            observer.component_removed(self, idx)
 
     def set_name(self, new_name: str):
         self.name = new_name

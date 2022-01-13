@@ -2,26 +2,34 @@ import math
 from typing import List, Optional, Tuple, cast
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (
+    QComboBox,
     QDoubleSpinBox,
     QLabel,
+    QLayoutItem,
     QLineEdit,
+    QListWidget,
+    QPushButton,
+    QVBoxLayout,
     QWidget,
+    QWidgetItem,
 )
-from PyQt5 import uic
 from pyrr.objects.vector3 import Vector3
 
-from nimble.common.resources import ui_file
+from nimble.common.resources import load_ui
+from nimble.interface.component_widget import ComponentWidget
+from nimble.objects.component import Component, CustomComponent
 from nimble.objects.model import Model, ModelObserver
 from nimble.objects.scene import SceneObserver
 from nimble.objects.scene import active_scene
 
 
-class ModelWidget(QWidget, SceneObserver, ModelObserver):
+class EntityInspector(QWidget, SceneObserver, ModelObserver):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.active = None
 
-        uic.loadUi(ui_file("entity_inspector.ui"), self)
+        load_ui(":/ui/entity_inspector.ui", self)
+
         self.object_name_title = cast(QLabel, self.object_name_title)
         self.object_name_input = cast(QLineEdit, self.object_name_input)
         self.entity_info = cast(QWidget, self.entity_info)
@@ -56,11 +64,52 @@ class ModelWidget(QWidget, SceneObserver, ModelObserver):
         active_scene.register_observer(self)
         active_scene.register_active_obj_observer(self, "entity_inspector")
 
+        self.component_type = cast(QComboBox, self.component_type)
+        self.components_types_list = [None, CustomComponent]
+        self.component_type.addItem("")
+        for component in self.components_types_list[1:]:
+            self.component_type.addItem(component.display_name)
+
+        self.component_type.currentIndexChanged.connect(self.component_changed)
+
+        self.add_component = cast(QPushButton, self.add_component)
+        self.add_component.setEnabled(False)
+        self.add_component.clicked.connect(self.add_component_clicked)
+
+        self.components_list = cast(QListWidget, self.components_list)
+
+    def component_changed(self, idx: int):
+        if self.components_types_list[idx] is None:
+            self.add_component.setEnabled(False)
+        else:
+            self.add_component.setEnabled(True)
+
+    def add_component_to_list(self, idx: int, component: Component):
+        self.components_list.insertItem(idx, component.display_name)
+
+    def add_component_clicked(self):
+        ComponentCons = self.components_types_list[self.component_type.currentIndex()]
+        if ComponentCons is not None:
+            self.active.add_component(ComponentCons(self.active))
+
     def select_changed(self, idx: int, obj: Optional[Model]) -> None:
         if obj is not self.active:
             self.active = obj
             self.active_idx = idx
+
+            self.components_list.clear()
+
+            if self.active is not None:
+                for component in self.active.components:
+                    self.add_component_to_list(-1, component)
+
             self.update_view()
+
+    def component_removed(self, _obj: Model, _component_id: int) -> None:
+        pass
+
+    def component_added(self, obj: Model, component_id: int) -> None:
+        self.add_component_to_list(-1, obj.components[component_id])
 
     def minimumSizeHint(self) -> QSize:
         return QSize(10, 100)
