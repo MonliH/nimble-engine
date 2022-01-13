@@ -19,7 +19,9 @@ class SaveProjectAs(QDialog):
         self.browse_file.clicked.connect(self.browse_file_path)
         self.filename_editor.textChanged.connect(self.check_line)
         self.project_name.textChanged.connect(self.check_line)
+        self.cancel.clicked.connect(self.reject)
         self.create.clicked.connect(self.created)
+
         self.create.setEnabled(False)
 
         self.folder = None

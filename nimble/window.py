@@ -119,4 +119,5 @@ class MainWindow(QMainWindow, ProjectObserver):
         if res == QDialog.Accepted:
             dialog = SaveProjectAs(self, new_project=True)
             dialog.exec()
-            current_project.set_folder_and_name(dialog.folder, dialog.name)
+            if dialog == QDialog.Accepted:
+                current_project.set_folder_and_name(dialog.folder, dialog.name)
