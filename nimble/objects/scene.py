@@ -191,6 +191,3 @@ class Scene(InputObserver, QAbstractListModel):
         self, section: int, orientation: QtCore.Qt.Orientation, role: int
     ) -> Any:
         return "Object Name"
-
-
-active_scene = Scene()

@@ -1,14 +1,12 @@
 import math
 from typing import List, Optional, Tuple, cast
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QComboBox,
     QDoubleSpinBox,
     QLabel,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
     QPushButton,
     QScrollArea,
     QVBoxLayout,
@@ -21,7 +19,7 @@ from nimble.interface.component_widget import ComponentWidget
 from nimble.objects.component import Component, CustomComponent
 from nimble.objects.model import Model, ModelObserver
 from nimble.objects.scene import SceneObserver
-from nimble.objects.scene import active_scene
+from nimble.objects.project import current_project
 
 
 class EntityInspector(QWidget, SceneObserver, ModelObserver):
@@ -63,8 +61,8 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         self.update_view()
         self.object_name_input.textChanged.connect(self.rename_object)
 
-        active_scene.register_observer(self)
-        active_scene.register_active_obj_observer(self, "entity_inspector")
+        current_project.scene.register_observer(self)
+        current_project.scene.register_active_obj_observer(self, "entity_inspector")
 
         self.component_type = cast(QComboBox, self.component_type)
         self.components_types_list = [None, CustomComponent]
@@ -141,7 +139,7 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
 
     def rename_object(self, new_name: str):
         if self.active is not None:
-            active_scene.rename_obj(self.active_idx, new_name)
+            current_project.scene.rename_obj(self.active_idx, new_name)
             self.object_name_input.setText(new_name)
 
     def translation_changed(self, obj: Model) -> None:

@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QDir
 
 from nimble.objects.component import PathLike
+from nimble.objects.scene import Scene
 
 
 class ProjectObserver:
@@ -22,6 +23,11 @@ class Project(QFileSystemModel):
         self.folder = project_folder
 
         self.observers: Dict[str, ProjectObserver] = {}
+        self._scene = Scene()
+
+    @property
+    def scene(self):
+        return self._scene
 
     def project_is_saved(self) -> bool:
         return self.folder is not None and self.name is not None

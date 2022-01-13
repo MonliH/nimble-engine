@@ -17,7 +17,8 @@ from nimble.interface.orbit_camera import OrbitCamera
 from nimble.objects.geometry import Cube, Cylinder, Geometry, Plane, Sphere
 from nimble.objects.material import Material
 from nimble.objects.model import Model
-from nimble.objects.scene import Scene, active_scene
+from nimble.objects.scene import Scene
+from nimble.objects.project import current_project
 from nimble.interface.overlays.grid import Grid
 from nimble.interface.overlays.object_controls import Axis, TransformTools
 
@@ -51,7 +52,7 @@ class Viewport(InputObserver, WindowObserver):
         axis_rel_scale = 0.7
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
         self.active_tools = TransformTools(axis_rel_scale, self.camera)
-        active_scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
+        self.scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
         self.viewport_material = Material(Shaders()["viewport"])
@@ -274,7 +275,9 @@ class ViewportWidget(QOpenGLWidget):
         self.open_context = None
         self.last_mouse_button = Qt.NoButton
 
-        self.manager = Viewport(active_scene, self.width(), self.height(), self)
+        self.manager = Viewport(
+            current_project.scene, self.width(), self.height(), self
+        )
 
     def initializeGL(self):
         self.ctx = mgl.create_context(require=430)

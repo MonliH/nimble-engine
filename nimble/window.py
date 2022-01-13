@@ -14,7 +14,6 @@ from nimble.interface.project_ui import OverwriteWarning, SaveProjectAs
 
 from nimble.interface.viewport import ViewportWidget
 
-from nimble.objects.scene import active_scene
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cube, Plane
 from nimble.objects.project import ProjectObserver, current_project
@@ -87,10 +86,10 @@ class MainWindow(QMainWindow, ProjectObserver):
 
     def init_viewport(self):
         material = self.viewport.manager.viewport_material
-        active_scene.add_obj(
+        current_project.scene.add_obj(
             Model(material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0)))
         )
-        active_scene.add_obj(
+        current_project.scene.add_obj(
             Model(
                 material,
                 geometry=Plane(),
@@ -118,6 +117,6 @@ class MainWindow(QMainWindow, ProjectObserver):
         res = overwrite.exec()
         if res == QDialog.Accepted:
             dialog = SaveProjectAs(self, new_project=True)
-            dialog.exec()
-            if dialog == QDialog.Accepted:
+            res = dialog.exec()
+            if res == QDialog.Accepted:
                 current_project.set_folder_and_name(dialog.folder, dialog.name)
