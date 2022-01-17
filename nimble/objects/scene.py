@@ -7,10 +7,13 @@ from PyQt5 import QtGui
 
 from moderngl.framebuffer import Framebuffer
 from moderngl_window.scene.camera import Camera
+from pyrr import Vector3
 
 from nimble.common.event_listener import InputObserver
 from nimble.common.models.size import Size
-from nimble.objects.geometry import Ray
+from nimble.common.shader_manager import Shaders
+from nimble.objects.geometry import Cube, Plane, Ray
+from nimble.objects.material import Material
 from nimble.objects.model import Model, ModelObserver
 import nimble.common.models.ray_cast as ray_cast
 
@@ -35,6 +38,25 @@ class Scene(InputObserver, QAbstractListModel):
 
         self.observers: List[SceneObserver] = []
         self.active_obj_observers: Dict[str, ModelObserver] = {}
+
+    @classmethod
+    def default_scene(cls):
+        scene = cls()
+        material = Material("viewport")
+        cube = Model(
+            material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0))
+        )
+        scene.add_obj(cube)
+        scene.add_obj(
+            Model(
+                material,
+                geometry=Plane(),
+                name="Plane",
+                scale=Vector3((3, 1, 3)),
+                position=Vector3((0, -0.001, 0)),
+            )
+        )
+        return scene
 
     def replace(self, new_model: Scene):
         for observer in self.observers:

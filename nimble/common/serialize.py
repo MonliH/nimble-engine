@@ -101,7 +101,6 @@ def unserialize_component(data: Any, model: Model) -> Component:
         data["class_name"],
     )
 
-    print(component_class)
     c = component_class(
         model=model,
         _id=data["component_id"],

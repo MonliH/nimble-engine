@@ -67,8 +67,12 @@ class Project(QFileSystemModel):
         for observer in self.observers.values():
             observer.project_changed()
 
+        for observer in self.scene.observers:
+            observer.select_changed(self.scene.active_idx, self.scene.get_active())
+
     def set_project_name(self, folder: PathLike, name: str):
         self.folder = pathlib.Path(folder) / f"{name}/"
+        self.folder.mkdir(parents=True, exist_ok=True)
         self.name = name
         for observer in self.observers.values():
             observer.project_changed()
@@ -78,6 +82,7 @@ class Project(QFileSystemModel):
         self.folder = pathlib.Path(folder) / f"{name}/"
         self.folder.mkdir(parents=True, exist_ok=True)
         self.name = name
+        self._scene.replace(Scene.default_scene())
         self.save_project()
         self.save_scene()
         for observer in self.observers.values():

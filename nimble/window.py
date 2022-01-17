@@ -20,6 +20,7 @@ from nimble.objects.component import CustomComponent
 from nimble.objects.model import Model
 from nimble.objects.geometry import Cube, Plane
 from nimble.objects.project import ProjectObserver, current_project
+from nimble.objects.scene import Scene
 
 
 class MainWindow(QMainWindow, ProjectObserver):
@@ -91,20 +92,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.setWindowTitle(current_project.get_project_display_name())
 
     def init_viewport(self):
-        material = self.viewport.manager.viewport_material
-        cube = Model(
-            material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0))
-        )
-        current_project.scene.add_obj(cube)
-        current_project.scene.add_obj(
-            Model(
-                material,
-                geometry=Plane(),
-                name="Plane",
-                scale=Vector3((3, 1, 3)),
-                position=Vector3((0, -0.001, 0)),
-            )
-        )
+        current_project.scene.replace(Scene.default_scene())
 
     def closeEvent(self, event):
         event.accept()

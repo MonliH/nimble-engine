@@ -9,6 +9,7 @@ from nimble.objects.project import ProjectObserver, current_project
 
 class FileExplorer(QWidget, ProjectObserver):
     def project_changed(self):
+        print(current_project.folder)
         self.files.setRootIndex(current_project.index(str(current_project.folder)))
 
     def __init__(self, parent: Optional[QWidget] = None):

@@ -6,6 +6,7 @@ from nimble.objects.material import Material
 
 from nimble.objects.model import Model, ModelObserver
 from nimble.objects.geometry import Cylinder, Ray
+from nimble.objects.project import ProjectObserver
 from nimble.objects.scene import Scene, SceneObserver
 import nimble.common.models.bounding_box as bounding_box
 import nimble.common.models.ray_cast as ray_cast
@@ -94,8 +95,10 @@ class TransformTools(SceneObserver, ModelObserver):
         self.plane = None
         self.camera = camera
 
-    def select_changed(self, idx: int, object: Model) -> None:
-        self.set_active(object)
+    def select_changed(self, idx: int, obj: Model) -> None:
+        self.set_active(obj)
+        if obj is not None:
+            self.translation_changed(obj)
 
     def render(self):
         self.x.render(self.camera)
