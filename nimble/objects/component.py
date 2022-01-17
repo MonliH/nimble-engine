@@ -11,7 +11,6 @@ from nimble.objects.model import Model
 
 ComponentId = str
 
-PathLike = Union[str, bytes, os.PathLike]
 T = TypeVar("T")
 
 
@@ -30,6 +29,15 @@ class ModelSlot:
 
 
 SlotType = Union[FileSlot, ModelSlot]
+
+
+def display_slot_type(slot_type: SlotType) -> str:
+    if isinstance(slot_type, FileSlot):
+        return "File"
+    elif isinstance(slot_type, ModelSlot):
+        return "Model"
+    else:
+        raise ValueError(f"Unknown slot type: {slot_type}")
 
 
 class ComponentSlot(ABC, Generic[T]):
@@ -54,17 +62,17 @@ class ComponentSlot(ABC, Generic[T]):
         pass
 
 
-class ScriptSlot(ComponentSlot[PathLike]):
+class ScriptSlot(ComponentSlot[Path]):
     ty = FileSlot(file_type=FileType.CODE)
 
-    def __init__(self, filename: PathLike = ""):
-        self.filename: PathLike = Path(filename)
+    def __init__(self, filename: Path = ""):
+        self.filename: Path = Path(filename)
 
     def validate(self, value: Any) -> bool:
-        return isinstance(value, PathLike)
+        return isinstance(value, Path)
 
-    def insert_in_slot(self, value: PathLike) -> bool:
-        if isinstance(value, (str, bytes, os.PathLike)):
+    def insert_in_slot(self, value: Any) -> bool:
+        if isinstance(value, (Path)):
             self.filename = Path(value)
             return True
         return False
@@ -72,7 +80,7 @@ class ScriptSlot(ComponentSlot[PathLike]):
     def get_jsonable(self) -> Any:
         return str(self.filename)
 
-    def get_value(self) -> PathLike:
+    def get_value(self) -> Path:
         return self.filename
 
     def slot_type(self) -> SlotType:
