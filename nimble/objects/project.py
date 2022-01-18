@@ -1,7 +1,8 @@
+import glob
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
 from PyQt5.QtWidgets import QFileSystemModel
-from PyQt5.QtCore import QDir, QAbstractItemModel, QFileSystemWatcher
+from PyQt5.QtCore import QDir, QAbstractListModel, QFileSystemWatcher, QModelIndex, Qt
 import json
 
 from nimble.common.serialize import serialize_scene, unserialize_scene
@@ -11,6 +12,49 @@ from nimble.objects.scene import Scene
 class ProjectObserver:
     def project_changed(self):
         pass
+
+
+class ScriptList(QAbstractListModel):
+    def __init__(self):
+        super().__init__()
+        self._scripts: List[Path] = []
+
+    def add_path(self, path: str):
+        idx = len(self._scripts)
+        self._scripts.append(path)
+        self.rowsInserted.emit(QModelIndex(), idx, idx)
+
+    def clear_paths(self):
+        scripts_len = len(self._scripts)
+        self._scripts.clear()
+        self.rowsRemoved.emit(QModelIndex(), 0, scripts_len)
+
+    def remove_path(self, path: str):
+        for i, p in enumerate(self._scripts):
+            if p == path:
+                del self._scripts[i]
+                self.rowsRemoved.emit(QModelIndex(), i, i)
+                break
+
+    def rowCount(self, _parent) -> int:
+        return len(self._scripts) + 1
+
+    def data(self, index: QModelIndex, role: int) -> Any:
+        if index.row() == 0:
+            if role == Qt.UserRole:
+                return None
+            elif role == Qt.DisplayRole:
+                return "<No script selected>"
+
+        fname = self._scripts[index.row() - 1]
+        if role == Qt.DisplayRole and current_project.saved_project_is_open():
+            return str(fname.relative_to(current_project.folder))
+        elif role == Qt.UserRole:
+            print("userole", fname)
+            return fname
+
+    def get_index(self, script: Optional[Path]) -> int:
+        return self._scripts.index(script) + 1 if script is not None else 0
 
 
 class Project(QFileSystemModel):
@@ -26,7 +70,7 @@ class Project(QFileSystemModel):
         self.observers: Dict[str, ProjectObserver] = {}
         self.file_watcher = None
         self._scene = Scene()
-        self._scripts: QAbstractItemModel = QAbstractItemModel()
+        self._scripts = ScriptList()
 
     @staticmethod
     def get_scene_file(folder: Path) -> Path:
@@ -69,9 +113,12 @@ class Project(QFileSystemModel):
         if create:
             self.folder.mkdir(parents=True, exist_ok=True)
         self.file_watcher.addPath(str(self.folder))
+        self.dir_changed(str(self.folder))
 
     def dir_changed(self, _path: str):
-        pass
+        self._scripts.clear_paths()
+        for path in glob.glob(str(self.folder / "*.py")):
+            self._scripts.add_path(Path(path))
 
     def load_project(self, file: Path):
         file = Path(file)
@@ -114,7 +161,7 @@ class Project(QFileSystemModel):
         del self.observers[key]
 
     @property
-    def scripts(self) -> QAbstractItemModel:
+    def scripts(self) -> ScriptList:
         return self._scripts
 
 

@@ -1,5 +1,6 @@
 from typing import Optional, cast
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QComboBox, QSizePolicy
+from PyQt5.QtCore import Qt
 
 from nimble.common.resources import load_ui
 from nimble.objects.component import Component, ComponentSlot, display_slot_type
@@ -16,7 +17,13 @@ class SlotWidget(QWidget):
         self.options.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.options.setGeometry(self.options.geometry().adjusted(0, 0, 0, -15))
         self.options.setModel(current_project.scripts)
+        self.options.currentIndexChanged.connect(self.on_index_changed)
+        idx = current_project.scripts.get_index(self.slot.get_value())
+        self.options.setCurrentIndex(idx)
         self.field.addWidget(self.options)
+
+    def on_index_changed(self, index: int):
+        self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
 
 
 class ComponentWidget(QWidget):

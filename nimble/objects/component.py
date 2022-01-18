@@ -65,8 +65,8 @@ class ComponentSlot(ABC, Generic[T]):
 class ScriptSlot(ComponentSlot[Path]):
     ty = FileSlot(file_type=FileType.CODE)
 
-    def __init__(self, filename: Path = ""):
-        self.filename: Path = Path(filename)
+    def __init__(self, filename: Optional[Path] = None):
+        self.filename: Optional[Path] = filename
 
     def validate(self, value: Any) -> bool:
         return isinstance(value, Path)
@@ -75,12 +75,15 @@ class ScriptSlot(ComponentSlot[Path]):
         if isinstance(value, (Path)):
             self.filename = Path(value)
             return True
+        elif value is None:
+            self.filename = None
+            return True
         return False
 
     def get_jsonable(self) -> Any:
-        return str(self.filename)
+        return str(self.filename) if self.filename is not None else None
 
-    def get_value(self) -> Path:
+    def get_value(self) -> Optional[Path]:
         return self.filename
 
     def slot_type(self) -> SlotType:
@@ -124,7 +127,7 @@ class CustomComponent(Component):
         self.model = model
         self._id = next(self._unique_id) if _id is None else _id
 
-        self.script_slot = ScriptSlot("" if slot_params is None else slot_params[0])
+        self.script_slot = ScriptSlot(None if slot_params is None else slot_params[0])
 
     display_name = "Custom Script"
 

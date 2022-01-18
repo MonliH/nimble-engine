@@ -1,4 +1,3 @@
-import nimble.resources.resources
 import faulthandler
 from PyQt5.QtCore import QCoreApplication, Qt
 from PyQt5.QtWidgets import QApplication
