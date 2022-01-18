@@ -11,5 +11,9 @@
   </qresource>
   <qresource prefix="fonts">
     <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>
+    <file alias="FiraCode-Regular.ttf">fonts/FiraCode-Regular.ttf</file>
+  </qresource>
+  <qresource prefix="img">
+    <file alias="python.svg">img/python.svg</file>
   </qresource>
 </RCC>

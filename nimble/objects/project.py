@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QDir, QAbstractListModel, QFileSystemWatcher, QModelIndex, Qt
+from PyQt5.QtGui import QIcon
 import json
 
 from nimble.common.serialize import serialize_scene, unserialize_scene
@@ -40,17 +41,19 @@ class ScriptList(QAbstractListModel):
         return len(self._scripts) + 1
 
     def data(self, index: QModelIndex, role: int) -> Any:
+        if role == Qt.DecorationRole:
+            return QIcon(":/img/python.svg")
+
         if index.row() == 0:
             if role == Qt.UserRole:
                 return None
             elif role == Qt.DisplayRole:
                 return "<No script selected>"
-
+            return None
         fname = self._scripts[index.row() - 1]
         if role == Qt.DisplayRole and current_project.saved_project_is_open():
             return str(fname.relative_to(current_project.folder))
         elif role == Qt.UserRole:
-            print("userole", fname)
             return fname
 
     def get_index(self, script: Optional[Path]) -> int:

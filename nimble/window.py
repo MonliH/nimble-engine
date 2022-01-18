@@ -1,24 +1,18 @@
 from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
-import json
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog, QWidget
 from PyQt5.QtCore import QSettings, Qt
-from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
-from nimble.common.resources import load_ui
-from nimble.common.serialize import serialize_scene, unserialize_scene
+from nimble.interface.editor import Editor
 
+import nimble.resources.resources
+from nimble.common.resources import load_ui
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
 from nimble.interface.outline import OutlineWidget
 from nimble.interface.project_ui import OpenProject, OverwriteWarning, SaveProjectAs
-
 from nimble.interface.viewport import ViewportWidget
-from nimble.objects.component import CustomComponent
-
-from nimble.objects.model import Model
-from nimble.objects.geometry import Cube, Plane
 from nimble.objects.project import ProjectObserver, current_project
 from nimble.objects.scene import Scene
 
@@ -87,6 +81,14 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.restore_perspectives()
         self.project_changed()
+
+        text_dock = ads.CDockWidget("Text Editor")
+        text_dock.setWidget(self.create_code_editor())
+        self.dock_manager.addDockWidgetFloating(text_dock)
+
+    def create_code_editor(self) -> QWidget:
+        editor = Editor()
+        return editor
 
     def project_changed(self):
         self.setWindowTitle(current_project.get_project_display_name())
