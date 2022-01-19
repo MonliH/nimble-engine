@@ -1,5 +1,7 @@
+import os
 from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
+from pathlib import Path
 import moderngl_window as mglw
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog, QWidget
 from PyQt5.QtCore import QSettings, Qt
@@ -71,6 +73,8 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.actionReset_Layout.triggered.connect(self.restore_perspectives)
         self.actionOpen.triggered.connect(self.open_project)
 
+        self.actionSave.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.addAction(self.actionSave)
         self.actionSave.triggered.connect(self.save_project)
 
         self.menuWindow = cast(QMenu, self.menuWindow)
@@ -82,12 +86,10 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.restore_perspectives()
         self.project_changed()
 
-        text_dock = ads.CDockWidget("Text Editor")
-        text_dock.setWidget(self.create_code_editor())
-        self.dock_manager.addDockWidgetFloating(text_dock)
+        self.dock_manager.addDockWidgetFloating(self.create_code_editor())
 
     def create_code_editor(self) -> QWidget:
-        editor = Editor()
+        editor = Editor(__file__)
         return editor
 
     def project_changed(self):
@@ -140,3 +142,4 @@ class MainWindow(QMainWindow, ProjectObserver):
             self.save_project_as()
         else:
             current_project.save_scene()
+

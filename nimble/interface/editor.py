@@ -1,10 +1,16 @@
+from typing import Callable
 from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget
+from PyQtAds.QtAds import ads
+from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
 
-class Editor(QsciScintilla):
-    def __init__(self, parent=None):
-        super(Editor, self).__init__(parent)
+class EditorWidget(QsciScintilla):
+    def __init__(self, initial: str, parent=None):
+        super(EditorWidget, self).__init__(parent)
+        self.setText(initial)
 
         font_id = QFontDatabase().addApplicationFont(":/fonts/FiraCode-Regular.ttf")
         family = QFontDatabase().applicationFontFamilies(font_id)[0]
@@ -18,17 +24,14 @@ class Editor(QsciScintilla):
         self.setMarginsFont(font)
         self.setMarginWidth(0, fontmetrics.width("0000") + 6)
         self.setMarginLineNumbers(0, True)
-        self.setMarginsBackgroundColor(QColor("#cccccc"))
+        self.setMarginsBackgroundColor(QColor("#ebebeb"))
 
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         self.setCaretWidth(2)
 
-        self.setIndentationGuides(True)
         self.setTabWidth(4)
         self.setIndentationsUseTabs(True)
-
-        self.setWrapMode(QsciScintilla.WrapWord)
-        self.setWrapVisualFlags(QsciScintilla.WrapFlagByBorder)
+        self.setUtf8(True)
 
         lexer = QsciLexerPython()
         lexer.setDefaultFont(font)
@@ -37,6 +40,75 @@ class Editor(QsciScintilla):
             QsciScintilla.SCI_STYLESETFONT, 1, bytes("Fira Code", "utf8")
         )
 
-        self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+    def minimumSizeHint(self):
+        return QSize(700, 700)
 
-        self.setMinimumSize(600, 450)
+
+class EditorInner(QWidget):
+    def __init__(
+        self,
+        filename: str,
+        save: Callable[[], None],
+        on_change: Callable[[], None],
+        parent=None,
+    ):
+        super().__init__(parent)
+
+        self.filename = filename
+        self.box_layout = QVBoxLayout(self)
+
+        self.menu_bar = QMenuBar()
+        self.file_menu = self.menu_bar.addMenu("File")
+        self.save_action = self.file_menu.addAction("Save")
+        self.save_action.setShortcut("Ctrl+S")
+        self.save_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.save_action.triggered.connect(save)
+        self.addAction(self.save_action)
+
+        self.box_layout.setMenuBar(self.menu_bar)
+        self.box_layout.setContentsMargins(0, 0, 0, 0)
+        with open(filename, "r") as f:
+            initial_contents = f.read()
+
+        self.editor = EditorWidget(initial_contents)
+        self.editor.textChanged.connect(on_change)
+
+        self.box_layout.addWidget(self.editor)
+
+
+class Editor(ads.CDockWidget):
+    def __init__(self, filename: str, parent=None):
+        self.filename = filename
+        self.saved = True
+        super().__init__(self.title_text())
+        self.setObjectName(filename)
+
+        self.setMinimumSizeHintMode(ads.CDockWidget.MinimumSizeHintFromContent)
+        self.editor = EditorInner(filename, self.save, self.on_change)
+        self.setWidget(self.editor)
+
+    def title_text(self):
+        return f"Text Editor ({str(Path(self.filename).relative_to(Path.cwd()))}){' *' if not self.saved else ''}"
+
+    def update_title(self):
+        new_title = self.title_text()
+        self.setWindowTitle(new_title)
+        self.titleChanged.emit(new_title)
+
+    def on_change(self):
+        prev = self.saved
+        self.saved = False
+
+        if prev:
+            self.update_title()
+
+    def save(self):
+        content = self.editor.editor.text()
+        with open(self.filename, "w") as f:
+            f.write(content)
+
+        prev = self.saved
+        self.saved = True
+
+        if not prev:
+            self.update_title()
