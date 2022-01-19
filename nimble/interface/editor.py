@@ -81,7 +81,6 @@ class Editor(ads.CDockWidget):
         self.filename = filename
         self.saved = True
         super().__init__(self.title_text())
-        self.setObjectName(filename)
 
         self.setMinimumSizeHintMode(ads.CDockWidget.MinimumSizeHintFromContent)
         self.editor = EditorInner(filename, self.save, self.on_change)

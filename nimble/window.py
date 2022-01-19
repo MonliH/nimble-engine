@@ -142,4 +142,3 @@ class MainWindow(QMainWindow, ProjectObserver):
             self.save_project_as()
         else:
             current_project.save_scene()
-
