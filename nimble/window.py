@@ -86,12 +86,6 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.restore_perspectives()
         self.project_changed()
 
-        self.dock_manager.addDockWidgetFloating(self.create_code_editor())
-
-    def create_code_editor(self) -> QWidget:
-        editor = Editor(__file__)
-        return editor
-
     def project_changed(self):
         self.setWindowTitle(current_project.get_project_display_name())
 
@@ -133,6 +127,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         dialog = SaveProjectAs(self)
         res = dialog.exec()
         if res == QDialog.Accepted:
+            current_project.copy_assets(dialog.folder, dialog.name)
             current_project.set_project_name(dialog.folder, dialog.name)
             current_project.save_project()
             current_project.save_scene()

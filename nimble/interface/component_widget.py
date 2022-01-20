@@ -1,10 +1,44 @@
 from typing import Optional, cast
-from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QComboBox, QSizePolicy
+from PyQt5.QtWidgets import (
+    QLabel,
+    QWidget,
+    QVBoxLayout,
+    QComboBox,
+    QSizePolicy,
+    QPushButton,
+    QDialog,
+)
 from PyQt5.QtCore import Qt
 
 from nimble.common.resources import load_ui
+from nimble.interface.warning_popup import WarningPopup
 from nimble.objects.component import Component, ComponentSlot, display_slot_type
 from nimble.objects.project import current_project
+
+
+class CreateScript(QDialog):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        load_ui(":/ui/new_script_popup.ui", self)
+        self.buttonBox.setEnabled(False)
+        self.script_name.textChanged.connect(self.update_button_state)
+        self.buttonBox.accepted.disconnect(self.accept)
+        self.buttonBox.accepted.connect(self.accept_pressed)
+
+    def update_button_state(self):
+        self.buttonBox.setEnabled(self.script_name.text() != "")
+
+    def accept_pressed(self):
+        name = self.script_name.text() + ".py"
+        full_path = current_project.folder / name
+        if full_path in current_project.scripts:
+            warning_text = f'A script with name "{name}" already exists.'
+            warning = WarningPopup(warning_text)
+            ok = warning.exec()
+            if ok != QDialog.Accepted:
+                return
+
+        super().accept()
 
 
 class SlotWidget(QWidget):
@@ -22,8 +56,25 @@ class SlotWidget(QWidget):
         self.options.setCurrentIndex(idx)
         self.field.addWidget(self.options)
 
+        text = "Edit" if self.slot.get_value() is not None else "New"
+        self.button = QPushButton(text)
+        self.field.addWidget(self.button)
+        self.button.clicked.connect(self.on_button_clicked)
+
     def on_index_changed(self, index: int):
         self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
+
+    def on_button_clicked(self):
+        if self.slot.get_value() is not None:
+            # Open the script editor
+            pass
+        else:
+            # Create a new script
+            dialog = CreateScript()
+            ok = dialog.exec()
+            if ok == QDialog.Accepted:
+                script = current_project.create_script(dialog.script_name.text())
+                self.slot.insert_in_slot(script)
 
 
 class ComponentWidget(QWidget):

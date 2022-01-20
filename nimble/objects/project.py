@@ -1,4 +1,5 @@
 import glob
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from PyQt5.QtWidgets import QFileSystemModel
@@ -51,13 +52,19 @@ class ScriptList(QAbstractListModel):
                 return "<No script selected>"
             return None
         fname = self._scripts[index.row() - 1]
-        if role == Qt.DisplayRole and current_project.saved_project_is_open():
+        if role == Qt.DisplayRole:
             return str(fname.relative_to(current_project.folder))
         elif role == Qt.UserRole:
             return fname
 
     def get_index(self, script: Optional[Path]) -> int:
         return self._scripts.index(script) + 1 if script is not None else 0
+
+    def __iter__(self):
+        return iter(self._scripts)
+
+    def __contains__(self, script):
+        return script in self._scripts
 
 
 class Project(QFileSystemModel):
@@ -117,6 +124,10 @@ class Project(QFileSystemModel):
             self.folder.mkdir(parents=True, exist_ok=True)
         self.file_watcher.addPath(str(self.folder))
         self.dir_changed(str(self.folder))
+        self.scripts.dataChanged.emit(
+            self.scripts.index(0, 0),
+            self.scripts.index(self.scripts.rowCount(self.scripts) - 1, 0),
+        )
 
     def dir_changed(self, _path: str):
         self._scripts.clear_paths()
@@ -167,5 +178,15 @@ class Project(QFileSystemModel):
     def scripts(self) -> ScriptList:
         return self._scripts
 
+    def create_script(self, filename: str) -> Path:
+        full_filename = current_project.folder / (filename + ".py")
+        with open(full_filename, "w") as f:
+            f.write("# Write your script here")
+        self.scripts.add_path(full_filename)
 
-current_project = Project()
+    def copy_assets(self, to_dir: str, to_name: str):
+        for script in self.scripts:
+            shutil.copy(str(script), str(Path(to_dir) / to_name))
+
+
+current_project = Project(project_folder=Path(QDir.temp().canonicalPath()))
