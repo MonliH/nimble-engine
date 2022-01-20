@@ -6,6 +6,8 @@ from PyQtAds.QtAds import ads
 from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
+from nimble.objects.project import current_project
+
 
 class EditorWidget(QsciScintilla):
     def __init__(self, initial: str, parent=None):
@@ -87,7 +89,7 @@ class Editor(ads.CDockWidget):
         self.setWidget(self.editor)
 
     def title_text(self):
-        return f"Text Editor ({str(Path(self.filename).relative_to(Path.cwd()))}){' *' if not self.saved else ''}"
+        return f"Text Editor ({str(Path(self.filename).relative_to(current_project.folder))}){' *' if not self.saved else ''}"
 
     def update_title(self):
         new_title = self.title_text()

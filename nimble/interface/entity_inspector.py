@@ -1,6 +1,6 @@
 import math
-from typing import List, Optional, Tuple, cast
-from PyQt5.QtCore import QSize
+from typing import Callable, List, Optional, Tuple, cast
+from PyQt5.QtCore import QSize, QEvent
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 from pyrr.objects.vector3 import Vector3
+from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
 from nimble.interface.component_widget import ComponentWidget
@@ -23,11 +24,16 @@ from nimble.objects.project import current_project
 
 
 class EntityInspector(QWidget, SceneObserver, ModelObserver):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        open_window: Callable[[ads.CDockWidget], None],
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
         self.active = None
 
         load_ui(":/ui/entity_inspector.ui", self)
+        self.open_window = open_window
 
         self.object_name_title = cast(QLabel, self.object_name_title)
         self.object_name_title.setMargin(10)
@@ -87,7 +93,9 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.add_component.setEnabled(True)
 
     def add_component_to_list(self, idx: int, component: Component):
-        self.components_list.insertWidget(idx, ComponentWidget(component, self))
+        self.components_list.insertWidget(
+            idx, ComponentWidget(component, self.open_window, self)
+        )
 
     def remove_component(self, idx: int):
         self.components_list.itemAt(idx).widget().setParent(None)

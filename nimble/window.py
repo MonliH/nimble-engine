@@ -1,12 +1,11 @@
 import os
 from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
-from pathlib import Path
 import moderngl_window as mglw
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog, QWidget
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, Qt, QEvent
 from PyQtAds.QtAds import ads
-from nimble.interface.editor import Editor
+from nimble.interface.component_widget import SlotWidget
 
 import nimble.resources.resources
 from nimble.common.resources import load_ui
@@ -51,7 +50,7 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.entity_dock = ads.CDockWidget("Entity Inspector")
         self.dock_manager.addDockWidget(ads.RightDockWidgetArea, self.entity_dock)
-        self.entity = EntityInspector()
+        self.entity = EntityInspector(self.add_popup)
         self.entity_dock.setWidget(self.entity)
 
         self.file_explorer_dock = ads.CDockWidget("File Explorer")
@@ -84,7 +83,9 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
 
         self.restore_perspectives()
-        self.project_changed()
+
+    def add_popup(self, window: ads.CDockWidget):
+        self.dock_manager.addDockWidgetFloating(window)
 
     def project_changed(self):
         self.setWindowTitle(current_project.get_project_display_name())

@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import Optional, cast, Callable
 from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
@@ -9,8 +9,10 @@ from PyQt5.QtWidgets import (
     QDialog,
 )
 from PyQt5.QtCore import Qt
+from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
+from nimble.interface.editor import Editor
 from nimble.interface.warning_popup import WarningPopup
 from nimble.objects.component import Component, ComponentSlot, display_slot_type
 from nimble.objects.project import current_project
@@ -42,9 +44,15 @@ class CreateScript(QDialog):
 
 
 class SlotWidget(QWidget):
-    def __init__(self, slot: ComponentSlot, parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        slot: ComponentSlot,
+        open_window: Callable[[ads.CDockWidget], None],
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
         self.slot = slot
+        self.open_window = open_window
         load_ui(":/ui/component_slot.ui", self)
         self.label.setText(display_slot_type(slot.ty))
         self.options = QComboBox(self)
@@ -63,11 +71,12 @@ class SlotWidget(QWidget):
 
     def on_index_changed(self, index: int):
         self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
+        self.button.setText("Edit" if self.slot.get_value() is not None else "New")
 
     def on_button_clicked(self):
         if self.slot.get_value() is not None:
             # Open the script editor
-            pass
+            self.open_window(Editor(self.slot.get_value()))
         else:
             # Create a new script
             dialog = CreateScript()
@@ -78,14 +87,20 @@ class SlotWidget(QWidget):
 
 
 class ComponentWidget(QWidget):
-    def __init__(self, component: Component, parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        component: Component,
+        open_window: Callable[[ads.CDockWidget], None],
+        parent: QWidget = None,
+    ):
         super().__init__(parent)
         self.component = component
+        self.open_window = parent.open_window
 
         load_ui(":/ui/component.ui", self)
         self.component_name_title = cast(QLabel, self.component_name_title)
         self.component_name_title.setText(component.display_name)
         self.component_slots = cast(QVBoxLayout, self.component_slots)
         for slot in self.component.slots():
-            self.component_slots.addWidget(SlotWidget(slot))
+            self.component_slots.addWidget(SlotWidget(slot, open_window, self))
         self.show()
