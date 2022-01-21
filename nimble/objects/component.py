@@ -1,10 +1,10 @@
-import os
 from enum import Enum
 from abc import ABC, abstractmethod
 import itertools
 from typing import Any, Generic, List, Optional, TypeVar, Union
 from dataclasses import dataclass
 from pathlib import Path
+import importlib
 
 from nimble.objects.model import Model
 
@@ -112,6 +112,10 @@ class Component:
         raise NotImplementedError("Component.init not implemented")
 
 
+def custom_init(self, obj):
+    self.obj = obj
+
+
 class CustomComponent(Component):
     _unique_id = itertools.count()
 
@@ -144,5 +148,11 @@ class CustomComponent(Component):
         with open(current_project.folder / self.script_slot.get_value(), "r") as f:
             self.script_file_contents = f.read()
 
+        self.module = {}
+        exec(self.script_file_contents, self.module)
+        self.ComponentClass = self.module["Component"]
+        self.ComponentClass.__init__ = custom_init
+        self.component = self.ComponentClass(self.model)
+
     def tick(self):
-        print(self.script_file_contents)
+        self.component.update()
