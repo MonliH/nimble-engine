@@ -15,6 +15,13 @@ from nimble.objects.geometry import Geometry
 
 class GameViewport(Viewport):
     def render(self, screen: mgl.Framebuffer):
+        for model in self.scene.objects.values():
+            for component in model.components:
+                if not component.inited:
+                    component.init()
+                    component.inited = True
+                component.tick()
+
         mglw.activate_context(ctx=self.ctx)
         self.ctx.enable_only(mgl.DEPTH_TEST | mgl.BLEND)
         self.ctx.clear(0.235, 0.235, 0.235)

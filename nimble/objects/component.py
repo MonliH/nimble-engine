@@ -91,13 +91,8 @@ class ScriptSlot(ComponentSlot[str]):
 
 
 class Component:
-    def __init__(
-        self,
-        _model: Model,
-        _id: Optional[int] = None,
-        slot_params: Optional[List[Any]] = None,
-    ):
-        raise NotImplementedError("Component.__init__ not implemented")
+    def __init__(self):
+        self.inited = False
 
     def update(self):
         raise NotImplementedError("Component.update not implemented")
@@ -107,12 +102,14 @@ class Component:
     def display_name() -> str:
         raise NotImplementedError("Component.display_name not implemented")
 
-    @property
-    def id(self) -> ComponentId:
-        raise NotImplementedError("Component.id not implemented")
-
     def slots(self) -> List[ComponentSlot]:
-        pass
+        raise NotImplementedError("Component.slots not implemented")
+
+    def tick(self) -> None:
+        raise NotImplementedError("Component.tick not implemented")
+
+    def init(self) -> None:
+        raise NotImplementedError("Component.init not implemented")
 
 
 class CustomComponent(Component):
@@ -124,10 +121,13 @@ class CustomComponent(Component):
         _id: Optional[int] = None,
         slot_params: Optional[List[Any]] = None,
     ):
+        super().__init__()
         self.model = model
         self._id = next(self._unique_id) if _id is None else _id
 
         self.script_slot = ScriptSlot(None if slot_params is None else slot_params[0])
+        self.file = None
+        self.inited = False
 
     display_name = "Custom Script"
 
@@ -137,3 +137,12 @@ class CustomComponent(Component):
 
     def slots(self) -> List[ComponentSlot]:
         return [self.script_slot]
+
+    def init(self):
+        from nimble.objects.project import current_project
+
+        with open(current_project.folder / self.script_slot.get_value(), "r") as f:
+            self.script_file_contents = f.read()
+
+    def tick(self):
+        print(self.script_file_contents)

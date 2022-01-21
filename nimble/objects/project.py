@@ -190,7 +190,15 @@ class Project(QFileSystemModel):
         py_filename = filename + ".py"
         full_filename = current_project.folder / py_filename
         with open(full_filename, "w") as f:
-            f.write("# Write your script here")
+            f.write(
+                """# Write your script here
+
+class Component:
+	def update(self):
+		# Update loop; runs 60 times a second
+		# self.obj = the current object
+		pass"""
+            )
         self.scripts.add_path(py_filename)
         return py_filename
 
