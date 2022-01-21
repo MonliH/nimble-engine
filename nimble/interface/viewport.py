@@ -1,7 +1,7 @@
 import math
 from typing import Callable, Optional, Type
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QElapsedTimer, QObject, QPoint, QSize, QTimer, Qt, pyqtSignal
+from PyQt5.QtCore import QElapsedTimer, QPoint, QTimer, Qt
 from PyQt5.QtWidgets import QAction, QMenu, QOpenGLWidget
 from PyQt5 import QtGui
 import moderngl_window as mglw
@@ -244,7 +244,13 @@ class Viewport(InputObserver, WindowObserver):
 
 
 class ViewportWidget(QOpenGLWidget):
-    def __init__(self, parent=None, on_gl_init: Optional[Callable[[], None]] = None):
+    def __init__(
+        self,
+        parent=None,
+        on_gl_init: Optional[Callable[[], None]] = None,
+        viewport: Type[Viewport] = None,
+        scene: Optional[Scene] = None,
+    ):
         super().__init__(parent)  # fmt, None)
         fmt = QtGui.QSurfaceFormat()
         fmt.setVersion(4, 3)
@@ -263,10 +269,7 @@ class ViewportWidget(QOpenGLWidget):
         self.timer_update.timeout.connect(self.update)
         self.timer_update.start(0)
 
-        self.standalone_ctx = mgl.create_standalone_context()
         self.on_gl_init = on_gl_init
-
-        self.ctx = None
 
         self.last_mouse = None
         self.shift = False
@@ -274,13 +277,26 @@ class ViewportWidget(QOpenGLWidget):
         self.did_drag = False
         self.open_context = None
         self.last_mouse_button = Qt.NoButton
+        try:
+            self.ctx = mglw.ctx()
+        except ValueError:
+            self.ctx = None
 
-        self.manager = Viewport(
-            current_project.scene, self.width(), self.height(), self
-        )
+        if viewport is None:
+            self.manager = Viewport(
+                current_project.scene, self.width(), self.height(), self
+            )
+        else:
+            self.manager = viewport(
+                scene if scene is not None else current_project.scene,
+                self.width(),
+                self.height(),
+                self,
+            )
 
     def initializeGL(self):
-        self.ctx = mgl.create_context(require=430)
+        if self.ctx is None:
+            self.ctx = mgl.create_context(require=430)
         mglw.activate_context(ctx=self.ctx)
         self.init()
 
@@ -289,7 +305,8 @@ class ViewportWidget(QOpenGLWidget):
         self.ctx.viewport = (0, 0, self.width(), self.height())
         self.manager.init(self.ctx)
 
-        self.on_gl_init()
+        if self.on_gl_init is not None:
+            self.on_gl_init()
 
     def restart(self, w, h):
         self.resize(w, h)
