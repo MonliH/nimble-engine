@@ -28,7 +28,6 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.setWindowState(Qt.WindowMaximized)
         self.show()
-        self.setWindowTitle("Nimble Engine")
 
         load_ui(":/ui/main_window.ui", self)
         self.actionNew.triggered.connect(self.new_project)
@@ -83,6 +82,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
 
         self.restore_perspectives()
+        self.project_changed()
 
     def add_popup(self, window: ads.CDockWidget):
         self.dock_manager.addDockWidgetFloating(window)

@@ -62,18 +62,18 @@ class ComponentSlot(ABC, Generic[T]):
         pass
 
 
-class ScriptSlot(ComponentSlot[Path]):
+class ScriptSlot(ComponentSlot[str]):
     ty = FileSlot(file_type=FileType.CODE)
 
-    def __init__(self, filename: Optional[Path] = None):
-        self.filename: Optional[Path] = filename
+    def __init__(self, filename: Optional[str] = None):
+        self.filename: Optional[str] = filename
 
     def validate(self, value: Any) -> bool:
         return isinstance(value, Path)
 
     def insert_in_slot(self, value: Any) -> bool:
-        if isinstance(value, (Path)):
-            self.filename = Path(value)
+        if isinstance(value, (str)):
+            self.filename = value
             return True
         elif value is None:
             self.filename = None
@@ -81,9 +81,9 @@ class ScriptSlot(ComponentSlot[Path]):
         return False
 
     def get_jsonable(self) -> Any:
-        return str(self.filename) if self.filename is not None else None
+        return self.filename if self.filename is not None else None
 
-    def get_value(self) -> Optional[Path]:
+    def get_value(self) -> Optional[str]:
         return self.filename
 
     def slot_type(self) -> SlotType:

@@ -61,13 +61,13 @@ class SlotWidget(QWidget):
         self.options.setModel(current_project.scripts)
         self.options.currentIndexChanged.connect(self.on_index_changed)
         idx = current_project.scripts.get_index(self.slot.get_value())
-        self.options.setCurrentIndex(idx)
         self.field.addWidget(self.options)
 
         text = "Edit" if self.slot.get_value() is not None else "New"
         self.button = QPushButton(text)
         self.field.addWidget(self.button)
         self.button.clicked.connect(self.on_button_clicked)
+        self.options.setCurrentIndex(idx)
 
     def on_index_changed(self, index: int):
         self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
@@ -83,7 +83,10 @@ class SlotWidget(QWidget):
             ok = dialog.exec()
             if ok == QDialog.Accepted:
                 script = current_project.create_script(dialog.script_name.text())
+                print(script)
                 self.slot.insert_in_slot(script)
+                idx = current_project.scripts.get_index(self.slot.get_value())
+                self.options.setCurrentIndex(idx)
 
 
 class ComponentWidget(QWidget):

@@ -42,9 +42,6 @@ class EditorWidget(QsciScintilla):
             QsciScintilla.SCI_STYLESETFONT, 1, bytes("Fira Code", "utf8")
         )
 
-    def minimumSizeHint(self):
-        return QSize(700, 700)
-
 
 class EditorInner(QWidget):
     def __init__(

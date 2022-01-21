@@ -19,7 +19,7 @@ class ProjectObserver:
 class ScriptList(QAbstractListModel):
     def __init__(self):
         super().__init__()
-        self._scripts: List[Path] = []
+        self._scripts: List[str] = []
 
     def add_path(self, path: str):
         idx = len(self._scripts)
@@ -51,13 +51,14 @@ class ScriptList(QAbstractListModel):
             elif role == Qt.DisplayRole:
                 return "<No script selected>"
             return None
+
         fname = self._scripts[index.row() - 1]
         if role == Qt.DisplayRole:
-            return str(fname.relative_to(current_project.folder))
+            return str(fname)
         elif role == Qt.UserRole:
             return fname
 
-    def get_index(self, script: Optional[Path]) -> int:
+    def get_index(self, script: Optional[str]) -> int:
         return self._scripts.index(script) + 1 if script is not None else 0
 
     def __iter__(self):
@@ -65,6 +66,12 @@ class ScriptList(QAbstractListModel):
 
     def __contains__(self, script):
         return script in self._scripts
+
+    def __len__(self):
+        return len(self._scripts)
+
+    def __delitem__(self, key):
+        del self._scripts[key]
 
 
 class Project(QFileSystemModel):
@@ -130,9 +137,10 @@ class Project(QFileSystemModel):
         )
 
     def dir_changed(self, _path: str):
-        self._scripts.clear_paths()
+        old_len = len(self._scripts)
         for path in glob.glob(str(self.folder / "*.py")):
-            self._scripts.add_path(Path(path))
+            self._scripts.add_path(Path(path).name)
+        del self._scripts[:old_len]
 
     def load_project(self, file: Path):
         file = Path(file)
@@ -179,14 +187,21 @@ class Project(QFileSystemModel):
         return self._scripts
 
     def create_script(self, filename: str) -> Path:
-        full_filename = current_project.folder / (filename + ".py")
+        py_filename = filename + ".py"
+        full_filename = current_project.folder / py_filename
         with open(full_filename, "w") as f:
             f.write("# Write your script here")
-        self.scripts.add_path(full_filename)
+        self.scripts.add_path(py_filename)
+        return py_filename
 
-    def copy_assets(self, to_dir: str, to_name: str):
+    def copy_assets(self, to_dir: str, to_name: str) -> List[Path]:
+        to_dir_path = Path(to_dir) / to_name
+        to_dir_path.mkdir(parents=True, exist_ok=True)
+        scripts = []
         for script in self.scripts:
-            shutil.copy(str(script), str(Path(to_dir) / to_name))
+            shutil.copy(self.folder / str(script), str(to_dir_path))
+            scripts.append(script)
+        return scripts
 
 
 current_project = Project(project_folder=Path(QDir.temp().canonicalPath()))
