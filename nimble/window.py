@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog, QWidget
 from PyQt5.QtCore import QSettings, Qt, QEvent
 from PyQtAds.QtAds import ads
 from nimble.interface.component_widget import SlotWidget
+from nimble.interface.run_window import RunWindow
 
 import nimble.resources.resources
 from nimble.common.resources import load_ui
@@ -75,11 +76,16 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.addAction(self.actionSave)
         self.actionSave.triggered.connect(self.save_project)
 
+        self.play = ads.CDockWidget("Play")
+        self.play.setWidget(RunWindow())
+        self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.play)
+
         self.menuWindow = cast(QMenu, self.menuWindow)
         self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
         self.menuWindow.addAction(self.outline_dock.toggleViewAction())
         self.menuWindow.addAction(self.entity_dock.toggleViewAction())
         self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
+        self.menuWindow.addAction(self.play.toggleViewAction())
 
         self.restore_perspectives()
         self.project_changed()
