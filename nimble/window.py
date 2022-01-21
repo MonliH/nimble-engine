@@ -83,8 +83,10 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.restore_perspectives()
         self.project_changed()
+        self.windows = []
 
     def add_popup(self, window: ads.CDockWidget):
+        self.windows.append(window)
         self.dock_manager.addDockWidgetFloating(window)
 
     def project_changed(self):

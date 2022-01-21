@@ -79,14 +79,15 @@ class Editor(ads.CDockWidget):
     def __init__(self, filename: str, parent=None):
         self.filename = filename
         self.saved = True
-        super().__init__(self.title_text())
+        super().__init__(self.title_text(), parent)
 
         self.setMinimumSizeHintMode(ads.CDockWidget.MinimumSizeHintFromContent)
         self.editor = EditorInner(filename, self.save, self.on_change)
         self.setWidget(self.editor)
+        self.update_title()
 
     def title_text(self):
-        return f"Text Editor ({str(Path(self.filename).relative_to(current_project.folder))}){' *' if not self.saved else ''}"
+        return f"Text Editor ({Path(self.filename).relative_to(current_project.folder)}){' *' if not self.saved else ''}"
 
     def update_title(self):
         new_title = self.title_text()

@@ -76,14 +76,13 @@ class SlotWidget(QWidget):
     def on_button_clicked(self):
         if self.slot.get_value() is not None:
             # Open the script editor
-            self.open_window(Editor(self.slot.get_value()))
+            self.open_window(Editor(current_project.folder / self.slot.get_value()))
         else:
             # Create a new script
             dialog = CreateScript()
             ok = dialog.exec()
             if ok == QDialog.Accepted:
                 script = current_project.create_script(dialog.script_name.text())
-                print(script)
                 self.slot.insert_in_slot(script)
                 idx = current_project.scripts.get_index(self.slot.get_value())
                 self.options.setCurrentIndex(idx)
