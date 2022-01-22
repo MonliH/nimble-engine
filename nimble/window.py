@@ -1,11 +1,10 @@
-import os
+import logging
 from typing import cast
 from PyQt5.QtGui import QFont, QFontDatabase
 import moderngl_window as mglw
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog, QWidget
-from PyQt5.QtCore import QSettings, Qt, QEvent
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog
+from PyQt5.QtCore import QSettings, Qt
 from PyQtAds.QtAds import ads
-from nimble.interface.component_widget import SlotWidget
 from nimble.interface.run_window import RunWindow
 
 import nimble.resources.resources
@@ -13,6 +12,7 @@ from nimble.common.resources import load_ui
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
 from nimble.interface.outline import OutlineWidget
+from nimble.interface.gui_logger import GuiLogger
 from nimble.interface.project_ui import OpenProject, OverwriteWarning, SaveProjectAs
 from nimble.interface.viewport import ViewportWidget
 from nimble.objects.project import ProjectObserver, current_project
@@ -80,12 +80,24 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.play.setWidget(RunWindow(self.add_popup))
         self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.play)
 
+        logTextBox = GuiLogger(self)
+        logTextBox.setFormatter(
+            logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        )
+        logging.getLogger("nimble").addHandler(logTextBox)
+        logging.getLogger("nimble").setLevel(logging.DEBUG)
+
+        self.log = ads.CDockWidget("Log")
+        self.log.setWidget(logTextBox)
+        self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.log)
+
         self.menuWindow = cast(QMenu, self.menuWindow)
         self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
         self.menuWindow.addAction(self.outline_dock.toggleViewAction())
         self.menuWindow.addAction(self.entity_dock.toggleViewAction())
         self.menuWindow.addAction(self.file_explorer_dock.toggleViewAction())
         self.menuWindow.addAction(self.play.toggleViewAction())
+        self.menuWindow.addAction(self.log.toggleViewAction())
 
         self.restore_perspectives()
         self.project_changed()

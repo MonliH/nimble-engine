@@ -11,6 +11,7 @@
     <file alias="new_script_popup.ui">ui/new_script_popup.ui</file>
     <file alias="warning_popup.ui">ui/warning_popup.ui</file>
     <file alias="run_tools.ui">ui/run_tools.ui</file>
+    <file alias="gui_logger.ui">ui/gui_logger.ui</file>
   </qresource>
   <qresource prefix="fonts">
     <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>

@@ -1,13 +1,20 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 import itertools
-from platform import processor
-from typing import Any, Generic, List, Optional, Set, TypeVar, Union
+import logging
+import traceback
+from typing import Any, Generic, List, Optional, TypeVar, Union
 from dataclasses import dataclass
 from pathlib import Path
-import importlib
-from nimble.common.ecs import Processor, World
+import sys
 
+import nimble
+from nimble.common.ecs import Processor
+from nimble.interface.gui_logger import (
+    StreamToLogger,
+    with_gui_logging,
+    with_gui_logging_default,
+)
 from nimble.objects.model import Model
 
 
@@ -170,14 +177,24 @@ class ScriptProcessor(Processor):
         with open(current_project.folder / path, "r") as f:
             script_file_contents = f.read()
 
-        module = {}
-        exec(script_file_contents, module)
-        CustomProcessor = module["Component"]
-        CustomProcessor.__init__ = lambda _: None
-        processor_instance = CustomProcessor()
+        @with_gui_logging_default({})
+        def run():
+            module = {"nimble": nimble}
+            exec(script_file_contents, module)
+            return module
+
+        module = run()
+
+        if "Component" in module:
+            CustomProcessor = module["Component"]
+            CustomProcessor.__init__ = lambda _: None
+            processor_instance = CustomProcessor()
+        else:
+            processor_instance = NoProcessor()
 
         return processor_instance
 
+    @with_gui_logging
     def init(self):
         for processor in self.processors.values():
             processor.world = self.world
@@ -185,7 +202,21 @@ class ScriptProcessor(Processor):
             if hasattr(processor, "init"):
                 processor.init()
 
+    @with_gui_logging
     def process(self):
         for pid, processor in self.processors.items():
             for (_, component) in self.world.get_component(pid):
                 processor.process(component.model)
+
+
+class BaseComponent(Processor):
+    def init(self):
+        pass
+
+
+class NoProcessor(BaseComponent):
+    def init(self):
+        logging.getLogger("nimble").error("No processor found")
+
+    def process(self, model: Model):
+        pass

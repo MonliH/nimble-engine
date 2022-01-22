@@ -1,10 +1,11 @@
 SCRIPT = """\
-class Component:
+from nimble.objects.component import BaseComponent
+class Component(BaseComponent):
 \tdef init(self):
 \t\t# Initializer; run once when the game starts.
 \t\tpass
 
-\tdef update(self, obj):
+\tdef process(self, obj):
 \t\t# Update loop; runs 60 times a second.
 \t\t# `obj` an object that this component is currently attached to.
 \t\t#
