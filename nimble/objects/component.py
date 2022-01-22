@@ -1,10 +1,12 @@
 from enum import Enum
 from abc import ABC, abstractmethod
 import itertools
-from typing import Any, Generic, List, Optional, TypeVar, Union
+from platform import processor
+from typing import Any, Generic, List, Optional, Set, TypeVar, Union
 from dataclasses import dataclass
 from pathlib import Path
 import importlib
+from nimble.common.ecs import Processor, World
 
 from nimble.objects.model import Model
 
@@ -111,9 +113,9 @@ class Component:
     def init(self) -> None:
         raise NotImplementedError("Component.init not implemented")
 
-
-def custom_init(self, obj):
-    self.obj = obj
+    @property
+    def type_alias(self) -> Optional[str]:
+        return None
 
 
 class CustomComponent(Component):
@@ -142,19 +144,48 @@ class CustomComponent(Component):
     def slots(self) -> List[ComponentSlot]:
         return [self.script_slot]
 
-    def init(self):
+    @property
+    def type_alias(self) -> Optional[str]:
+        return f"custom_{self.script_slot.get_value()}"
+
+
+class ScriptProcessor(Processor):
+    def __init__(self, components: List[CustomComponent]):
+        is_inited = set()
+        self.processors = {}
+
+        for component in components:
+            if component.type_alias in is_inited:
+                continue
+
+            self.processors[component.type_alias] = self.get_processor_from_script(
+                component.script_slot.get_value()
+            )
+            is_inited.add(component.type_alias)
+
+    @staticmethod
+    def get_processor_from_script(path: Optional[str]) -> Processor:
         from nimble.objects.project import current_project
 
-        with open(current_project.folder / self.script_slot.get_value(), "r") as f:
-            self.script_file_contents = f.read()
+        with open(current_project.folder / path, "r") as f:
+            script_file_contents = f.read()
 
-        self.module = {}
-        exec(self.script_file_contents, self.module)
-        self.ComponentClass = self.module["Component"]
-        self.ComponentClass.__init__ = custom_init
-        self.component = self.ComponentClass(self.model)
-        if hasattr(self.component, "init"):
-            self.component.init()
+        module = {}
+        exec(script_file_contents, module)
+        CustomProcessor = module["Component"]
+        CustomProcessor.__init__ = lambda _: None
+        processor_instance = CustomProcessor()
 
-    def tick(self):
-        self.component.update()
+        return processor_instance
+
+    def init(self):
+        for processor in self.processors.values():
+            processor.world = self.world
+
+            if hasattr(processor, "init"):
+                processor.init()
+
+    def process(self):
+        for pid, processor in self.processors.items():
+            for (_, component) in self.world.get_component(pid):
+                processor.process(component.model)

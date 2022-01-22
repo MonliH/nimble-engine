@@ -9,6 +9,7 @@ import json
 
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.objects.scene import Scene
+from nimble.resources import script_boilerplate
 
 
 class ProjectObserver:
@@ -190,15 +191,7 @@ class Project(QFileSystemModel):
         py_filename = filename + ".py"
         full_filename = current_project.folder / py_filename
         with open(full_filename, "w") as f:
-            f.write(
-                """# Write your script here
-
-class Component:
-	def update(self):
-		# Update loop; runs 60 times a second
-		# self.obj = the current object
-		pass"""
-            )
+            f.write(script_boilerplate.SCRIPT)
         self.scripts.add_path(py_filename)
         return py_filename
 

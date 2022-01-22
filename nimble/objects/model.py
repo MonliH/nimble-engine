@@ -92,6 +92,8 @@ class Model:
         if components is not None:
             self.components.extend(components)
 
+        self._entity_id = None
+
     def add_component(self, component: Component) -> int:
         insert_idx = len(self.components)
         self.components.append(component)
@@ -207,3 +209,11 @@ class Model:
         self.material.render(
             camera, self.geometry, self.model_matrix, self.bounding_box_buffer
         )
+
+    @property
+    def entity_id(self) -> Optional[int]:
+        return self._entity_id
+
+    @entity_id.setter
+    def entity_id(self, value: int):
+        self._entity_id = value
