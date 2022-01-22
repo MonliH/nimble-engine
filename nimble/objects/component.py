@@ -153,6 +153,8 @@ class CustomComponent(Component):
         self.ComponentClass = self.module["Component"]
         self.ComponentClass.__init__ = custom_init
         self.component = self.ComponentClass(self.model)
+        if hasattr(self.component, "init"):
+            self.component.init()
 
     def tick(self):
         self.component.update()

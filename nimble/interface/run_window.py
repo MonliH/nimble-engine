@@ -76,10 +76,19 @@ class RunWindow(QWidget):
         self.temp_window = None
 
         self.open_window = open_window
+        self.setContentsMargins(0, 0, 0, 0)
 
     def start_game(self):
+        self.run.setEnabled(False)
         self.temp_scene = unserialize_scene(serialize_scene(current_project.scene))
         self.dock_widget = ads.CDockWidget("Game")
         self.temp_window = ViewportWidget(viewport=GameViewport, scene=self.temp_scene)
         self.dock_widget.setWidget(self.temp_window)
+        self.dock_widget.closed.connect(self.close_game)
         self.open_window(self.dock_widget)
+
+    def close_game(self):
+        self.dock_widget.deleteDockWidget()
+        self.temp_window = None
+        self.temp_scene = None
+        self.run.setEnabled(True)

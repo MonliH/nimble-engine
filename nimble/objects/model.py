@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 import moderngl_window as mglw
 import moderngl as mgl
 from pyrr import Matrix44, Vector3
@@ -14,6 +14,9 @@ from nimble.utils import custom_index
 
 if TYPE_CHECKING:
     from .component import Component, ComponentId
+
+
+LikeVector3 = Union[Vector3, Tuple[int, int, int], List[int]]
 
 
 class ModelObserver:
@@ -31,6 +34,12 @@ class ModelObserver:
 
     def component_removed(self, obj: Model, component_id: int) -> None:
         pass
+
+
+def to_vec3(v: LikeVector3) -> Vector3:
+    if isinstance(v, Vector3):
+        return v
+    return Vector3(v, dtype="f4")
 
 
 class Model:
@@ -148,7 +157,8 @@ class Model:
             observer.translation_changed(self)
         self.transform_changed()
 
-    def translate(self, translation: Vector3):
+    def translate(self, translation: LikeVector3):
+        translation = to_vec3(translation)
         self.position += translation
         self.position_changed()
 
@@ -157,8 +167,14 @@ class Model:
             observer.rotation_changed(self)
         self.transform_changed()
 
-    def rotate(self, rotation: Vector3):
+    def rotate(self, rotation: LikeVector3):
+        rotation = to_vec3(rotation)
         self.rotation += rotation
+        self.rotation_changed()
+
+    def set_rotation(self, rotation: LikeVector3):
+        rotation = to_vec3(rotation)
+        self.rotation = rotation
         self.rotation_changed()
 
     def scale_changed(self):
@@ -166,12 +182,13 @@ class Model:
             observer.scale_changed(self)
         self.transform_changed()
 
-    def set_scale(self, scale: Vector3):
+    def set_scale(self, scale: LikeVector3):
+        scale = to_vec3(scale)
         self.scale = scale
         self.scale_changed()
 
-    def set_position(self, position: Vector3):
-        self.position = position
+    def set_position(self, position: LikeVector3):
+        self.position = to_vec3(position)
         self.transform_changed()
 
     def transform_changed(self):
