@@ -17,7 +17,7 @@ from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
 from nimble.interface.component_widget import ComponentWidget
-from nimble.objects.component import Component, CustomComponent
+from nimble.objects.component import Component, CustomComponent, PhysicsComponent
 from nimble.objects.model import Model, ModelObserver
 from nimble.objects.scene import SceneObserver
 from nimble.objects.project import current_project
@@ -71,7 +71,7 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         current_project.scene.register_active_obj_observer(self, "entity_inspector")
 
         self.component_type = cast(QComboBox, self.component_type)
-        self.components_types_list = [None, CustomComponent]
+        self.components_types_list = [None, PhysicsComponent, CustomComponent]
         self.component_type.addItem("")
         for component in self.components_types_list[1:]:
             self.component_type.addItem(component.display_name)

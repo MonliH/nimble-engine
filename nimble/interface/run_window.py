@@ -89,6 +89,8 @@ class GameWindow(QMainWindow):
         self.setCentralWidget(self.scene)
         self.on_close = on_close
 
+        self.resize(1280, 720)
+
     def closeEvent(self, event):
         self.on_close()
 

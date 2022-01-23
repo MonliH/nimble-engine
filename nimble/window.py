@@ -72,7 +72,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.actionReset_Layout.triggered.connect(self.restore_perspectives)
         self.actionOpen.triggered.connect(self.open_project)
 
-        self.actionSave.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.actionSave.setShortcutContext(Qt.WindowShortcut)
         self.addAction(self.actionSave)
         self.actionSave.triggered.connect(self.save_project)
 

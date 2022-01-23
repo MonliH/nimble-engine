@@ -3,18 +3,18 @@ from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
     QVBoxLayout,
-    QComboBox,
-    QSizePolicy,
-    QPushButton,
     QDialog,
+    QCheckBox,
+    QSpacerItem,
+    QSizePolicy,
 )
 from PyQt5.QtCore import Qt
 from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
-from nimble.interface.editor import Editor
 from nimble.interface.warning_popup import WarningPopup
-from nimble.objects.component import Component, ComponentSlot, display_slot_type
+from nimble.interface.editor import Editor
+from nimble.objects.component import Component, Slot, SlotType
 from nimble.objects.project import current_project
 
 
@@ -43,35 +43,36 @@ class CreateScript(QDialog):
         super().accept()
 
 
-class SlotWidget(QWidget):
+class FileWidget(QWidget):
     def __init__(
         self,
-        slot: ComponentSlot,
+        slot: Slot,
         open_window: Callable[[ads.CDockWidget], None],
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
+        assert slot.ty == SlotType.FILE
+
+        load_ui(":/ui/file_widget_slot.ui", self)
+
         self.slot = slot
-        self.open_window = open_window
-        load_ui(":/ui/component_slot.ui", self)
-        self.label.setText(display_slot_type(slot.ty))
-        self.options = QComboBox(self)
-        self.options.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.options.setGeometry(self.options.geometry().adjusted(0, 0, 0, -15))
         self.options.setModel(current_project.scripts)
         self.options.currentIndexChanged.connect(self.on_index_changed)
         idx = current_project.scripts.get_index(self.slot.get_value())
-        self.field.addWidget(self.options)
 
         text = "Edit" if self.slot.get_value() is not None else "New"
-        self.button = QPushButton(text)
-        self.field.addWidget(self.button)
-        self.button.clicked.connect(self.on_button_clicked)
+        self.file_widget_button.setText(text)
+        self.file_widget_button.clicked.connect(self.on_button_clicked)
+
         self.options.setCurrentIndex(idx)
+
+        self.open_window = open_window
 
     def on_index_changed(self, index: int):
         self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
-        self.button.setText("Edit" if self.slot.get_value() is not None else "New")
+        self.file_widget_button.setText(
+            "Edit" if self.slot.get_value() is not None else "New"
+        )
 
     def on_button_clicked(self):
         if self.slot.get_value() is not None:
@@ -86,6 +87,38 @@ class SlotWidget(QWidget):
                 self.slot.insert_in_slot(script)
                 idx = current_project.scripts.get_index(self.slot.get_value())
                 self.options.setCurrentIndex(idx)
+
+
+class SlotWidget(QWidget):
+    def __init__(
+        self,
+        slot: Slot,
+        open_window: Callable[[ads.CDockWidget], None],
+        parent: Optional[QWidget] = None,
+    ):
+        super().__init__(parent)
+        self.slot = slot
+        load_ui(":/ui/component_slot.ui", self)
+        self.label.setText(slot.display())
+
+        if slot.ty == SlotType.FILE:
+            self.field.addWidget(FileWidget(slot, open_window, self))
+        if slot.ty == SlotType.BOOLEAN:
+            self.field.addWidget(BooleanWidget(slot, self))
+
+
+class BooleanWidget(QWidget):
+    def __init__(self, slot: Slot, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.slot = slot
+
+        self.frame = QVBoxLayout(self)
+        self.frame.setContentsMargins(0, 0, 0, 0)
+        self.checkbox = QCheckBox(self)
+        self.frame.addWidget(self.checkbox)
+        self.frame.addItem(
+            QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
 
 
 class ComponentWidget(QWidget):
