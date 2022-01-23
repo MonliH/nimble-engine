@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 from pyrr import Vector3
 import moderngl_window as mglw
 import moderngl as mgl
@@ -35,6 +36,9 @@ class Geometry:
             model.T,
         )
 
+    def create_collision_shape(self, p) -> Optional[int]:
+        return None
+
 
 class Cube(Geometry):
     def __init__(self, **kwargs):
@@ -50,6 +54,11 @@ class Cube(Geometry):
                 Vector3(tuple(-a / 2 for a in size), dtype="f4"),
                 Vector3(tuple(a / 2 for a in size), dtype="f4"),
             ),
+        )
+
+    def create_collision_shape(self, p) -> Optional[int]:
+        return p.createCollisionShape(
+            p.GEOM_BOX, halfExtents=tuple(s / 2 for s in self.kwargs["size"])
         )
 
 
@@ -215,19 +224,22 @@ class Cylinder(Geometry):
         if radius_bottom != 0:
             index = generate_cap(index, False, verticies, normals, uvs, indicies)
 
-        indicies = np.array(indicies, dtype="i4")
-        verticies = np.array(verticies, dtype="f4")
+        np_indicies = np.array(indicies, dtype="i4")
+        np_verts = np.array(verticies, dtype="f4")
         normals = np.array(normals, dtype="f4")
         uvs = np.array(uvs, dtype="f4")
 
         vao = VAO()
-        vao.buffer(verticies, "3f", [AttributeNames.POSITION])
+        vao.buffer(np_verts, "3f", [AttributeNames.POSITION])
         vao.buffer(normals, "3f", [AttributeNames.NORMAL])
         vao.buffer(uvs, "2f", [AttributeNames.TEXCOORD_0])
 
-        vao.index_buffer(indicies)
+        vao.index_buffer(np_indicies)
 
         max_radius = max(radius_top, radius_bottom)
+        self.verts = verticies
+        self.idx = indicies
+
         super().__init__(
             vao,
             (

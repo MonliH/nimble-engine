@@ -119,6 +119,12 @@ class BooleanWidget(QWidget):
         self.frame.addItem(
             QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         )
+        self.checkbox.stateChanged.connect(self.on_state_change)
+        self.checkbox.setChecked(self.slot.get_value())
+
+    def on_state_change(self, state):
+        checked = state == Qt.Checked
+        self.slot.insert_in_slot(checked)
 
 
 class ComponentWidget(QWidget):

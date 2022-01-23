@@ -145,9 +145,10 @@ class Scene(InputObserver, QAbstractListModel):
         if self.active in self.objects:
             return self.objects[self.active]
 
-    def add_obj(self, obj: object) -> int:
+    def add_obj(self, obj: Model) -> int:
         name = obj.name
         object_name = name if name not in self.objects else self.get_new_name(name)
+        obj.set_name(object_name)
         self.objects[object_name] = obj
         idx = len(self.objects_list)
         self.objects_list.append(object_name)

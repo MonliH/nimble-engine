@@ -1,7 +1,7 @@
 from typing import Callable
-from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget
+from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase, QKeySequence
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget, QShortcut
 from PyQtAds.QtAds import ads
 from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
@@ -59,7 +59,10 @@ class EditorInner(QWidget):
         self.menu_bar = QMenuBar()
         self.file_menu = self.menu_bar.addMenu("File")
         self.save_action = self.file_menu.addAction("Save")
-        self.save_action.setShortcut("Ctrl+S")
+        shortcut = QShortcut(QKeySequence("Ctrl+S"), self, save, save)
+        shortcut.activated.connect(save)
+        shortcut.activatedAmbiguously.connect(save)
+
         self.save_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.save_action.triggered.connect(save)
         self.addAction(self.save_action)
@@ -92,6 +95,7 @@ class Editor(ads.CDockWidget):
     def update_title(self):
         new_title = self.title_text()
         self.setWindowTitle(new_title)
+        self.setObjectName(new_title)
         self.titleChanged.emit(new_title)
 
     def on_change(self):

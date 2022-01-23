@@ -9,7 +9,7 @@ from nimble.common.ecs import World
 from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.viewport import ViewportWidget, Viewport
-from nimble.objects.component import ScriptProcessor
+from nimble.objects.component import PhysicsProcessor, ScriptProcessor
 from nimble.objects.project import current_project
 from nimble.objects.scene import Scene
 from nimble.objects.geometry import Geometry
@@ -27,11 +27,16 @@ class GameViewport(Viewport):
                 self.world.add_component(
                     entity_id, component, type_alias=component.type_alias
                 )
-                if component.type_alias.startswith("custom_"):
+                if (
+                    component.type_alias is not None
+                    and component.type_alias.startswith("custom_")
+                ):
                     custom_components.append(component)
         custom_script_processor = ScriptProcessor(custom_components)
         self.world.add_processor(custom_script_processor)
-        custom_script_processor.init()
+
+        physics_processor = PhysicsProcessor()
+        self.world.add_processor(physics_processor)
 
     def render(self, screen: mgl.Framebuffer):
         self.world.process()

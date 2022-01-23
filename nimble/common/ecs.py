@@ -39,6 +39,9 @@ class Processor:
     def process(self, *args, **kwargs):
         raise NotImplementedError
 
+    def init(self):
+        pass
+
 
 class World:
     """A World object keeps track of all Entities, Components, and Processors.
@@ -80,6 +83,7 @@ class World:
         assert issubclass(processor_instance.__class__, Processor)
         processor_instance.priority = priority
         processor_instance.world = self
+        processor_instance.init()
         self._processors.append(processor_instance)
         self._processors.sort(key=lambda proc: proc.priority, reverse=True)
 

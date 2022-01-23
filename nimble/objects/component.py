@@ -1,11 +1,12 @@
+import pybullet as p
 from abc import ABC
 from enum import Enum
 import itertools
 import logging
-from typing import Any, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar, cast
 
 import nimble
-from nimble.common.ecs import Processor
+from nimble.common.ecs import Processor, World
 from nimble.interface.gui_logger import (
     with_gui_logging,
     with_gui_logging_default,
@@ -83,6 +84,42 @@ class PhysicsComponent(Component):
 
     def slots(self) -> List[Slot]:
         return [self.static]
+
+
+class PhysicsProcessor(Processor):
+    def __init__(self):
+        super().__init__()
+        self.client = p.connect(p.DIRECT)
+        p.resetSimulation()
+        p.setGravity(0, -9.81, 0)
+
+    def init(self):
+        self.added_entities: Dict[str, int] = {}
+        for (_, component) in cast(World, self.world).get_component(PhysicsComponent):
+            model_name = component.model.name
+            if model_name not in self.added_entities:
+                collider = component.model.geometry.create_collision_shape(p)
+                self.added_entities[model_name] = (
+                    p.createMultiBody(
+                        0 if component.static.get_value() else 1,
+                        collider,
+                        basePosition=tuple(component.model.position.tolist()),
+                        baseOrientation=p.getQuaternionFromEuler(
+                            tuple(component.model.rotation.tolist())
+                        ),
+                    ),
+                    component.model,
+                )
+
+    def process(self):
+        for _ in range(4):
+            p.stepSimulation()
+
+        for (body, model) in self.added_entities.values():
+            pos, rot = p.getBasePositionAndOrientation(body)
+            model.set_position(pos)
+            x, y, z = p.getEulerFromQuaternion(rot)
+            model.set_rotation((-x, -z, -y))
 
 
 class CustomComponent(Component):
