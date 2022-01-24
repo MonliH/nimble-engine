@@ -196,7 +196,7 @@ class Model:
     def transform_changed(self):
         self.model_matrix = (
             Matrix44.from_translation(self.position, dtype="f4")
-            * Matrix44.from_eulers(self.rotation, dtype="f4")
+            * Matrix44.from_eulers(self.rotation[[0, 2, 1]], dtype="f4")
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
         if self.geometry is not None:

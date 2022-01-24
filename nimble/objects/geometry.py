@@ -14,6 +14,7 @@ from nimble.common.models.bounding_box import (
     apply_world_transform,
     vao2bounding_box,
 )
+from nimble.objects.draw_primitive import sphere
 
 
 class Geometry:
@@ -36,7 +37,7 @@ class Geometry:
             model.T,
         )
 
-    def create_collision_shape(self, p) -> Optional[int]:
+    def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
         return None
 
 
@@ -56,9 +57,12 @@ class Cube(Geometry):
             ),
         )
 
-    def create_collision_shape(self, p) -> Optional[int]:
+    def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
         return p.createCollisionShape(
-            p.GEOM_BOX, halfExtents=tuple(s / 2 for s in self.kwargs["size"])
+            p.GEOM_BOX,
+            halfExtents=tuple(
+                s / 2 * scale[i] for i, s in enumerate(self.kwargs["size"])
+            ),
         )
 
 
@@ -70,8 +74,9 @@ class Sphere(Geometry):
         radius = kwargs["radius"]
         self.kwargs = kwargs
 
+        vao, self.verts, self.idx = sphere(**kwargs)
         super().__init__(
-            mglw.geometry.sphere(**kwargs),
+            vao,
             bounding_box=(
                 Vector3((-radius,) * 3, dtype="f4"),
                 Vector3((radius,) * 3, dtype="f4"),
@@ -90,6 +95,11 @@ class Sphere(Geometry):
                 (self.bounding_box[1]),
             ),
             new.T,
+        )
+
+    def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
+        return p.createCollisionShape(
+            p.GEOM_MESH, vertices=self.verts * scale[np.newaxis, :], indices=self.idx
         )
 
 
@@ -252,6 +262,11 @@ class Cylinder(Geometry):
             ),
         )
 
+    def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
+        return p.createCollisionShape(
+            p.GEOM_MESH, vertices=self.verts * scale[np.newaxis, :], indices=self.idx
+        )
+
 
 class Plane(Geometry):
     def __init__(self):
@@ -260,10 +275,10 @@ class Plane(Geometry):
         vao = VAO()
         # fmt: off
         verticies = np.array([
-            -1, 0, -1,
-            -1, 0, 1,
-            1, 0, 1,
-            1, 0, -1,
+            -0.5, 0, -0.5,
+            -0.5, 0, 0.5,
+            0.5, 0, 0.5,
+            0.5, 0, -0.5,
         ], dtype="f4")
         normals = np.array([0, 1, 0] * 4, dtype="f4")
         uvs = np.array([
@@ -278,8 +293,14 @@ class Plane(Geometry):
         vao.buffer(normals, "3f", [AttributeNames.NORMAL])
         vao.buffer(uvs, "2f", [AttributeNames.TEXCOORD_0])
 
-        vao.index_buffer(np.array([(0, 1, 2, 0, 2, 3)], dtype="i4"))
+        vao.index_buffer(np.array([0, 1, 2, 0, 2, 3], dtype="i4"))
 
         super().__init__(
-            vao, (Vector3((-1, 0, -1), dtype="f4"), Vector3((1, 0, 1), dtype="f4"))
+            vao,
+            (Vector3((-0.5, 0, -0.5), dtype="f4"), Vector3((0.5, 0, 0.5), dtype="f4")),
+        )
+
+    def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
+        return p.createCollisionShape(
+            p.GEOM_BOX, halfExtents=[scale[0], 0.01, scale[2]]
         )

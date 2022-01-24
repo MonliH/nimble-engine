@@ -98,7 +98,9 @@ class PhysicsProcessor(Processor):
         for (_, component) in cast(World, self.world).get_component(PhysicsComponent):
             model_name = component.model.name
             if model_name not in self.added_entities:
-                collider = component.model.geometry.create_collision_shape(p)
+                collider = component.model.geometry.create_collision_shape(
+                    component.model.scale, p
+                )
                 self.added_entities[model_name] = (
                     p.createMultiBody(
                         0 if component.static.get_value() else 1,
@@ -119,7 +121,7 @@ class PhysicsProcessor(Processor):
             pos, rot = p.getBasePositionAndOrientation(body)
             model.set_position(pos)
             x, y, z = p.getEulerFromQuaternion(rot)
-            model.set_rotation((-x, -z, -y))
+            model.set_rotation((-x, -y, -z))
 
 
 class CustomComponent(Component):

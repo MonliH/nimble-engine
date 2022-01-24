@@ -52,7 +52,7 @@ class Scene(InputObserver, QAbstractListModel):
                 material,
                 geometry=Plane(),
                 name="Plane",
-                scale=Vector3((3, 1, 3)),
+                scale=Vector3((7, 1, 7)),
                 position=Vector3((0, -0.001, 0)),
             )
         )

@@ -85,7 +85,7 @@ class Axis:
 
 class TransformTools(SceneObserver, ModelObserver):
     def __init__(self, scale, camera: OrbitCamera):
-        self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, pi / 2, 0), dtype="f4"), scale)
+        self.x = Arrow(Vector3((1, 0, 0)), Vector3((0, 0, pi / 2), dtype="f4"), scale)
         self.y = Arrow(Vector3((0, 1, 0)), Vector3((0, 0, 0), dtype="f4"), scale)
         self.z = Arrow(Vector3((0, 0, 1)), Vector3((-pi / 2, 0, 0), dtype="f4"), scale)
 
