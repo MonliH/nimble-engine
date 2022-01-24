@@ -98,6 +98,11 @@ class Sphere(Geometry):
         )
 
     def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
+        if np.all(np.isclose(scale, scale[0])):
+            return p.createCollisionShape(
+                p.GEOM_SPHERE, radius=scale[0] * self.kwargs["radius"]
+            )
+
         return p.createCollisionShape(
             p.GEOM_MESH, vertices=self.verts * scale[np.newaxis, :], indices=self.idx
         )
@@ -302,5 +307,5 @@ class Plane(Geometry):
 
     def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
         return p.createCollisionShape(
-            p.GEOM_BOX, halfExtents=[scale[0], 0.01, scale[2]]
+            p.GEOM_BOX, halfExtents=[scale[0] / 2, 0.005, scale[2] / 2]
         )

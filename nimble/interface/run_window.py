@@ -1,11 +1,12 @@
 from typing import Callable, Optional, cast, Type
 import moderngl_window as mglw
 import moderngl as mgl
-from PyQt5.QtWidgets import QWidget, QPushButton, QMainWindow, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QMainWindow
 from PyQtAds.QtAds import ads
 from PyQt5 import QtGui
 
 from nimble.common import current_project, World
+from nimble.common.keys import Key, PressedKeys, is_key
 from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.viewport import ViewportWidget, Viewport
@@ -16,6 +17,7 @@ class GameViewport(Viewport):
     def __init__(self, *args):
         super().__init__(*args)
         self.world = World()
+        self.keys = PressedKeys()
         custom_components = []
         for model in self.scene.objects.values():
             entity_id = self.world.create_entity()
@@ -29,8 +31,10 @@ class GameViewport(Viewport):
                     and component.type_alias.startswith("custom_")
                 ):
                     custom_components.append(component)
+
         custom_script_processor = ScriptProcessor(custom_components)
         self.world.add_processor(custom_script_processor)
+        custom_script_processor.add_keys_attr(self.keys)
 
         physics_processor = PhysicsProcessor()
         self.world.add_processor(physics_processor)
@@ -48,10 +52,14 @@ class GameViewport(Viewport):
         self.scene.render(self.camera, self.active_buffer, screen)
 
     def key_released(self, event: QtGui.QKeyEvent):
-        pass
+        key = event.key()
+        if is_key(key):
+            self.keys[Key(event.key())] = False
 
     def key_pressed(self, event: QtGui.QKeyEvent):
-        pass
+        key = event.key()
+        if is_key(key):
+            self.keys[Key(event.key())] = True
 
     def mouse_pressed(self, event: QtGui.QMouseEvent):
         pass

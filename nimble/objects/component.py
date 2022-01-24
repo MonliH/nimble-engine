@@ -7,6 +7,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar, cast
 
 import nimble
 from nimble.common.ecs import Processor, World
+from nimble.common.keys import PressedKeys
 from nimble.interface.gui_logger import (
     with_gui_logging,
     with_gui_logging_default,
@@ -215,6 +216,10 @@ class ScriptProcessor(Processor):
         for pid, processor in self.processors.items():
             for (_, component) in self.world.get_component(pid):
                 processor.process(component.model)
+
+    def add_keys_attr(self, keys: PressedKeys):
+        for processor in self.processors.values():
+            processor.keys = keys
 
 
 class BaseComponent(Processor):
