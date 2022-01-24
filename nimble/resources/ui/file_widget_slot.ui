@@ -40,6 +40,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="file_widget_button">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
        <property name="text">
         <string>PushButton</string>
        </property>

@@ -1,11 +1,13 @@
-from typing import Optional
-from moderngl.program import Program
+from typing import Optional, Tuple
 import moderngl as mgl
 from pyrr.objects.matrix44 import Matrix44
 from nimble.common.shader_manager import Shaders
 from nimble.interface.orbit_camera import OrbitCamera
 
 from nimble.objects.geometry import Geometry
+
+
+default_color = (0.2, 0.2, 0.2)
 
 
 class Material:
@@ -16,14 +18,17 @@ class Material:
         draw_wireframe: bool = False,
         draw_bounding_box: bool = False,
         pass_model_matrix: bool = True,
+        color: Tuple[float, float, float] = default_color,
     ):
         self.shader = Shaders()[shader]
+        self.color = tuple(color)
         self.shader_name = shader
         self.params = {
             "pass_mvp": pass_mvp,
             "draw_wireframe": draw_wireframe,
             "draw_bounding_box": draw_bounding_box,
             "pass_model_matrix": pass_model_matrix,
+            "color": color,
         }
 
         self.wireframe = draw_wireframe
@@ -46,6 +51,10 @@ class Material:
         if self.pass_model_matrix and model is not None:
             self.shader["model"].write(model)
 
+    def set_color(self, color: Tuple[float, float, float] = default_color):
+        self.color = tuple(color)
+        self.params["color"] = self.color
+
     def render(
         self,
         camera: OrbitCamera,
@@ -54,6 +63,7 @@ class Material:
         bounding_box_buffer: mgl.VertexArray,
     ):
         self.write_matrix(camera, model)
+        self.shader["color"] = self.color
         geometry.vao.render(self.shader, mode=mgl.TRIANGLES)
 
         if self.wireframe:

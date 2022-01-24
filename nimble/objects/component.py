@@ -179,6 +179,9 @@ class ScriptProcessor(Processor):
     def get_processor_from_script(path: Optional[str]) -> Processor:
         from nimble.common import current_project
 
+        if path is None:
+            return BaseComponent()
+
         with open(current_project.folder / path, "r") as f:
             script_file_contents = f.read()
 
@@ -216,6 +219,9 @@ class ScriptProcessor(Processor):
 
 class BaseComponent(Processor):
     def init(self):
+        pass
+
+    def process(self, model: Model):
         pass
 
 

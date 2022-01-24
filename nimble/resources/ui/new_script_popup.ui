@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>118</height>
+    <height>113</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,9 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

@@ -19,7 +19,7 @@ class Arrow:
     def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
-        material = Material("constant_color", pass_mvp=True)
+        material = Material("constant_color", pass_mvp=True, color=tuple(color))
         self.axis_shader = material.shader
 
         line_height = 0.5
@@ -57,7 +57,6 @@ class Arrow:
         )
 
     def render(self, camera: OrbitCamera):
-        self.axis_shader["color"].write(self.color)
         self.line.render(camera)
         self.point.render(camera)
 

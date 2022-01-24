@@ -60,7 +60,6 @@ class Viewport(InputObserver, WindowObserver):
         self.scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
         self.active_vao = quad_fs()
-        self.viewport_material = Material("viewport")
 
     def render(self, screen: mgl.Framebuffer):
         mglw.activate_context(ctx=self.ctx)
@@ -222,7 +221,7 @@ class Viewport(InputObserver, WindowObserver):
         delete.triggered.connect(self.delete_current)
 
     def add_obj(self, name: str, cons: Type[Geometry]):
-        self.scene.add_obj(Model(self.viewport_material, geometry=cons(), name=name))
+        self.scene.add_obj(Model(Material("viewport"), geometry=cons(), name=name))
 
     def delete_current(self):
         self.scene.delete_obj(self.open_context)

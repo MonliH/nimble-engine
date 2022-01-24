@@ -1,5 +1,6 @@
 import math
 from typing import Callable, List, Optional, Tuple, cast
+from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -11,6 +12,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QWidget,
+    QColorDialog,
 )
 from pyrr.objects.vector3 import Vector3
 from PyQtAds.QtAds import ads
@@ -91,6 +93,23 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         self.scroll_area = cast(QScrollArea, self.scroll_area)
         self.scroll_area.setFrameShape(QAbstractItemView.NoFrame)
 
+        self.pick_color = cast(QPushButton, self.pick_color)
+        self.pick_color.pressed.connect(self.select_color)
+
+    def create_color(self):
+        return f"rgb({', '.join(str(int(f*255)) for f in self.active.material.color)})"
+
+    def select_color(self):
+        color = QColorDialog.getColor(
+            QColor(*(int(f * 255) for f in self.active.material.color)),
+            self,
+            "Select Color",
+            QColorDialog.DontUseNativeDialog,
+        )
+        rgb = (color.getRgb())[:3]
+        self.active.material.set_color(tuple(f / 255 for f in rgb))
+        self.update_view()
+
     def component_changed(self, idx: int):
         if self.components_types_list[idx] is None:
             self.add_component.setEnabled(False)
@@ -142,6 +161,11 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
                 for j, spinner in enumerate(spinner_row):
                     value = self.get_idx(i, self.active)[j]
                     spinner.setValue(value if i != 1 else math.degrees(value))
+            self.pick_color.setStyleSheet(
+                ";".join(self.pick_color.styleSheet().split(";")[:-1])
+                + f"; background-color: {self.create_color()}"
+            )
+            self.pick_color.repaint()
         else:
             self.object_name_title.setText(f"No object selected")
             self.entity_info.hide()

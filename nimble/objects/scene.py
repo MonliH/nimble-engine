@@ -39,14 +39,16 @@ class Scene(InputObserver, QAbstractListModel):
     @classmethod
     def default_scene(cls):
         scene = cls()
-        material = Material("viewport")
         cube = Model(
-            material, geometry=Cube(), name="Cube", position=Vector3((0, 0.5, 0))
+            Material("viewport"),
+            geometry=Cube(),
+            name="Cube",
+            position=Vector3((0, 0.5, 0)),
         )
         scene.add_obj(cube)
         scene.add_obj(
             Model(
-                material,
+                Material("viewport"),
                 geometry=Plane(),
                 name="Plane",
                 scale=Vector3((7, 1, 7)),
