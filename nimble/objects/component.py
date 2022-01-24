@@ -125,7 +125,7 @@ class PhysicsProcessor(Processor):
 
 
 def CustomComponentQuery(id) -> str:
-    return f"custom_{id}"
+    return f"custom_{id}.py"
 
 
 class CustomComponent(Component):
@@ -221,7 +221,9 @@ class BaseComponent(Processor):
 
 class NoProcessor(BaseComponent):
     def init(self):
-        logging.getLogger("nimble").error("No processor found")
+        logging.getLogger("nimble").error(
+            "No component found. There is likely some error above, which prevented a component from being loaded."
+        )
 
     def process(self, model: Model):
         pass

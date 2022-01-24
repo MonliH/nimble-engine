@@ -102,6 +102,10 @@ class Project(QFileSystemModel):
     def scene(self):
         return self._scene
 
+    @property
+    def project_file(self) -> Path:
+        return self.get_project_file(self.folder)
+
     def saved_project_is_open(self) -> bool:
         return self.folder is not None and self.name is not None
 

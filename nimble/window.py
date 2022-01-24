@@ -1,31 +1,37 @@
 import logging
-from typing import cast
-from PyQt5.QtGui import QFont, QFontDatabase
-import moderngl_window as mglw
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QDialog
-from PyQt5.QtCore import QSettings, Qt
-from PyQtAds.QtAds import ads
-from nimble.interface.run_window import RunWindow
+from pathlib import Path
+from typing import List, cast
 
-import nimble.resources.resources
+import moderngl_window as mglw
+from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow, QMenu, QAction
+from PyQtAds.QtAds import ads
+from numpy import delete
+
+import nimble.resources.resources  # Note: This is needed to load the qt resources. (don't remove this seemingly unused import!)
+from nimble.common import ProjectObserver, current_project
 from nimble.common.resources import load_ui
 from nimble.interface.entity_inspector import EntityInspector
 from nimble.interface.file_explorer import FileExplorer
-from nimble.interface.outline import OutlineWidget
 from nimble.interface.gui_logger import GuiLogger
+from nimble.interface.outline import OutlineWidget
 from nimble.interface.project_ui import OpenProject, OverwriteWarning, SaveProjectAs
+from nimble.interface.run_window import RunWindow
 from nimble.interface.viewport import ViewportWidget
-from nimble.common import ProjectObserver, current_project
 from nimble.objects import Scene
 
 
 class MainWindow(QMainWindow, ProjectObserver):
+    MaxRecentProjects = 5
+
     def __init__(self, parent=None):
         super().__init__(parent)
         current_project.add_observer("main_window", self)
         font_id = QFontDatabase().addApplicationFont(":/fonts/OpenSans-Regular.ttf")
         family = QFontDatabase().applicationFontFamilies(font_id)[0]
         QApplication.setFont(QFont(family))
+        self.settings = QSettings("jonathan_li", "nimble")
 
         self.setWindowState(Qt.WindowMaximized)
         self.show()
@@ -102,6 +108,16 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.restore_perspectives()
         self.project_changed()
 
+        self.menuOpen_Recent = cast(QMenu, self.menuOpen_Recent)
+        self.recent_project_actions: List[QAction] = []
+        for _ in range(self.MaxRecentProjects):
+            action = QAction()
+            self.recent_project_actions.append(action)
+            self.menuOpen_Recent.addAction(action)
+            action.triggered.connect(self.open_recent_project)
+
+        self.update_recent_projects()
+
     def add_popup(self, window: ads.CDockWidget):
         self.dock_manager.addDockWidgetFloating(window)
 
@@ -132,6 +148,7 @@ class MainWindow(QMainWindow, ProjectObserver):
             res = dialog.exec()
             if res == QDialog.Accepted:
                 current_project.new_project(dialog.folder, dialog.name)
+                self.add_recent_project(current_project.project_file)
 
     def open_project(self):
         overwrite = OverwriteWarning(self)
@@ -141,6 +158,7 @@ class MainWindow(QMainWindow, ProjectObserver):
             res = dialog.exec()
             if res == QDialog.Accepted:
                 current_project.load_project(dialog.filename)
+                self.add_recent_project(current_project.project_file)
 
     def save_project_as(self):
         dialog = SaveProjectAs(self)
@@ -150,9 +168,56 @@ class MainWindow(QMainWindow, ProjectObserver):
             current_project.set_project_name(dialog.folder, dialog.name)
             current_project.save_project()
             current_project.save_scene()
+            self.add_recent_project(current_project.project_file)
 
     def save_project(self):
         if not current_project.saved_project_is_open():
             self.save_project_as()
         else:
             current_project.save_scene()
+
+        self.add_recent_project(current_project.project_file)
+
+    def add_recent_project(self, path: Path):
+        recent_projects = self.settings.value("recent_projects", [], "QStringList")
+        path_str = str(path)
+        if path_str in recent_projects:
+            recent_projects.remove(path_str)
+
+        recent_projects.insert(0, path_str)
+        del recent_projects[MainWindow.MaxRecentProjects :]
+
+        self.settings.setValue("recent_projects", recent_projects)
+        self.update_recent_projects()
+
+    def update_recent_projects(self):
+        deleted_projects = []
+        recent_projects = self.settings.value("recent_projects", [], "QStringList")
+        for i, project in enumerate(recent_projects):
+            if not Path(project).exists():
+                deleted_projects.append(i)
+
+        deleted_projects.reverse()
+        for to_del in deleted_projects:
+            del recent_projects[to_del]
+
+        self.settings.setValue("recent_projects", recent_projects)
+
+        current_recent_files = min(len(recent_projects), MainWindow.MaxRecentProjects)
+        for i in range(current_recent_files):
+            path = Path(recent_projects[i])
+            action = self.recent_project_actions[i]
+            action.setText(path.parent.name)
+            action.setData(path)
+            action.setVisible(True)
+
+        for i in range(current_recent_files, MainWindow.MaxRecentProjects):
+            self.recent_project_actions[i].setVisible(False)
+
+    def open_recent_project(self):
+        action = self.sender()
+        if action:
+            path = action.data()
+            if path:
+                current_project.load_project(path)
+                self.add_recent_project(current_project.project_file)
