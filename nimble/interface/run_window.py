@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QMainWindow
 from PyQtAds.QtAds import ads
 from PyQt5 import QtGui
 
-from nimble.common import current_project, World
-from nimble.common.keys import Key, PressedKeys, is_key
+from nimble.common import current_project, Key, PressedKeys, is_key
+from nimble.common.world import World
 from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.viewport import ViewportWidget, Viewport

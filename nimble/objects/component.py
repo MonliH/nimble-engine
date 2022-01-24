@@ -6,13 +6,14 @@ import logging
 from typing import Any, Dict, Generic, List, Optional, TypeVar, cast
 
 import nimble
-from nimble.common.ecs import Processor, World
+from nimble.common.ecs import Processor
+from nimble.common.world import World
 from nimble.common.keys import PressedKeys
 from nimble.interface.gui_logger import (
     with_gui_logging,
     with_gui_logging_default,
 )
-from nimble.objects.model import Model
+from nimble.objects.model import LikeVector3, Model
 
 
 ComponentId = str
@@ -23,6 +24,7 @@ T = TypeVar("T")
 class SlotType(Enum):
     FILE = "file"
     BOOLEAN = "boolean"
+    FLOAT = "float"
 
 
 class Slot(ABC, Generic[T]):
@@ -71,8 +73,11 @@ class PhysicsComponent(Component):
         super().__init__()
         self._id = _id
         self.model = model
+        self.mass = Slot(
+            1 if slot_params is None else slot_params[0], "Mass", SlotType.FLOAT
+        )
         self.static = Slot(
-            False if slot_params is None else slot_params[0],
+            False if slot_params is None else slot_params[1],
             "Is static",
             SlotType.BOOLEAN,
         )
@@ -84,7 +89,24 @@ class PhysicsComponent(Component):
         return "physics"
 
     def slots(self) -> List[Slot]:
-        return [self.static]
+        return [self.mass, self.static]
+
+    def apply_force(self, force: LikeVector3):
+        p.applyExternalForce(
+            self._id,
+            -1,
+            list(force),
+            p.getBasePositionAndOrientation(self._id)[0],
+            p.LINK_FRAME,
+        )
+
+    @property
+    def id(self) -> Optional[int]:
+        return self._id
+
+    @id.setter
+    def id(self, value: Optional[int]):
+        self._id = value
 
 
 class PhysicsProcessor(Processor):
@@ -102,17 +124,19 @@ class PhysicsProcessor(Processor):
                 collider = component.model.geometry.create_collision_shape(
                     component.model.scale, p
                 )
-                self.added_entities[model_name] = (
-                    p.createMultiBody(
-                        0 if component.static.get_value() else 1,
-                        collider,
-                        basePosition=tuple(component.model.position.tolist()),
-                        baseOrientation=p.getQuaternionFromEuler(
-                            tuple(component.model.rotation.tolist())
-                        ),
+                body_id = p.createMultiBody(
+                    0 if component.static.get_value() else component.mass.get_value(),
+                    collider,
+                    basePosition=tuple(component.model.position.tolist()),
+                    baseOrientation=p.getQuaternionFromEuler(
+                        tuple(component.model.rotation.tolist())
                     ),
+                )
+                self.added_entities[model_name] = (
+                    body_id,
                     component.model,
                 )
+                component.id = body_id
 
     def process(self):
         for _ in range(4):

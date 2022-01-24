@@ -159,8 +159,9 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.object_name_input.setText(self.active.name)
             for i, spinner_row in enumerate(self.spinners):
                 for j, spinner in enumerate(spinner_row):
-                    value = self.get_idx(i, self.active)[j]
-                    spinner.setValue(value if i != 1 else math.degrees(value))
+                    if not spinner.hasFocus():
+                        value = self.get_idx(i, self.active)[j]
+                        spinner.setValue(value if i != 1 else math.degrees(value))
             self.pick_color.setStyleSheet(
                 ";".join(self.pick_color.styleSheet().split(";")[:-1])
                 + f"; background-color: {self.create_color()}"
@@ -203,5 +204,3 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
                 self.active.rotation_changed()
             elif row_idx == 2:
                 self.active.scale_changed()
-
-            self.update_view()

@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QSpacerItem,
     QSizePolicy,
+    QDoubleSpinBox,
 )
 from PyQt5.QtCore import Qt
 from PyQtAds.QtAds import ads
@@ -89,6 +90,26 @@ class FileWidget(QWidget):
                 self.options.setCurrentIndex(idx)
 
 
+class FloatWidget(QWidget):
+    def __init__(self, slot: Slot, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        assert slot.ty == SlotType.FLOAT
+        self.slot = slot
+
+        self.frame = QVBoxLayout(self)
+        self.frame.setContentsMargins(0, 0, 0, 0)
+        self.number = QDoubleSpinBox(self)
+        self.number.setValue(self.slot.get_value())
+        self.number.valueChanged.connect(self.update)
+        self.frame.addWidget(self.number)
+        self.frame.addItem(
+            QSpacerItem(0, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        )
+
+    def update(self) -> None:
+        self.slot.insert_in_slot(self.number.value())
+
+
 class SlotWidget(QWidget):
     def __init__(
         self,
@@ -103,8 +124,10 @@ class SlotWidget(QWidget):
 
         if slot.ty == SlotType.FILE:
             self.field.addWidget(FileWidget(slot, open_window, self))
-        if slot.ty == SlotType.BOOLEAN:
+        elif slot.ty == SlotType.BOOLEAN:
             self.field.addWidget(BooleanWidget(slot, self))
+        elif slot.ty == SlotType.FLOAT:
+            self.field.addWidget(FloatWidget(slot, self))
 
 
 class BooleanWidget(QWidget):

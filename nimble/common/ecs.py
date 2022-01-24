@@ -43,7 +43,7 @@ class Processor:
         pass
 
 
-class World:
+class BaseWorld:
     """A World object keeps track of all Entities, Components, and Processors.
     A World contains a database of all Entity/Component assignments. The World
     is also responsible for executing all Processors assigned to it for each
