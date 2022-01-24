@@ -5,14 +5,11 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QMainWindow, QVBoxLayout
 from PyQtAds.QtAds import ads
 from PyQt5 import QtGui
 
-from nimble.common.ecs import World
+from nimble.common import current_project, World
 from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.viewport import ViewportWidget, Viewport
-from nimble.objects.component import PhysicsProcessor, ScriptProcessor
-from nimble.objects.project import current_project
-from nimble.objects.scene import Scene
-from nimble.objects.geometry import Geometry
+from nimble.objects import PhysicsProcessor, ScriptProcessor, Scene, Geometry
 
 
 class GameViewport(Viewport):

@@ -1,17 +1,17 @@
-from math import dist, pi
+from math import pi
 from typing import Optional, Set, Tuple, Union
-from numpy.lib.type_check import real
 from pyrr import Vector3
-from nimble.objects.material import Material
 
-from nimble.objects.model import Model, ModelObserver
-from nimble.objects.geometry import Cylinder, Ray
-from nimble.objects.project import ProjectObserver
-from nimble.objects.scene import Scene, SceneObserver
+from nimble.objects import (
+    Material,
+    Model,
+    ModelObserver,
+    Cylinder,
+    SceneObserver,
+)
 import nimble.common.models.bounding_box as bounding_box
 import nimble.common.models.ray_cast as ray_cast
 
-from nimble.common.shader_manager import Shaders
 from ..orbit_camera import OrbitCamera
 
 

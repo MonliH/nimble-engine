@@ -124,6 +124,10 @@ class PhysicsProcessor(Processor):
             model.set_rotation((-x, -y, -z))
 
 
+def CustomComponentQuery(id) -> str:
+    return f"custom_{id}"
+
+
 class CustomComponent(Component):
     _unique_id = itertools.count()
 
@@ -173,7 +177,7 @@ class ScriptProcessor(Processor):
 
     @staticmethod
     def get_processor_from_script(path: Optional[str]) -> Processor:
-        from nimble.objects.project import current_project
+        from nimble.common import current_project
 
         with open(current_project.folder / path, "r") as f:
             script_file_contents = f.read()

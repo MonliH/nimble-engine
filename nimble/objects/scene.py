@@ -11,11 +11,8 @@ from pyrr import Vector3
 
 from nimble.common.event_listener import InputObserver
 from nimble.common.models.size import Size
-from nimble.common.shader_manager import Shaders
-from nimble.objects.geometry import Cube, Plane, Ray
-from nimble.objects.material import Material
-from nimble.objects.model import Model, ModelObserver
 import nimble.common.models.ray_cast as ray_cast
+from nimble.objects import Cube, Plane, Ray, Material, Model, ModelObserver
 
 
 class SceneObserver:

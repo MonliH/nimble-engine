@@ -1,5 +1,7 @@
 SCRIPT = """\
-from nimble.objects.component import BaseComponent
+from nimble.objects import BaseComponent
+
+
 class Component(BaseComponent):
 \tdef init(self):
 \t\t# Initializer; run once when the game starts.

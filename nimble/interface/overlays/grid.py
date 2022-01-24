@@ -1,12 +1,9 @@
-from moderngl_window.scene.camera import Camera
 import numpy as np
-from pyrr.objects.vector4 import Vector3
-from nimble.objects.material import Material
-from nimble.objects.model import Model
 import moderngl as mgl
-from nimble.interface.orbit_camera import OrbitCamera
-from nimble.common.shader_manager import Shaders
 from pyrr import Matrix44
+
+from nimble.objects import Vector3, Material, Model
+from nimble.interface.orbit_camera import OrbitCamera
 
 
 class Grid(Model):

@@ -1,6 +1,6 @@
 import math
 from typing import Callable, List, Optional, Tuple, cast
-from PyQt5.QtCore import QSize, QEvent
+from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -17,10 +17,15 @@ from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
 from nimble.interface.component_widget import ComponentWidget
-from nimble.objects.component import Component, CustomComponent, PhysicsComponent
-from nimble.objects.model import Model, ModelObserver
-from nimble.objects.scene import SceneObserver
-from nimble.objects.project import current_project
+from nimble.objects import (
+    Component,
+    CustomComponent,
+    PhysicsComponent,
+    Model,
+    ModelObserver,
+    SceneObserver,
+)
+from nimble.common import current_project
 
 
 class EntityInspector(QWidget, SceneObserver, ModelObserver):

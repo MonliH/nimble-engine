@@ -10,15 +10,20 @@ from moderngl_window.geometry.quad import quad_fs
 from pyrr.objects.matrix33 import Matrix33
 
 from nimble.common.models import ray_cast
-from nimble.common.shader_manager import Shaders
+from nimble.common import current_project, Shaders
 from nimble.common.event_listener import InputObserver, WindowObserver
 from nimble.common.models.size import ViewportSize
 from nimble.interface.orbit_camera import OrbitCamera
-from nimble.objects.geometry import Cube, Cylinder, Geometry, Plane, Sphere
-from nimble.objects.material import Material
-from nimble.objects.model import Model
-from nimble.objects.scene import Scene
-from nimble.objects.project import current_project
+from nimble.objects import (
+    Cube,
+    Cylinder,
+    Geometry,
+    Plane,
+    Sphere,
+    Material,
+    Model,
+    Scene,
+)
 from nimble.interface.overlays.grid import Grid
 from nimble.interface.overlays.object_controls import Axis, TransformTools
 

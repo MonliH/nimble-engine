@@ -14,8 +14,8 @@ from PyQtAds.QtAds import ads
 from nimble.common.resources import load_ui
 from nimble.interface.warning_popup import WarningPopup
 from nimble.interface.editor import Editor
-from nimble.objects.component import Component, Slot, SlotType
-from nimble.objects.project import current_project
+from nimble.objects import Component, Slot, SlotType
+from nimble.common import current_project
 
 
 class CreateScript(QDialog):

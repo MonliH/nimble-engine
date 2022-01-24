@@ -8,7 +8,7 @@ from PyQt5.QtGui import QIcon
 import json
 
 from nimble.common.serialize import serialize_scene, unserialize_scene
-from nimble.objects.scene import Scene
+from nimble.objects import Scene
 from nimble.resources import script_boilerplate
 
 

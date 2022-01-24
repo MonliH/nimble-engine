@@ -6,7 +6,7 @@ from PyQtAds.QtAds import ads
 from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
-from nimble.objects.project import current_project
+from nimble.common import current_project
 
 
 class EditorWidget(QsciScintilla):

@@ -2,9 +2,8 @@ from typing import Optional
 from PyQt5.QtWidgets import QListView, QWidget
 from PyQt5.QtCore import QItemSelection, pyqtSlot, QItemSelectionModel
 
-from nimble.objects.model import Model
-from nimble.objects.scene import SceneObserver
-from nimble.objects.project import current_project
+from nimble.objects import Model, SceneObserver
+from nimble.common import current_project
 
 
 class OutlineWidget(QListView, SceneObserver):

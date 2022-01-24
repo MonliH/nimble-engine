@@ -3,11 +3,7 @@ from typing import TYPE_CHECKING, Any, List
 
 from pyrr import Vector3
 
-from nimble.objects.geometry import Geometry
-from nimble.objects.model import Model
-from nimble.objects.scene import Scene
-from nimble.objects.material import Material
-from nimble.objects.component import Component
+from nimble.objects import Geometry, Model, Scene, Material, Component
 from nimble.objects import component, geometry
 
 

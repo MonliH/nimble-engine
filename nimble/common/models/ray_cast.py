@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 from pyrr import Vector3, Vector4
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
-from nimble.objects.model import Model
+from nimble.objects import Model
 
 
 # (origin, direction, inv_direction, sign)

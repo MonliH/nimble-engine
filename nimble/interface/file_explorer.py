@@ -5,7 +5,7 @@ from typing import Optional, cast
 from PyQt5.QtWidgets import QTreeView, QWidget, QFileSystemModel
 
 from nimble.common.resources import load_ui
-from nimble.objects.project import ProjectObserver, current_project
+from nimble.common import ProjectObserver, current_project
 
 
 class FileExplorer(QWidget, ProjectObserver):

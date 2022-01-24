@@ -15,8 +15,8 @@ from nimble.interface.outline import OutlineWidget
 from nimble.interface.gui_logger import GuiLogger
 from nimble.interface.project_ui import OpenProject, OverwriteWarning, SaveProjectAs
 from nimble.interface.viewport import ViewportWidget
-from nimble.objects.project import ProjectObserver, current_project
-from nimble.objects.scene import Scene
+from nimble.common import ProjectObserver, current_project
+from nimble.objects import Scene
 
 
 class MainWindow(QMainWindow, ProjectObserver):
