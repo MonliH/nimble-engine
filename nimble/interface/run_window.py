@@ -37,7 +37,7 @@ class GameViewport(Viewport):
                     custom_components.append(component)
 
         custom_script_processor = ScriptProcessor(custom_components)
-        self.world.add_processor(custom_script_processor)
+        self.world.add_processor(custom_script_processor, priority=1)
         custom_script_processor.add_keys_attr(self.keys)
 
         physics_processor = PhysicsProcessor()

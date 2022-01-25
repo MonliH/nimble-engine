@@ -93,6 +93,10 @@ class Model:
             self.components.extend(components)
 
         self._entity_id = None
+        self.active = True
+
+    def set_active(self, value: bool):
+        self.active = value
 
     def add_component(self, component: Component) -> int:
         insert_idx = len(self.components)

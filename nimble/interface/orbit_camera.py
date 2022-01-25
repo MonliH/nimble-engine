@@ -3,7 +3,7 @@ import typing
 from moderngl_window.opengl.projection import Projection3D
 from moderngl_window.scene.camera import Camera
 from pyrr import Vector3, Matrix44
-from math import acos, atan2, radians, sqrt, cos, sin, tan, pi
+from math import atan2, radians, sqrt, cos, sin, tan, pi
 import numpy as np
 import copy
 
@@ -30,7 +30,7 @@ class Spherical:
             self.theta = 0
             self.phi = 0
         else:
-            self.theta = acos(z / self.radius)
+            self.theta = atan2(sqrt(x * x + y * y), z)
             self.phi = atan2(y, x)
 
         return self

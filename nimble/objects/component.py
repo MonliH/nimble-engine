@@ -104,12 +104,15 @@ class PhysicsComponent(Component):
             p.WORLD_FRAME,
         )
 
+    def collides_with(self, other: PhysicsComponent) -> bool:
+        return len(p.getContactPoints(self._id, other._id)) > 0
+
     @property
-    def id(self) -> Optional[int]:
+    def body_id(self) -> Optional[int]:
         return self._id
 
-    @id.setter
-    def id(self, value: Optional[int]):
+    @body_id.setter
+    def body_id(self, value: Optional[int]):
         self._id = value
 
 
@@ -118,40 +121,56 @@ class PhysicsProcessor(Processor):
         super().__init__()
         self.client = p.connect(p.DIRECT)
         p.resetSimulation()
+        print(p.getPhysicsEngineParameters())
+        p.setPhysicsEngineParameter(
+            fixedTimeStep=1.0 / 120.0,
+            numSolverIterations=100,
+        )
         p.setGravity(0, -9.81, 0)
 
+    def add_rigid_body(self, component: PhysicsComponent, eid: int):
+        collider = component.model.geometry.create_collision_shape(
+            component.model.scale, p
+        )
+        body_id = p.createMultiBody(
+            0 if component.static.get_value() else component.mass.get_value(),
+            collider,
+            basePosition=tuple(component.model.position.tolist()),
+            baseOrientation=p.getQuaternionFromEuler(
+                tuple(component.model.rotation.tolist())
+            ),
+        )
+        self.added_entities[eid] = (body_id, component.model)
+        component.body_id = body_id
+
     def init(self):
-        self.added_entities: Dict[str, int] = {}
+        self.added_entities: Dict[int, int] = {}
         self.world: World = self.world
-        for (_, component) in self.world.get_component(PhysicsComponent):
-            model_name = component.model.name
-            if model_name not in self.added_entities:
-                collider = component.model.geometry.create_collision_shape(
-                    component.model.scale, p
-                )
-                body_id = p.createMultiBody(
-                    0 if component.static.get_value() else component.mass.get_value(),
-                    collider,
-                    basePosition=tuple(component.model.position.tolist()),
-                    baseOrientation=p.getQuaternionFromEuler(
-                        tuple(component.model.rotation.tolist())
-                    ),
-                )
-                self.added_entities[model_name] = (
-                    body_id,
-                    component.model,
-                )
-                component.id = body_id
+        for (eid, component) in self.world.get_component(PhysicsComponent):
+            if eid not in self.added_entities:
+                self.add_rigid_body(component, eid)
 
     def process(self):
-        for _ in range(4):
-            p.stepSimulation()
+        for (eid, component) in self.world.get_component(PhysicsComponent):
+            if not component.model.active:
+                if eid in self.added_entities:
+                    p.removeBody(component.body_id)
+                    del self.added_entities[eid]
+                continue
 
-        for (body, model) in self.added_entities.values():
-            pos, rot = p.getBasePositionAndOrientation(body)
-            model.set_position(pos)
-            x, y, z = p.getEulerFromQuaternion(rot)
-            model.set_rotation((-x, -y, -z))
+            if eid not in self.added_entities:
+                self.add_rigid_body(component, eid)
+
+        p.stepSimulation()
+
+        for (eid, component) in self.world.get_component(PhysicsComponent):
+            if not component.static.get_value():
+                pos, rot = p.getBasePositionAndOrientation(component.body_id)
+                component.model.set_position(pos)
+                x, y, z = p.getEulerFromQuaternion(rot)
+                component.model.set_rotation((-x, -y, -z))
+
+        p.performCollisionDetection()
 
 
 def CustomComponentQuery(id) -> str:
