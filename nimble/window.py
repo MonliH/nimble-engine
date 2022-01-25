@@ -82,6 +82,9 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.addAction(self.actionSave)
         self.actionSave.triggered.connect(self.save_project)
 
+        self.actionCopy.triggered.connect(current_project.copy)
+        self.actionPaste.triggered.connect(current_project.paste)
+
         self.play = ads.CDockWidget("Play")
         self.play.setWidget(RunWindow(self.add_popup))
         self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.play)

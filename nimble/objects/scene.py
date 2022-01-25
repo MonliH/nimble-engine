@@ -177,7 +177,8 @@ class Scene(InputObserver, QAbstractListModel):
         self, camera: Camera, active_fbo: Framebuffer, screen: Framebuffer
     ) -> None:
         for obj in self.objects.values():
-            obj.render(camera)
+            if obj.active:
+                obj.render(camera)
         active_fbo.clear()
         active = self.get_active()
         if active:

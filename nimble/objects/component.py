@@ -80,8 +80,11 @@ class PhysicsComponent(Component):
         self.mass = Slot(
             1 if slot_params is None else slot_params[0], "Mass", SlotType.FLOAT
         )
+        self.friction = Slot(
+            0.5 if slot_params is None else slot_params[1], "Friction", SlotType.FLOAT
+        )
         self.static = Slot(
-            False if slot_params is None else slot_params[1],
+            False if slot_params is None else slot_params[2],
             "Is static",
             SlotType.BOOLEAN,
         )
@@ -93,7 +96,7 @@ class PhysicsComponent(Component):
         return "physics"
 
     def slots(self) -> List[Slot]:
-        return [self.mass, self.static]
+        return [self.mass, self.friction, self.static]
 
     def apply_force(self, force: LikeVector3):
         p.applyExternalForce(
@@ -121,7 +124,6 @@ class PhysicsProcessor(Processor):
         super().__init__()
         self.client = p.connect(p.DIRECT)
         p.resetSimulation()
-        print(p.getPhysicsEngineParameters())
         p.setPhysicsEngineParameter(
             fixedTimeStep=1.0 / 120.0,
             numSolverIterations=100,
@@ -137,10 +139,14 @@ class PhysicsProcessor(Processor):
             collider,
             basePosition=tuple(component.model.position.tolist()),
             baseOrientation=p.getQuaternionFromEuler(
-                tuple(component.model.rotation.tolist())
+                tuple(-r for r in component.model.rotation.tolist())
             ),
         )
         self.added_entities[eid] = (body_id, component.model)
+        friction = component.friction.get_value()
+        p.changeDynamics(
+            body_id, -1, lateralFriction=friction, spinningFriction=friction * 0.01
+        )
         component.body_id = body_id
 
     def init(self):

@@ -7,7 +7,12 @@ from PyQt5.QtCore import QDir, QAbstractListModel, QFileSystemWatcher, QModelInd
 from PyQt5.QtGui import QIcon
 import json
 
-from nimble.common.serialize import serialize_scene, unserialize_scene
+from nimble.common.serialize import (
+    serialize_model,
+    serialize_scene,
+    unserialize_model,
+    unserialize_scene,
+)
 from nimble.objects import Scene
 from nimble.resources import script_boilerplate
 
@@ -90,6 +95,8 @@ class Project(QFileSystemModel):
         self._scene = Scene()
         self._scripts = ScriptList()
 
+        self.copied: Any = None
+
     @staticmethod
     def get_scene_file(folder: Path) -> Path:
         return folder / "scene.nimscn"
@@ -108,6 +115,17 @@ class Project(QFileSystemModel):
 
     def saved_project_is_open(self) -> bool:
         return self.folder is not None and self.name is not None
+
+    def copy(self):
+        if self.scene.has_object_selected is not None:
+            self.copied = serialize_model(self.scene.get_active())
+        else:
+            self.copied = None
+
+    def paste(self):
+        if self.copied is not None:
+            _id = self.scene.add_obj(unserialize_model(self.copied))
+            self.scene.set_active(_id)
 
     def save_scene(self):
         scene_dict = serialize_scene(current_project.scene)
