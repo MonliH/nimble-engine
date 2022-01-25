@@ -1,19 +1,23 @@
+from __future__ import annotations
 import pybullet as p
 from abc import ABC
 from enum import Enum
 import itertools
 import logging
-from typing import Any, Dict, Generic, List, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, cast
 
 import nimble
 from nimble.common.ecs import Processor
-from nimble.common.world import World
 from nimble.common.keys import PressedKeys
 from nimble.interface.gui_logger import (
     with_gui_logging,
     with_gui_logging_default,
 )
 from nimble.objects.model import LikeVector3, Model
+
+if TYPE_CHECKING:
+    from nimble.interface.orbit_camera import OrbitCamera
+    from nimble.common.world import World
 
 
 ComponentId = str
@@ -97,7 +101,7 @@ class PhysicsComponent(Component):
             -1,
             list(force),
             p.getBasePositionAndOrientation(self._id)[0],
-            p.LINK_FRAME,
+            p.WORLD_FRAME,
         )
 
     @property
@@ -118,7 +122,8 @@ class PhysicsProcessor(Processor):
 
     def init(self):
         self.added_entities: Dict[str, int] = {}
-        for (_, component) in cast(World, self.world).get_component(PhysicsComponent):
+        self.world: World = self.world
+        for (_, component) in self.world.get_component(PhysicsComponent):
             model_name = component.model.name
             if model_name not in self.added_entities:
                 collider = component.model.geometry.create_collision_shape(
@@ -262,3 +267,8 @@ class NoProcessor(BaseComponent):
 
     def process(self, model: Model):
         pass
+
+
+class CameraComponent:
+    def __init__(self, camera: OrbitCamera):
+        self.camera = camera

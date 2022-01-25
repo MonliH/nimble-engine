@@ -11,12 +11,16 @@ from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
 from nimble.interface.viewport import ViewportWidget, Viewport
 from nimble.objects import PhysicsProcessor, ScriptProcessor, Scene, Geometry
+from nimble.objects.component import CameraComponent
 
 
 class GameViewport(Viewport):
     def __init__(self, *args):
         super().__init__(*args)
         self.world = World()
+        camera = self.world.create_entity()
+        self.world.add_component(camera, CameraComponent(self.camera))
+
         self.keys = PressedKeys()
         custom_components = []
         for model in self.scene.objects.values():
