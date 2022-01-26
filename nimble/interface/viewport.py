@@ -21,7 +21,7 @@ from nimble.objects import (
     Plane,
     Sphere,
     Material,
-    Model,
+    Model3D,
     Scene,
 )
 from nimble.interface.overlays.grid import Grid
@@ -221,7 +221,7 @@ class Viewport(InputObserver, WindowObserver):
         delete.triggered.connect(self.delete_current)
 
     def add_obj(self, name: str, cons: Type[Geometry]):
-        self.scene.add_obj(Model(Material("viewport"), geometry=cons(), name=name))
+        self.scene.add_obj(Model3D(Material("viewport"), geometry=cons(), name=name))
 
     def delete_current(self):
         self.scene.delete_obj(self.open_context)
@@ -231,7 +231,7 @@ class Viewport(InputObserver, WindowObserver):
         clicked_object = self.open_context
         if clicked_object == -1:
             # No selected object, show general menu
-            menu.addSection("General actions")
+            menu.addSection("New Object")
             for action in self.general_actions:
                 menu.addAction(action)
         else:

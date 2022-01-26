@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Type
 from nimble.common.ecs import BaseWorld, _C
-from nimble.objects.model import Model
+from nimble.objects.model_3d import Model3D
 from nimble.objects.component import CameraComponent
 
 if TYPE_CHECKING:
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class World(BaseWorld):
-    def get_obj_component(self, obj: Model, component: Type[_C]) -> _C:
+    def get_obj_component(self, obj: Model3D, component: Type[_C]) -> _C:
         return self.component_for_entity(obj.entity_id, component)
 
     def get_camera(self) -> Optional[OrbitCamera]:

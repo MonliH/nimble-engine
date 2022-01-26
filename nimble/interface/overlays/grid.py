@@ -2,11 +2,11 @@ import numpy as np
 import moderngl as mgl
 from pyrr import Matrix44
 
-from nimble.objects import Vector3, Material, Model
+from nimble.objects import Vector3, Material, Model3D
 from nimble.interface.orbit_camera import OrbitCamera
 
 
-class Grid(Model):
+class Grid(Model3D):
     def __init__(self, grid_size, ctx):
         super().__init__(Material("grid", pass_model_matrix=False))
         self.grid_size = grid_size

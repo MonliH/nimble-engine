@@ -23,11 +23,14 @@ from nimble.objects import (
     Component,
     CustomComponent,
     PhysicsComponent,
-    Model,
+    BaseModel,
     ModelObserver,
     SceneObserver,
 )
 from nimble.common import current_project
+from nimble.objects.base_model import BaseModel
+from nimble.objects.model_2d import Model2D
+from nimble.objects.model_3d import Model3D
 
 
 class EntityInspector(QWidget, SceneObserver, ModelObserver):
@@ -129,7 +132,7 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         if ComponentCons is not None:
             self.active.add_component(ComponentCons(self.active))
 
-    def select_changed(self, idx: int, obj: Optional[Model]) -> None:
+    def select_changed(self, idx: int, obj: Optional[BaseModel]) -> None:
         if obj is not self.active:
             self.active = obj
             self.active_idx = idx
@@ -140,13 +143,14 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             if self.active is not None:
                 for component in self.active.components:
                     self.add_component_to_list(-1, component)
+                self.object_name_input.setText(self.active.name)
 
             self.update_view()
 
-    def component_removed(self, _obj: Model, component_id: int) -> None:
+    def component_removed(self, _obj: BaseModel, component_id: int) -> None:
         self.remove_component(component_id)
 
-    def component_added(self, obj: Model, component_id: int) -> None:
+    def component_added(self, obj: BaseModel, component_id: int) -> None:
         self.add_component_to_list(-1, obj.components[component_id])
 
     def minimumSizeHint(self) -> QSize:
@@ -156,12 +160,21 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
         if self.active is not None:
             self.object_name_title.setText(f"Object ({self.active.name})")
             self.entity_info.show()
-            self.object_name_input.setText(self.active.name)
             for i, spinner_row in enumerate(self.spinners):
+                values = self.get_idx(i, self.active)
                 for j, spinner in enumerate(spinner_row):
                     if not spinner.hasFocus():
-                        value = self.get_idx(i, self.active)[j]
-                        spinner.setValue(value if i != 1 else math.degrees(value))
+                        if values is not None and len(values) > j:
+                            print(values, i, j)
+                            value = values[j]
+                            spinner.setValue(value if i != 1 else math.degrees(value))
+                        else:
+                            vstack: QVBoxLayout = getattr(
+                                self, f"verticalLayout_{i * 3 + j+1}"
+                            )
+                            for i in range(vstack.count()):
+                                vstack.itemAt(i).widget().setDisabled(True)
+
             self.pick_color.setStyleSheet(
                 ";".join(self.pick_color.styleSheet().split(";")[:-1])
                 + f"; background-color: {self.create_color()}"
@@ -171,26 +184,27 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.object_name_title.setText(f"No object selected")
             self.entity_info.hide()
 
-    def obj_name_changed(self, idx: int, obj: Model):
+    def obj_name_changed(self, idx: int, obj: BaseModel):
         if self.active_idx == idx:
             self.update_view()
 
     def rename_object(self, new_name: str):
         if self.active is not None:
             current_project.scene.rename_obj(self.active_idx, new_name)
-            self.object_name_input.setText(new_name)
 
-    def translation_changed(self, obj: Model) -> None:
+    def translation_changed(self, obj: BaseModel) -> None:
         self.update_view()
 
     @staticmethod
-    def get_idx(idx: int, obj: Model) -> Vector3:
+    def get_idx(idx: int, obj: BaseModel) -> Vector3:
         if idx == 0:
             return obj.position
-        elif idx == 1:
-            return obj.rotation
-        elif idx == 2:
-            return obj.scale
+
+        if isinstance(obj, Model3D):
+            if idx == 1:
+                return obj.rotation
+            elif idx == 2:
+                return obj.scale
 
     def spinner_changed(self, row_idx: int, vector_idx: int):
         if self.active is not None:

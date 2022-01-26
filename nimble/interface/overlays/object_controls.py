@@ -4,7 +4,7 @@ from pyrr import Vector3
 
 from nimble.objects import (
     Material,
-    Model,
+    Model3D,
     ModelObserver,
     Cylinder,
     SceneObserver,
@@ -26,7 +26,7 @@ class Arrow:
         height = line_height * 0.35
         line_radius = 0.015
 
-        self.line = Model(
+        self.line = Model3D(
             material,
             Cylinder(
                 height=line_height,
@@ -37,7 +37,7 @@ class Arrow:
             rotation=rotation,
             scale=Vector3((scale,) * 3, dtype="f4"),
         )
-        self.point = Model(
+        self.point = Model3D(
             material,
             Cylinder(
                 height=height,
@@ -89,15 +89,18 @@ class TransformTools(SceneObserver, ModelObserver):
         self.z = Arrow(Vector3((0, 0, 1)), Vector3((-pi / 2, 0, 0), dtype="f4"), scale)
 
         self.dragged = None
-        self.active: Optional[Model] = None
+        self.active: Optional[Model3D] = None
         self.translating = False
         self.plane = None
         self.camera = camera
 
-    def select_changed(self, idx: int, obj: Model) -> None:
-        self.set_active(obj)
-        if obj is not None:
-            self.translation_changed(obj)
+    def select_changed(self, idx: int, obj: Model3D) -> None:
+        if isinstance(obj, Model3D):
+            self.set_active(obj)
+            if obj is not None:
+                self.translation_changed(obj)
+        else:
+            self.set_active(None)
 
     def render(self):
         self.x.render(self.camera)
@@ -122,7 +125,7 @@ class TransformTools(SceneObserver, ModelObserver):
         self.translating = False
         self.length = None
 
-    def set_active(self, active: Optional[Model]):
+    def set_active(self, active: Optional[Model3D]):
         if active is not None:
             self.active = active
             normal = self.camera.position - self.active.position
@@ -133,7 +136,7 @@ class TransformTools(SceneObserver, ModelObserver):
         self.y.set_position(position)
         self.z.set_position(position)
 
-    def translation_changed(self, obj: Model) -> None:
+    def translation_changed(self, obj: Model3D) -> None:
         self.update_position(obj.position)
 
     @staticmethod

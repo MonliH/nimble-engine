@@ -2,7 +2,7 @@ from typing import Optional
 from PyQt5.QtWidgets import QListView, QWidget
 from PyQt5.QtCore import QItemSelection, pyqtSlot, QItemSelectionModel
 
-from nimble.objects import Model, SceneObserver
+from nimble.objects import Model3D, SceneObserver
 from nimble.common import current_project
 
 
@@ -20,7 +20,7 @@ class OutlineWidget(QListView, SceneObserver):
         if selected.indexes():
             current_project.scene.set_active(selected.indexes()[0].row())
 
-    def select_changed(self, idx: int, obj: Optional[Model]):
+    def select_changed(self, idx: int, obj: Optional[Model3D]):
         if idx >= 0:
             self.selection_model.setCurrentIndex(
                 self.model().index(idx), QItemSelectionModel.ClearAndSelect

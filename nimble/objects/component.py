@@ -13,7 +13,7 @@ from nimble.interface.gui_logger import (
     with_gui_logging,
     with_gui_logging_default,
 )
-from nimble.objects.model import LikeVector3, Model
+from nimble.objects.model_3d import LikeVector3, Model3D
 
 if TYPE_CHECKING:
     from nimble.interface.orbit_camera import OrbitCamera
@@ -70,7 +70,7 @@ class Component:
 class PhysicsComponent(Component):
     def __init__(
         self,
-        model: Model,
+        model: Model3D,
         _id: Optional[int] = None,
         slot_params: Optional[List[Any]] = None,
     ):
@@ -188,7 +188,7 @@ class CustomComponent(Component):
 
     def __init__(
         self,
-        model: Model,
+        model: Model3D,
         _id: Optional[int] = None,
         slot_params: Optional[List[Any]] = None,
     ):
@@ -280,7 +280,7 @@ class BaseComponent(Processor):
     def init(self):
         pass
 
-    def process(self, model: Model):
+    def process(self, model: Model3D):
         pass
 
 
@@ -290,7 +290,7 @@ class NoProcessor(BaseComponent):
             "No component found. There is likely some error above, which prevented a component from being loaded."
         )
 
-    def process(self, model: Model):
+    def process(self, model: Model3D):
         pass
 
 

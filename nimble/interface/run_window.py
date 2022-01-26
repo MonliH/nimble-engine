@@ -66,9 +66,7 @@ class GameViewport(Viewport):
         self.scene.render(self.camera, self.active_buffer, screen)
 
         w, h = self.screen_size.as_tuple
-        # self.overlay_buffer.write(
-        #     np.tile([0, 255, 0, 128], w * h).astype("u1").tobytes()
-        # )
+        self.overlay_buffer.write(np.tile([0, 0, 0, 0], w * h).astype("u1").tobytes())
         self.overlay_buffer.use(location=0)
         self.overlay_buffer.repeat_x = False
         self.overlay_buffer.repeat_y = False

@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 from pyrr import Vector3, Vector4
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
-from nimble.objects import Model
+from nimble.objects import Model3D
 
 
 # (origin, direction, inv_direction, sign)
@@ -47,7 +47,7 @@ def get_pos(x: int, y: int, camera: OrbitCamera) -> Vector3:
     return world
 
 
-def get_ray_between(camera: OrbitCamera, obj: Model) -> Ray:
+def get_ray_between(camera: OrbitCamera, obj: Model3D) -> Ray:
     """Get the ray between the camera and an object in the global axes."""
     direction = (obj.model_matrix * obj.position) - camera.position
     return create_ray(camera.position, direction)

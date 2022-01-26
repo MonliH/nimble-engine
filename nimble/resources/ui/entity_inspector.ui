@@ -99,7 +99,7 @@
        <item>
         <layout class="QHBoxLayout" name="position_group">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_1">
            <item>
             <widget class="QLabel" name="label_x">
              <property name="font">
@@ -163,7 +163,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout">
+          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <widget class="QLabel" name="label">
              <property name="font">
@@ -334,6 +334,9 @@
           <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
             <widget class="QLabel" name="label_5">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
              <property name="font">
               <font>
                <family>Open Sans</family>

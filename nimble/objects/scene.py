@@ -1,4 +1,5 @@
 from __future__ import annotations
+from PIL import ImageFont
 from typing import Any, List, Optional, Dict, Tuple
 from PyQt5 import QtCore
 
@@ -7,29 +8,32 @@ from PyQt5 import QtGui
 
 from moderngl.framebuffer import Framebuffer
 from moderngl_window.scene.camera import Camera
+from numpy import isin
 from pyrr import Vector3
 
 from nimble.common.event_listener import InputObserver
 from nimble.common.models.size import Size
 import nimble.common.models.ray_cast as ray_cast
-from nimble.objects import Cube, Plane, Ray, Material, Model, ModelObserver
+from nimble.objects import Cube, Plane, Ray, Material, Model3D, ModelObserver
+from nimble.objects.base_model import BaseModel
+from nimble.objects.model_2d import Model2D, TextModel
 
 
 class SceneObserver:
-    def select_changed(self, idx: int, obj: Optional[Model]) -> None:
+    def select_changed(self, idx: int, obj: Optional[Model3D]) -> None:
         pass
 
     def obj_deleted(self, deleted_idx: int) -> None:
         pass
 
-    def obj_name_changed(self, idx: int, obj: Model) -> None:
+    def obj_name_changed(self, idx: int, obj: Model3D) -> None:
         pass
 
 
 class Scene(InputObserver, QAbstractListModel):
     def __init__(self) -> None:
         super().__init__()
-        self.objects: Dict[str, Model] = {}
+        self.objects: Dict[str, BaseModel] = {}
         self.objects_list: List[str] = []
         self.active_idx = -1
 
@@ -39,15 +43,21 @@ class Scene(InputObserver, QAbstractListModel):
     @classmethod
     def default_scene(cls):
         scene = cls()
-        cube = Model(
+        cube = Model3D(
             Material("viewport"),
             geometry=Cube(),
             name="Cube",
             position=Vector3((0, 0.5, 0)),
         )
+        scene.add_obj(
+            TextModel(
+                initial_text="Hello World",
+                name="Text",
+            )
+        )
         scene.add_obj(cube)
         scene.add_obj(
-            Model(
+            Model3D(
                 Material("viewport"),
                 geometry=Plane(),
                 name="Plane",
@@ -132,7 +142,7 @@ class Scene(InputObserver, QAbstractListModel):
             for observer in self.observers:
                 observer.obj_deleted(idx)
 
-    def get_obj_from_idx(self, idx: int) -> Optional[Model]:
+    def get_obj_from_idx(self, idx: int) -> Optional[Model3D]:
         if 0 <= idx < len(self.objects_list):
             return self.objects[self.objects_list[idx]]
 
@@ -140,11 +150,11 @@ class Scene(InputObserver, QAbstractListModel):
         if 0 <= idx < len(self.objects_list):
             return self.objects_list[idx]
 
-    def get_active(self) -> Optional[Model]:
+    def get_active(self) -> Optional[Model3D]:
         if self.active in self.objects:
             return self.objects[self.active]
 
-    def add_obj(self, obj: Model) -> int:
+    def add_obj(self, obj: BaseModel) -> int:
         name = obj.name
         object_name = name if name not in self.objects else self.get_new_name(name)
         obj.set_name(object_name)
@@ -161,10 +171,10 @@ class Scene(InputObserver, QAbstractListModel):
             self.index(start, 0), self.index(end, 0), [Qt.DisplayRole]
         )
 
-    def get_obj(self, name: str) -> Model:
+    def get_obj(self, name: str) -> Model3D:
         return self.objects[name]
 
-    def __getitem__(self, key: str) -> Model:
+    def __getitem__(self, key: str) -> Model3D:
         return self.objects[key]
 
     def get_new_name(self, name: str) -> str:
@@ -191,14 +201,15 @@ class Scene(InputObserver, QAbstractListModel):
         min_dist_obj = None
         for i, obj_str in enumerate(self.objects_list):
             obj = self.objects[obj_str]
-            dist = ray_cast.ray_intersect(
-                obj.bounding_box_world,
-                ray,
-            )
-            if dist is not None:
-                if dist[0] < min_dist:
-                    min_dist_obj = (obj_str, i)
-                    min_dist = dist[0]
+            if isinstance(obj, Model3D):
+                dist = ray_cast.ray_intersect(
+                    obj.bounding_box_world,
+                    ray,
+                )
+                if dist is not None:
+                    if dist[0] < min_dist:
+                        min_dist_obj = (obj_str, i)
+                        min_dist = dist[0]
 
         return min_dist_obj
 

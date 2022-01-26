@@ -7,6 +7,7 @@ from pyrr import Matrix44, Vector3
 
 from nimble.interface.orbit_camera import OrbitCamera
 from nimble.common.models.bounding_box import BoundingBox
+from nimble.objects.base_model import BaseModel, ModelObserver
 from nimble.objects.material import Material
 from .geometry import Geometry
 from nimble.common.shader_manager import Shaders
@@ -19,45 +20,28 @@ if TYPE_CHECKING:
 LikeVector3 = Union[Vector3, Tuple[int, int, int], List[int]]
 
 
-class ModelObserver:
-    def translation_changed(self, obj: Model) -> None:
-        pass
-
-    def scale_changed(self, obj: Model) -> None:
-        pass
-
-    def rotation_changed(self, obj: Model) -> None:
-        pass
-
-    def component_added(self, obj: Model, component_id: int) -> None:
-        pass
-
-    def component_removed(self, obj: Model, component_id: int) -> None:
-        pass
-
-
 def to_vec3(v: LikeVector3) -> Vector3:
     if isinstance(v, Vector3):
         return v
     return Vector3(v, dtype="f4")
 
 
-class Model:
+class Model3D(BaseModel):
     def __init__(
         self,
         material: Material,
         geometry: Optional[Geometry] = None,
-        name: Optional[str] = None,
         rotation: Optional[Vector3] = None,
         position: Optional[Vector3] = None,
         scale: Optional[Vector3] = None,
-        components: Optional[List[Component]] = None,
+        **kwargs
     ):
+        super().__init__(**kwargs)
+
         if not isinstance(material, Material):
             raise TypeError("`material` must be of type Material")
 
         self.material = material
-        self.name = name
 
         self.rotation = Vector3((0, 0, 0), dtype="f4")
         self.position = Vector3((0, 0, 0), dtype="f4")
@@ -85,48 +69,6 @@ class Model:
         ctx: mgl.Context = mglw.ctx()
         self.verts = ctx.buffer(indicies)
         self.transform_changed()
-
-        self.observers: Dict[str, ModelObserver] = {}
-
-        self.components: List[Component] = []
-        if components is not None:
-            self.components.extend(components)
-
-        self._entity_id = None
-        self.active = True
-
-    def set_active(self, value: bool):
-        self.active = value
-
-    def add_component(self, component: Component) -> int:
-        insert_idx = len(self.components)
-        self.components.append(component)
-        for observer in self.observers.values():
-            observer.component_added(self, insert_idx)
-        return insert_idx
-
-    def remove_component(self, component_id: ComponentId):
-        idx = custom_index(self.components, lambda c: c.id == component_id)
-
-        del self.components[idx]
-
-        for observer in self.observers.values():
-            observer.component_removed(self, idx)
-
-    def set_name(self, new_name: str):
-        self.name = new_name
-
-    def register_observer(self, observer: ModelObserver, idx: str):
-        self.observers[idx] = observer
-
-    def unregister_observer(self, idx: str):
-        del self.observers[idx]
-
-    def set_all_observers(self, observers: Dict[str, ModelObserver]):
-        self.observers = observers
-
-    def remove_all_observers(self):
-        self.observers = {}
 
     def update_bounding_render(self):
         i = self.bounding_box_world[0]
@@ -213,11 +155,3 @@ class Model:
         self.material.render(
             camera, self.geometry, self.model_matrix, self.bounding_box_buffer
         )
-
-    @property
-    def entity_id(self) -> Optional[int]:
-        return self._entity_id
-
-    @entity_id.setter
-    def entity_id(self, value: int):
-        self._entity_id = value
