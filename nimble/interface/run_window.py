@@ -1,11 +1,14 @@
+import struct
 from typing import Callable, Optional, cast, Type
 import moderngl_window as mglw
 import moderngl as mgl
 from PyQt5.QtWidgets import QWidget, QPushButton, QMainWindow
 from PyQtAds.QtAds import ads
 from PyQt5 import QtGui
+import numpy as np
 
 from nimble.common import current_project, Key, PressedKeys, is_key
+from nimble.common.shader_manager import Shaders
 from nimble.common.world import World
 from nimble.common.resources import load_ui
 from nimble.common.serialize import serialize_scene, unserialize_scene
@@ -43,17 +46,36 @@ class GameViewport(Viewport):
         physics_processor = PhysicsProcessor()
         self.world.add_processor(physics_processor)
 
+        self.overlay_buffer = None
+
+    def regen_active_buffer(self):
+        super().regen_active_buffer()
+        if self.overlay_buffer:
+            self.overlay_buffer.release()
+            self.overlay_buffer = None
+
+        self.overlay_buffer = self.ctx.texture(self.screen_size.as_tuple, 4)
+
     def render(self, screen: mgl.Framebuffer):
+        self.ctx.blend_func = mgl.SRC_ALPHA, mgl.ONE_MINUS_SRC_ALPHA
         self.world.process()
-
         mglw.activate_context(ctx=self.ctx)
-        self.ctx.enable_only(mgl.DEPTH_TEST | mgl.BLEND)
+        self.ctx.enable(mgl.BLEND | mgl.DEPTH_TEST)
         self.ctx.clear(0.235, 0.235, 0.235)
-        self.active_buffer.use()
-        self.ctx.clear()
         screen.use()
-
         self.scene.render(self.camera, self.active_buffer, screen)
+
+        w, h = self.screen_size.as_tuple
+        # self.overlay_buffer.write(
+        #     np.tile([0, 255, 0, 128], w * h).astype("u1").tobytes()
+        # )
+        self.overlay_buffer.use(location=0)
+        self.overlay_buffer.repeat_x = False
+        self.overlay_buffer.repeat_y = False
+        texture_shader = Shaders()["texture"]
+
+        self.ctx.enable(mgl.BLEND)
+        self.overlay_vao.render(texture_shader)
 
     def key_released(self, event: QtGui.QKeyEvent):
         key = event.key()

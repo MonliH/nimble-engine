@@ -19,6 +19,7 @@ class Shaders(metaclass=Singleton):
         self.load("bounding_box", shader("bounding_box.glsl"))
         self.load("outline_filter", shader("outline_filter.glsl"))
         self.load("ray", shader("ray.glsl"))
+        self.load("texture", shader("texture.glsl"))
 
     def load(self, name: str, path: str) -> Program:
         if name in self.shaders:

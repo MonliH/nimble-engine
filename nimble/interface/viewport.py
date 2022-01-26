@@ -59,7 +59,7 @@ class Viewport(InputObserver, WindowObserver):
         self.active_tools = TransformTools(axis_rel_scale, self.camera)
         self.scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
-        self.active_vao = quad_fs()
+        self.overlay_vao = quad_fs()
 
     def render(self, screen: mgl.Framebuffer):
         mglw.activate_context(ctx=self.ctx)
@@ -82,7 +82,7 @@ class Viewport(InputObserver, WindowObserver):
             Matrix33([[1, 1, 1], [1, -8, 1], [1, 1, 1]], dtype="f4") / 16
         )
         screen.use()
-        self.active_vao.render(Shaders()["outline_filter"])
+        self.overlay_vao.render(Shaders()["outline_filter"])
 
         if self.scene.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
