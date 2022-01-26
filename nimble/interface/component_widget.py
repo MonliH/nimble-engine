@@ -8,8 +8,10 @@ from PyQt5.QtWidgets import (
     QSpacerItem,
     QSizePolicy,
     QDoubleSpinBox,
+    QComboBox,
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QWheelEvent
 from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
@@ -17,6 +19,14 @@ from nimble.interface.warning_popup import WarningPopup
 from nimble.interface.editor import Editor
 from nimble.objects import Component, Slot, SlotType
 from nimble.common import current_project
+
+
+class NoScrollComboBox(QComboBox):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+
+    def wheelEvent(self, e: QWheelEvent) -> None:
+        e.ignore()
 
 
 class CreateScript(QDialog):
