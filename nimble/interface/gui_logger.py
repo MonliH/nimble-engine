@@ -3,10 +3,8 @@ from io import TextIOBase
 from typing import Optional, cast
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget
 import logging
-
-from importlib_metadata import functools
-
-from PySide2 import sys
+import functools
+import sys
 
 from nimble.common.resources import load_ui
 

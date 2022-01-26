@@ -1,8 +1,7 @@
 import numpy as np
 from typing import Optional
-from PIL import Image, ImageDraw
+from PIL import Image
 from moderngl.texture import Texture
-from numpy import ndarray
 
 from nimble.common.ecs import Processor
 from nimble.common.world import World

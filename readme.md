@@ -1,7 +1,9 @@
 # nimble-engine
 
 Nimble Engine is a basic 3d game engine written in python. 
-It renders the 3d models using low level GLSL shaders (with OpenGL).
+It renders the 3d models using low level GLSL shaders (with OpenGL). 
+Before you ask: *yes*, I know, this is probably not suitable for super-serious 
+games, because python is slow. It's more for learning purposes, like pygame.
 
 <br>
 

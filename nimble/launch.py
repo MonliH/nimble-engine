@@ -1,3 +1,4 @@
+import os
 import faulthandler
 from PyQt5.QtCore import QCoreApplication, Qt
 from PyQt5.QtWidgets import QApplication
@@ -10,8 +11,8 @@ def start():
 
     QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
-    wnd = MainWindow()
-    sys.exit(app.exec_())
+    MainWindow()
+    os._exit(app.exec_())
 
 
 if __name__ == "__main__":
