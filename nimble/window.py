@@ -139,7 +139,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.dock_manager.savePerspectives(settings)
 
     def restore_perspectives(self):
-        settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
+        settings = QSettings(":/default_prefs.ini", QSettings.IniFormat)
         self.dock_manager.loadPerspectives(settings)
         self.dock_manager.openPerspective("default")
 

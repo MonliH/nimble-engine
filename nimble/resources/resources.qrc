@@ -26,5 +26,7 @@
     <file>shaders/ray.glsl</file>
     <file>shaders/texture.glsl</file>
     <file>shaders/viewport.glsl</file>
+
+    <file>default_prefs.ini</file>
   </qresource>
 </RCC>
