@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="186.47179mm"
+   height="105.18007mm"
+   viewBox="0 0 186.47179 105.18007"
+   version="1.1"
+   id="svg827"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20, custom)"
+   sodipodi:docname="splash.svg"
+   inkscape:export-filename="/home/jonathan/Documents/programming/school/nimble-engine/nimble/resources/img/splash.png"
+   inkscape:export-xdpi="81.72818"
+   inkscape:export-ydpi="81.72818"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview829"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.0494603"
+     inkscape:cx="332.07545"
+     inkscape:cy="277.28538"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="256"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <defs
+     id="defs824">
+    <rect
+       x="167.09776"
+       y="389.00641"
+       width="503.98843"
+       height="51.207382"
+       id="rect61718" />
+    <rect
+       x="149.57945"
+       y="257.03094"
+       width="571.36658"
+       height="223.6954"
+       id="rect5532" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient1536">
+      <stop
+         style="stop-color:#0e74ff;stop-opacity:1"
+         offset="0"
+         id="stop1532" />
+      <stop
+         style="stop-color:#32b9ff;stop-opacity:1"
+         offset="1"
+         id="stop1534" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1536"
+       id="linearGradient1538"
+       x1="14.261705"
+       y1="114.89146"
+       x2="161.87035"
+       y2="114.89146"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.263285,0,0,1,5.1586723,-10.430084)" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-23.175268,-51.871346)">
+    <rect
+       style="fill:url(#linearGradient1538);fill-opacity:1;stroke-width:1.852;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect914"
+       width="186.47179"
+       height="105.18007"
+       x="23.175268"
+       y="51.871346"
+       ry="0" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-1.4261705,-14.97479)"
+       id="text5530"
+       style="font-style:normal;font-weight:normal;font-size:192px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect5532);fill:#ffffff;fill-opacity:1;stroke:none"><tspan
+         x="149.58008"
+         y="420.99925"
+         id="tspan1046"><tspan
+           style="font-weight:bold;font-size:133.333px;font-family:'Google Sans';-inkscape-font-specification:'Google Sans'"
+           id="tspan1044">Nimble.</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-4.2785114,-0.35654265)"
+       id="text61716"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect61718);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="167.09766"
+         y="425.40062"
+         id="tspan1050"><tspan
+           style="font-weight:600;font-family:'Open Sans';-inkscape-font-specification:'Open Sans Semi-Bold';fill:#ffffff"
+           id="tspan1048">The Python Game Engine</tspan></tspan></text>
+  </g>
+</svg>

@@ -44,3 +44,17 @@ Then run:
 ```
 python -m nimble
 ```
+
+## building into an executable
+
+For now, nimble uses pyinstaller to bundle everything into an executable. Make sure it is installed:
+
+```bash
+pip install pyinstaller
+```
+
+Then build using the `nimble.spec` file:
+
+```bash
+pyinstaller nimble.spec
+```
