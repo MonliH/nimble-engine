@@ -13,8 +13,14 @@ import sys
 from nimble.window import MainWindow
 
 import ctypes
-app_id = u'jonathan.li.nimble.main'
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
+app_id = u"jonathan.li.nimble.main"
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+except AttributeError:
+    # Not running on windows
+    pass
+
 
 def start():
     faulthandler.enable()
