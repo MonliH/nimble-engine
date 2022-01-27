@@ -1,25 +1,30 @@
 <RCC>
-  <qresource prefix="ui">
-    <file alias="main_window.ui">ui/main_window.ui</file>
-    <file alias="entity_inspector.ui">ui/entity_inspector.ui</file>
-    <file alias="component.ui">ui/component.ui</file>
-    <file alias="file_explorer.ui">ui/file_explorer.ui</file>
-    <file alias="save_project_as.ui">ui/save_project_as.ui</file>
-    <file alias="open_project.ui">ui/open_project.ui</file>
-    <file alias="overwrite_warning.ui">ui/overwrite_warning.ui</file>
-    <file alias="component_slot.ui">ui/component_slot.ui</file>
-    <file alias="new_script_popup.ui">ui/new_script_popup.ui</file>
-    <file alias="warning_popup.ui">ui/warning_popup.ui</file>
-    <file alias="run_tools.ui">ui/run_tools.ui</file>
-    <file alias="gui_logger.ui">ui/gui_logger.ui</file>
+  <qresource>
+    <file>ui/main_window.ui</file>
+    <file>ui/entity_inspector.ui</file>
+    <file>ui/component.ui</file>
+    <file>ui/file_explorer.ui</file>
+    <file>ui/save_project_as.ui</file>
+    <file>ui/open_project.ui</file>
+    <file>ui/overwrite_warning.ui</file>
+    <file>ui/component_slot.ui</file>
+    <file>ui/new_script_popup.ui</file>
+    <file>ui/warning_popup.ui</file>
+    <file>ui/run_tools.ui</file>
+    <file>ui/gui_logger.ui</file>
+    <file>ui/file_widget_slot.ui</file>
 
-    <file alias="file_widget_slot.ui">ui/file_widget_slot.ui</file>
-  </qresource>
-  <qresource prefix="fonts">
-    <file alias="OpenSans-Regular.ttf">fonts/OpenSans-Regular.ttf</file>
-    <file alias="FiraCode-Regular.ttf">fonts/FiraCode-Regular.ttf</file>
-  </qresource>
-  <qresource prefix="img">
-    <file alias="python.svg">img/python.svg</file>
+    <file>fonts/OpenSans-Regular.ttf</file>
+    <file>fonts/FiraCode-Regular.ttf</file>
+
+    <file>img/python.svg</file>
+
+    <file>shaders/bounding_box.glsl</file>
+    <file>shaders/constant_color.glsl</file>
+    <file>shaders/grid.glsl</file>
+    <file>shaders/outline_filter.glsl</file>
+    <file>shaders/ray.glsl</file>
+    <file>shaders/texture.glsl</file>
+    <file>shaders/viewport.glsl</file>
   </qresource>
 </RCC>
