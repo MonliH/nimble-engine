@@ -9,7 +9,7 @@ games, because python is slow. It's more for learning purposes, like pygame.
 
 ## running
 
-The easiest way to try nimble is to download the packaged binaries, found in the [releases page]().
+The easiest way to try nimble is to download the packaged binaries, found in the [releases page](https://github.com/MonliH/nimble-engine/releases).
 
 <br>
 
