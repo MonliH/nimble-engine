@@ -51,6 +51,7 @@ exe = EXE(
     upx=True,
     console=False,
     disable_windowed_traceback=False,
+    icon="nimble/resources/img/icon.png",
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,

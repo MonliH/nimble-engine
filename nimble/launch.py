@@ -12,13 +12,17 @@ from PyQt5.QtWidgets import QApplication
 import sys
 from nimble.window import MainWindow
 
+import ctypes
+app_id = u'jonathan.li.nimble.main'
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
 def start():
     faulthandler.enable()
 
     QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
     app = QApplication(sys.argv)
-    MainWindow()
+    window = MainWindow()
+    window.showMaximized()
     os._exit(app.exec_())
 
 

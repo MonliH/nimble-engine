@@ -1,8 +1,7 @@
 from typing import Callable
-from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase, QKeySequence
+from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase, QKeySequence, QIcon
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget, QShortcut, QMainWindow
-from PyQtAds.QtAds import ads
 from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
@@ -87,6 +86,7 @@ class Editor(QMainWindow):
         self.editor = EditorInner(filename, self.save, self.on_change)
         self.setCentralWidget(self.editor)
         self.update_title()
+        self.setWindowIcon(QIcon(":/img/logo.png"))
 
         self.resize(650, 650)
 

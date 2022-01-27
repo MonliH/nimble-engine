@@ -4,10 +4,9 @@ from typing import List, cast
 
 import moderngl_window as mglw
 from PyQt5.QtCore import QSettings, Qt
-from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtGui import QFont, QFontDatabase, QIcon
 from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow, QMenu, QAction
 from PyQtAds.QtAds import ads
-from numpy import delete
 
 import nimble.resources.resources  # Note: This is needed to load the qt resources. (don't remove this seemingly unused import!)
 from nimble.common import ProjectObserver, current_project
@@ -33,11 +32,9 @@ class MainWindow(QMainWindow, ProjectObserver):
         QApplication.setFont(QFont(family))
         self.settings = QSettings("jonathan_li", "nimble")
 
-        self.setWindowState(Qt.WindowMaximized)
-        self.show()
-
         load_ui(":/ui/main_window.ui", self)
         self.actionNew.triggered.connect(self.new_project)
+        self.setWindowIcon(QIcon(":/img/logo.png"))
 
         self.dock_manager = ads.CDockManager(self)
 

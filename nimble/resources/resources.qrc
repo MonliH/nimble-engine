@@ -18,6 +18,7 @@
     <file>fonts/FiraCode-Regular.ttf</file>
 
     <file>img/python.svg</file>
+    <file>img/logo.png</file>
 
     <file>shaders/bounding_box.glsl</file>
     <file>shaders/constant_color.glsl</file>
