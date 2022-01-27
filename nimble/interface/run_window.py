@@ -132,7 +132,6 @@ class GameWindow(QMainWindow):
 class RunWindow(QWidget):
     def __init__(
         self,
-        open_window: Callable[[ads.CDockWidget], None],
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
@@ -142,7 +141,6 @@ class RunWindow(QWidget):
         self.temp_scene: Optional[Scene] = None
         self.window = None
 
-        self.open_window = open_window
         self.setContentsMargins(0, 0, 0, 0)
 
     def start_game(self):

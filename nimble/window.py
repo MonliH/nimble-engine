@@ -56,7 +56,7 @@ class MainWindow(QMainWindow, ProjectObserver):
 
         self.entity_dock = ads.CDockWidget("Entity Inspector")
         self.dock_manager.addDockWidget(ads.RightDockWidgetArea, self.entity_dock)
-        self.entity = EntityInspector(self.add_popup)
+        self.entity = EntityInspector()
         self.entity_dock.setWidget(self.entity)
 
         self.file_explorer_dock = ads.CDockWidget("File Explorer")
@@ -86,7 +86,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.actionPaste.triggered.connect(current_project.paste)
 
         self.play = ads.CDockWidget("Play")
-        self.play.setWidget(RunWindow(self.add_popup))
+        self.play.setWidget(RunWindow())
         self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.play)
 
         logTextBox = GuiLogger(self)
@@ -120,9 +120,6 @@ class MainWindow(QMainWindow, ProjectObserver):
             action.triggered.connect(self.open_recent_project)
 
         self.update_recent_projects()
-
-    def add_popup(self, window: ads.CDockWidget):
-        self.dock_manager.addDockWidgetFloating(window)
 
     def project_changed(self):
         self.setWindowTitle(current_project.get_project_display_name())

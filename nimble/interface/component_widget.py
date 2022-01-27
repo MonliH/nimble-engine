@@ -58,7 +58,6 @@ class FileWidget(QWidget):
     def __init__(
         self,
         slot: Slot,
-        open_window: Callable[[ads.CDockWidget], None],
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
@@ -77,8 +76,6 @@ class FileWidget(QWidget):
 
         self.options.setCurrentIndex(idx)
 
-        self.open_window = open_window
-
     def on_index_changed(self, index: int):
         self.slot.insert_in_slot(self.options.itemData(index, Qt.UserRole))
         self.file_widget_button.setText(
@@ -88,7 +85,8 @@ class FileWidget(QWidget):
     def on_button_clicked(self):
         if self.slot.get_value() is not None:
             # Open the script editor
-            self.open_window(Editor(current_project.folder / self.slot.get_value()))
+            self.window = Editor(current_project.folder / self.slot.get_value())
+            self.window.show()
         else:
             # Create a new script
             dialog = CreateScript()
@@ -124,7 +122,6 @@ class SlotWidget(QWidget):
     def __init__(
         self,
         slot: Slot,
-        open_window: Callable[[ads.CDockWidget], None],
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
@@ -133,7 +130,7 @@ class SlotWidget(QWidget):
         self.label.setText(slot.display())
 
         if slot.ty == SlotType.FILE:
-            self.field.addWidget(FileWidget(slot, open_window, self))
+            self.field.addWidget(FileWidget(slot, self))
         elif slot.ty == SlotType.BOOLEAN:
             self.field.addWidget(BooleanWidget(slot, self))
         elif slot.ty == SlotType.FLOAT:
@@ -164,17 +161,15 @@ class ComponentWidget(QWidget):
     def __init__(
         self,
         component: Component,
-        open_window: Callable[[ads.CDockWidget], None],
         parent: QWidget = None,
     ):
         super().__init__(parent)
         self.component = component
-        self.open_window = parent.open_window
 
         load_ui(":/ui/component.ui", self)
         self.component_name_title = cast(QLabel, self.component_name_title)
         self.component_name_title.setText(component.display_name)
         self.component_slots = cast(QVBoxLayout, self.component_slots)
         for slot in self.component.slots():
-            self.component_slots.addWidget(SlotWidget(slot, open_window, self))
+            self.component_slots.addWidget(SlotWidget(slot, self))
         self.show()

@@ -33,14 +33,12 @@ from nimble.common import current_project
 class EntityInspector(QWidget, SceneObserver, ModelObserver):
     def __init__(
         self,
-        open_window: Callable[[ads.CDockWidget], None],
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
         self.active = None
 
         load_ui(":/ui/entity_inspector.ui", self)
-        self.open_window = open_window
 
         self.object_name_title = cast(QLabel, self.object_name_title)
         self.object_name_title.setMargin(10)
@@ -117,9 +115,7 @@ class EntityInspector(QWidget, SceneObserver, ModelObserver):
             self.add_component.setEnabled(True)
 
     def add_component_to_list(self, idx: int, component: Component):
-        self.components_list.insertWidget(
-            idx, ComponentWidget(component, self.open_window, self)
-        )
+        self.components_list.insertWidget(idx, ComponentWidget(component, self))
 
     def remove_component(self, idx: int):
         self.components_list.itemAt(idx).widget().setParent(None)

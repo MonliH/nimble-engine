@@ -1,7 +1,7 @@
 from typing import Callable
 from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase, QKeySequence
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget, QShortcut
+from PyQt5.QtWidgets import QVBoxLayout, QMenuBar, QWidget, QShortcut, QMainWindow
 from PyQtAds.QtAds import ads
 from pathlib import Path
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
@@ -78,16 +78,17 @@ class EditorInner(QWidget):
         self.box_layout.addWidget(self.editor)
 
 
-class Editor(ads.CDockWidget):
+class Editor(QMainWindow):
     def __init__(self, filename: str, parent=None):
+        super().__init__(parent)
         self.filename = filename
         self.saved = True
-        super().__init__(self.title_text(), parent)
 
-        self.setMinimumSizeHintMode(ads.CDockWidget.MinimumSizeHintFromContent)
         self.editor = EditorInner(filename, self.save, self.on_change)
-        self.setWidget(self.editor)
+        self.setCentralWidget(self.editor)
         self.update_title()
+
+        self.resize(650, 650)
 
     def title_text(self):
         return f"Text Editor ({Path(self.filename).relative_to(current_project.folder)}){' *' if not self.saved else ''}"
@@ -95,8 +96,6 @@ class Editor(ads.CDockWidget):
     def update_title(self):
         new_title = self.title_text()
         self.setWindowTitle(new_title)
-        self.setObjectName(new_title)
-        self.titleChanged.emit(new_title)
 
     def on_change(self):
         prev = self.saved
