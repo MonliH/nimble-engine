@@ -47,10 +47,13 @@ python -m nimble
 
 ## building into an executable
 
-For now, nimble uses pyinstaller to bundle everything into an executable. Make sure it is installed:
+NOTE: make sure the commands below are run in the conda environment that 
+you set up above.
+
+For now, nimble uses pyinstaller to bundle everything into an executable. Make sure to install my branch with a patched splash screen:
 
 ```bash
-pip install pyinstaller
+pip install git+https://github.com/MonliH/pyinstaller.git@develop
 ```
 
 Then build using the `nimble.spec` file:
