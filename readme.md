@@ -60,6 +60,8 @@ Then run:
 python -m nimble
 ```
 
+<br>
+
 ## building into an executable
 
 NOTE: make sure the commands below are run in the conda environment that 
@@ -80,3 +82,10 @@ Then build using the `nimble.spec` file:
 ```bash
 pyinstaller nimble.spec
 ```
+
+<br>
+
+## todo
+
+* Add some lighting system, and eventually physically based rendering (PBR)
+* Add a UI to add 2d elements
