@@ -53,7 +53,10 @@ you set up above.
 For now, nimble uses pyinstaller to bundle everything into an executable. Make sure to install my branch with a patched splash screen:
 
 ```bash
-pip install git+https://github.com/MonliH/pyinstaller.git@develop
+git clone https://github.com/MonliH/pyinstaller.git
+cd pyinstaller
+git checkout develop
+python setup.py install #  may need sudo
 ```
 
 Then build using the `nimble.spec` file:
