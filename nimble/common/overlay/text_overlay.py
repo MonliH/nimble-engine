@@ -9,14 +9,17 @@ class TextOverlay(OverlayComponent):
     def __init__(self, text, font_size=32):
         file = QFile(":/fonts/OpenSans-Regular.ttf")
         file.setOpenMode(QFile.ReadOnly)
-        self.font_bytes = io.BytesIO(file.readAll().data())
+        self.font_bytes = file.readAll().data()
 
         self._text = text
         self._font_size = font_size
         self.position = (0, 0)
 
+        self.font = None
+        self.update_font()
+
     def update_font(self):
-        self.font = ImageFont.truetype(self.font_bytes, size=self.font_size)
+        self.font = ImageFont.truetype(io.BytesIO(self.font_bytes), size=self.font_size)
 
     @property
     def text(self) -> str:
