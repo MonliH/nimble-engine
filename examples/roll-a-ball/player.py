@@ -9,7 +9,7 @@ class Component(BaseComponent):
 		physics_component = self.world.get_obj_component(obj, PhysicsComponent)
 		
 		# Accumulate a force vector for keys
-		speed = 0.5
+		speed = 0.7
 		force = Vector3((0.0, 0.0, 0.0))
 		if self.keys[Key.W] or self.keys[Key.UP]:
 			force.z -= speed

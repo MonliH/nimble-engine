@@ -58,11 +58,12 @@ class ScriptList(QAbstractListModel):
                 return "<No script selected>"
             return None
 
-        fname = self._scripts[index.row() - 1]
-        if role == Qt.DisplayRole:
-            return str(fname)
-        elif role == Qt.UserRole:
-            return fname
+        if len(self._scripts) > index.row() - 1:
+            fname = self._scripts[index.row() - 1]
+            if role == Qt.DisplayRole:
+                return str(fname)
+            elif role == Qt.UserRole:
+                return fname
 
     def get_index(self, script: Optional[str]) -> int:
         return self._scripts.index(script) + 1 if script is not None else 0
