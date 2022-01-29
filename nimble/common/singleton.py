@@ -1,8 +1,7 @@
-# A singleton metaclass
-# Credit to: https://stackoverflow.com/a/6798042/9470078
-
-
 class Singleton(type):
+    """A singleton metaclass.
+    Taken from https://stackoverflow.com/a/6798042/9470078"""
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):

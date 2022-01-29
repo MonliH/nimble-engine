@@ -17,6 +17,9 @@ from nimble.objects.component import CameraComponent
 
 
 class GameViewport(Viewport):
+    """A subclass of the viewport for the actual game, without a
+    grid or active object indicator."""
+
     def __init__(self, *args):
         super().__init__(*args)
         self.world = World()
@@ -85,32 +88,22 @@ class GameViewport(Viewport):
         if is_key(key):
             self.keys[Key(event.key())] = True
 
-    def mouse_pressed(self, event: QtGui.QMouseEvent):
-        pass
-
-    def mouse_moved(self, event: QtGui.QMouseEvent):
-        pass
-
-    def mouse_released(self, event: QtGui.QMouseEvent):
-        pass
-
-    def scrolled(self, event: QtGui.QWheelEvent):
-        pass
-
-    def create_menu_items(self, parent: QWidget):
-        pass
-
-    def add_obj(self, name: str, cons: Type[Geometry]):
-        pass
-
-    def delete_current(self):
-        pass
-
-    def show_context(self, x: int, y: int, parent: QWidget):
-        pass
+    # Ignore all of these events for now
+    # fmt: off
+    def mouse_pressed(self, event: QtGui.QMouseEvent): pass
+    def mouse_moved(self, event: QtGui.QMouseEvent): pass
+    def mouse_released(self, event: QtGui.QMouseEvent): pass
+    def scrolled(self, event: QtGui.QWheelEvent): pass
+    def create_menu_items(self, parent: QWidget): pass
+    def add_obj(self, name: str, cons: Type[Geometry]): pass
+    def delete_current(self): pass
+    def show_context(self, x: int, y: int, parent: QWidget): pass
+    # fmt: on
 
 
 class GameWindow(QMainWindow):
+    """A Qt window that contains a viewport for the game."""
+
     def __init__(
         self,
         scene: Scene,
@@ -145,7 +138,10 @@ class RunWindow(QWidget):
 
     def start_game(self):
         self.run.setEnabled(False)
+
+        # Create a new copy of the scene by serializing it then unserializing it
         self.temp_scene = unserialize_scene(serialize_scene(current_project.scene))
+
         self.window = GameWindow(self.temp_scene, self.stop_game)
         self.window.show()
 

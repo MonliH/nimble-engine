@@ -22,22 +22,30 @@ from nimble.objects import Scene
 
 
 class MainWindow(QMainWindow, ProjectObserver):
+    """The main window of the nimble."""
+
     MaxRecentProjects = 5
 
     def __init__(self, parent=None):
         super().__init__(parent)
         current_project.add_observer("main_window", self)
+
+        # Set default font to Open Sans
         font_id = QFontDatabase().addApplicationFont(":/fonts/OpenSans-Regular.ttf")
         family = QFontDatabase().applicationFontFamilies(font_id)[0]
         QApplication.setFont(QFont(family))
+
+        # Load settings from the qt settings file
         self.settings = QSettings("jonathan_li", "nimble")
 
         load_ui(":/ui/main_window.ui", self)
-        self.actionNew.triggered.connect(self.new_project)
         self.setWindowIcon(QIcon(":/img/logo.png"))
+        self.actionNew.triggered.connect(self.new_project)
 
+        # Create the advanced docking manager
         self.dock_manager = ads.CDockManager(self)
 
+        # Create all the dock widgets
         self.viewport_dock = ads.CDockWidget("Scene Viewer")
         self.dock_manager.addDockWidget(ads.RightDockWidgetArea, self.viewport_dock)
         self.viewport = ViewportWidget(
@@ -63,29 +71,11 @@ class MainWindow(QMainWindow, ProjectObserver):
             ads.RightDockWidgetArea, self.file_explorer_dock
         )
 
-        self.last_mouse_button = None
-
-        self.shift = False
-        self.did_drag = False
-        self.open_context = None
-        self.context_menu_pos = (0, 0)
-        self._modifiers = mglw.context.base.KeyModifiers()
-
-        self.actionSave_Layout.triggered.connect(self.save_perspectives)
-        self.actionReset_Layout.triggered.connect(self.restore_perspectives)
-        self.actionOpen.triggered.connect(self.open_project)
-
-        self.actionSave.setShortcutContext(Qt.WindowShortcut)
-        self.addAction(self.actionSave)
-        self.actionSave.triggered.connect(self.save_project)
-
-        self.actionCopy.triggered.connect(current_project.copy)
-        self.actionPaste.triggered.connect(current_project.paste)
-
         self.play = ads.CDockWidget("Play")
         self.play.setWidget(RunWindow())
         self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.play)
 
+        # Create logging widget, with custom GuiLogger
         logTextBox = GuiLogger(self)
         logTextBox.setFormatter(
             logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -97,6 +87,18 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.log.setWidget(logTextBox)
         self.dock_manager.addDockWidget(ads.BottomDockWidgetArea, self.log)
 
+        # Register menu actions
+        self.actionSave_Layout.triggered.connect(self.save_layout)
+        self.actionReset_Layout.triggered.connect(self.restore_layout)
+        self.actionOpen.triggered.connect(self.open_project)
+
+        self.actionSave.setShortcutContext(Qt.WindowShortcut)
+        self.addAction(self.actionSave)
+        self.actionSave.triggered.connect(self.save_project)
+
+        self.actionCopy.triggered.connect(current_project.copy)
+        self.actionPaste.triggered.connect(current_project.paste)
+
         self.menuWindow = cast(QMenu, self.menuWindow)
         self.menuWindow.addAction(self.viewport_dock.toggleViewAction())
         self.menuWindow.addAction(self.outline_dock.toggleViewAction())
@@ -105,9 +107,10 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.menuWindow.addAction(self.play.toggleViewAction())
         self.menuWindow.addAction(self.log.toggleViewAction())
 
-        self.restore_perspectives()
+        self.restore_layout()  # Load window layout
         self.project_changed()
 
+        # Create recently opened projects menu
         self.menuOpen_Recent = cast(QMenu, self.menuOpen_Recent)
         self.recent_project_actions: List[QAction] = []
         for _ in range(self.MaxRecentProjects):
@@ -127,12 +130,13 @@ class MainWindow(QMainWindow, ProjectObserver):
     def closeEvent(self, event):
         event.accept()
 
-    def save_perspectives(self):
+    def save_layout(self):
         settings = QSettings("UserPrefs.ini", QSettings.IniFormat)
         self.dock_manager.addPerspective("default")
         self.dock_manager.savePerspectives(settings)
 
-    def restore_perspectives(self):
+    def restore_layout(self):
+        """Load default window layout."""
         settings = QSettings(":/default_prefs.ini", QSettings.IniFormat)
         self.dock_manager.loadPerspectives(settings)
         self.dock_manager.openPerspective("default")
@@ -176,6 +180,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.add_recent_project(current_project.project_file)
 
     def add_recent_project(self, path: Path):
+        """Add a project to the recent projects menu"""
         recent_projects = self.settings.value("recent_projects", [], "QStringList")
         path_str = str(path)
         if path_str in recent_projects:
@@ -188,6 +193,7 @@ class MainWindow(QMainWindow, ProjectObserver):
         self.update_recent_projects()
 
     def update_recent_projects(self):
+        """Update the recent projects menu."""
         deleted_projects = []
         recent_projects = self.settings.value("recent_projects", [], "QStringList")
         for i, project in enumerate(recent_projects):
@@ -212,6 +218,7 @@ class MainWindow(QMainWindow, ProjectObserver):
             self.recent_project_actions[i].setVisible(False)
 
     def open_recent_project(self):
+        """Open a recent project."""
         action = self.sender()
         if action:
             path = action.data()

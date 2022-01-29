@@ -49,6 +49,7 @@ float radius_to_original = grid_radius/500.0;
 
 void main() {
     vec4 bigger_color = grid(frag_uv, grid_square_size * radius_to_original);
+
     // Make larger grid more bold based on zoomgrid
     bigger_color.w *= (1 + zoom_segment_percentage);
 

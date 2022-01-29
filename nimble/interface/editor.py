@@ -1,3 +1,4 @@
+"""A file editor, using QScintilla."""
 from typing import Callable
 from PyQt5.QtGui import QFont, QFontMetrics, QColor, QFontDatabase, QKeySequence, QIcon
 from PyQt5.QtCore import Qt

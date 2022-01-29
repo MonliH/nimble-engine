@@ -1,4 +1,3 @@
-from collections import defaultdict
 from enum import Enum
 from PyQt5.QtCore import Qt
 
@@ -97,8 +96,9 @@ class PressedKeys:
         self._keys[idx] = value
 
 
-_keys = set(key.value for key in Key)
+_keys = set(key.value for key in Key)  # The set of all keys
 
 
 def is_key(k: int) -> bool:
+    """Check if the given key is a valid key."""
     return k in _keys

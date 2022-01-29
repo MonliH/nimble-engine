@@ -31,6 +31,8 @@ new_obj_menu = {"Cube": Cube, "Sphere": Sphere, "Cylinder": Cylinder, "Plane": P
 
 
 class Viewport(InputObserver, WindowObserver):
+    """The main 3D viewport in the nimble editor."""
+
     def __init__(
         self, scene: Scene, width: int, height: int, parent: QtWidgets.QWidget
     ):
@@ -52,13 +54,23 @@ class Viewport(InputObserver, WindowObserver):
         self.create_menu_items(self.parent)
 
     def init(self, ctx: mgl.Context):
+        """Initialize the viewport after the OpenGl context has been created."""
         self.ctx = ctx
+
+        # Create a grid
         self.grid = Grid(1, self.ctx)
         axis_rel_scale = 0.7
+
+        # Create the transform tools (the arrows)
         self.zoom_to_axis_ratio = axis_rel_scale / self.camera.spherical.radius
         self.active_tools = TransformTools(axis_rel_scale, self.camera)
+
         self.scene.register_active_obj_observer(self.active_tools, "active_obj_tools")
         self.scene.register_observer(self.active_tools)
+
+        # Create the overlay vertex array, which is just a fullscreen quad
+        # This overlay is used to draw the outline of the active object, and
+        # to draw 2D overlays in the actual game
         self.overlay_vao = quad_fs()
 
     def render(self, screen: mgl.Framebuffer):
@@ -72,10 +84,14 @@ class Viewport(InputObserver, WindowObserver):
         self.scene.render(self.camera, self.active_buffer, screen)
         self.grid.render(self.camera)
 
-        # Draw active object outline with offscreen buffer
+        # Draw active object outline to the offscreen buffer
         self.active_buffer.color_attachments[0].use(location=0)
         self.active_buffer.color_attachments[0].repeat_x = False
         self.active_buffer.color_attachments[0].repeat_y = False
+
+        # The "outline_filter" shader creates an outline by blurring the active object
+        # then drawing the edge with a solid color that has an alpha based off of the
+        # original object's alpha
         Shaders()["outline_filter"]["width"] = self.screen_size.width
         Shaders()["outline_filter"]["height"] = self.screen_size.height
         Shaders()["outline_filter"]["kernel"].write(
@@ -84,12 +100,16 @@ class Viewport(InputObserver, WindowObserver):
         screen.use()
         self.overlay_vao.render(Shaders()["outline_filter"])
 
+        # Render the active object tools if there is an active object
         if self.scene.has_object_selected:
             self.ctx.disable(mgl.DEPTH_TEST)
             self.active_tools.render()
             self.ctx.enable(mgl.DEPTH_TEST)
 
     def regen_active_buffer(self):
+        """Regenerate the offscreen buffer used to draw the object overlays.
+        Used when the window is resized."""
+
         mglw.activate_context(ctx=self.ctx)
         if self.active_buffer:
             self.active_buffer.color_attachments[0].release()
@@ -108,6 +128,7 @@ class Viewport(InputObserver, WindowObserver):
 
     def key_pressed(self, event: QtGui.QKeyEvent):
         key = event.key()
+
         if key == Qt.Key_1:
             # Make camera look from x axis
             self.camera.spherical.phi = math.pi / 2
@@ -140,6 +161,7 @@ class Viewport(InputObserver, WindowObserver):
             axis = None
 
             if self.scene.has_object_selected:
+                # Check if the mouse has pressed any of the transform controls
                 ray = ray_cast.get_ray(x, y, self.camera)
                 if ray_cast.does_intersect(self.active_tools.x.bounding_box, ray):
                     axis = Axis.X
@@ -149,32 +171,40 @@ class Viewport(InputObserver, WindowObserver):
                     axis = Axis.Z
 
             if axis is not None:
+                # Start the transform tool if the mouse is pressed on an axis
                 self.active_tools.start_drag(axis)
             else:
+                # check if the mouse has hit any other objects, and if so, select them
                 ray = ray_cast.get_ray(x, y, self.camera)
                 hit_object = self.scene.cast_ray(ray)
                 if hit_object is not None:
                     self.scene.set_active(hit_object[1])
                 else:
                     self.scene.set_active(-1)
+
         if self.last_mouse_button != Qt.RightButton:
-            self.open_context = None
+            self.open_context = None  # Reset the context menu
 
     def mouse_moved(self, event: QtGui.QMouseEvent):
         last_pos = x, y = event.x(), event.y()
         if self.prev_mouse_pos is not None:
+            # Get the mouse delta
             dx, dy = x - self.prev_mouse_pos[0], y - self.prev_mouse_pos[1]
             button = event.buttons()
+
             if button != Qt.NoButton:
-                if abs(dx) > 0.1 and abs(dx) > 0.1:
+                min_speed = 0.1
+                if abs(dx) > min_speed and abs(dx) > min_speed:
+                    # Only set drag if the mouse has moved more than a certain threshold
                     self.did_drag = True
 
-            if button == Qt.LeftButton:
-                self.active_tools.did_drag(x, y, dx, dy)
-            elif button == Qt.RightButton:
+            self.active_tools.did_drag(x, y, dx, dy)
+            if button == Qt.RightButton:
                 if event.modifiers() == Qt.ShiftModifier:
+                    # Pan the camera if the shift key is held down
                     self.camera.pan(dx, dy)
                 else:
+                    # Otherwise rotate the camera
                     self.camera.rotate(dx, dy)
             self.open_context = None
         self.prev_mouse_pos = last_pos
@@ -185,12 +215,15 @@ class Viewport(InputObserver, WindowObserver):
             ray = ray_cast.get_ray(x, y, self.camera)
             hit_object = self.scene.cast_ray(ray)
             self.context_menu_pos = (x, y)
+
             if hit_object is not None:
+                # Show object specific context menu if the mouse is released on an object
                 self.open_context = hit_object[1]
             else:
-                # Show context menu
+                # Show context menu if the mouse is released outside of any objects
                 self.open_context = -1
             self.show_context(x, y, self.parent)
+
         self.did_drag = False
         self.prev_mouse_pos = None
         self.last_mouse_button = Qt.NoButton
@@ -200,6 +233,7 @@ class Viewport(InputObserver, WindowObserver):
         y_offset = event.angleDelta().y() / 120
         if y_offset:
             if y_offset > 0 or self.camera.radius < 100:
+                # Zoom in or out if the mouse wheel is scrolled on the y axis
                 self.camera.zoom(y_offset * self.camera.radius / 10)
                 self.active_tools.set_scale(
                     self.camera.radius * self.zoom_to_axis_ratio
@@ -255,17 +289,18 @@ class ViewportWidget(QOpenGLWidget):
         viewport: Type[Viewport] = None,
         scene: Optional[Scene] = None,
     ):
-        super().__init__(parent)  # fmt, None)
+        super().__init__(parent)
+
+        # Set opengl parameters for this Qt widget
         fmt = QtGui.QSurfaceFormat()
         fmt.setVersion(4, 3)
         fmt.setProfile(QtGui.QSurfaceFormat.CoreProfile)
         fmt.setSamples(8)
+        self.setFormat(fmt)
 
         self.setFocusPolicy(Qt.StrongFocus)
         self.setMouseTracking(True)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        self.setFormat(fmt)
 
         self.timer = QElapsedTimer()
         self.timer.restart()
@@ -281,6 +316,7 @@ class ViewportWidget(QOpenGLWidget):
         self.did_drag = False
         self.open_context = None
         self.last_mouse_button = Qt.NoButton
+
         try:
             self.ctx = mglw.ctx()
         except ValueError:
@@ -324,10 +360,15 @@ class ViewportWidget(QOpenGLWidget):
         self.manager.window_resized(w, h)
 
     def paintGL(self):
+        # This is called 60 times per second
         mglw.activate_context(ctx=self.ctx)
+
+        # Get the current framebuffer
         self.screen = self.ctx.detect_framebuffer(self.defaultFramebufferObject())
         self.screen.use()
         self.makeCurrent()
+
+        # Render onto the framebuffer
         self.render(self.timer.elapsed() / 1000, 0)
 
     def render(self, _time: float, _frametime: float):

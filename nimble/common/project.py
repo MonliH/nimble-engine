@@ -1,3 +1,4 @@
+from __future__ import annotations
 import glob
 import shutil
 from pathlib import Path
@@ -18,70 +19,15 @@ from nimble.resources import script_boilerplate
 
 
 class ProjectObserver:
+    """A base class for classes that want to be notified when the current project changes."""
+
     def project_changed(self):
         pass
 
 
-class ScriptList(QAbstractListModel):
-    def __init__(self):
-        super().__init__()
-        self._scripts: List[str] = []
-
-    def add_path(self, path: str):
-        idx = len(self._scripts)
-        self._scripts.append(path)
-        self.rowsInserted.emit(QModelIndex(), idx, idx)
-
-    def clear_paths(self):
-        scripts_len = len(self._scripts)
-        self._scripts.clear()
-        self.rowsRemoved.emit(QModelIndex(), 0, scripts_len)
-
-    def remove_path(self, path: str):
-        for i, p in enumerate(self._scripts):
-            if p == path:
-                del self._scripts[i]
-                self.rowsRemoved.emit(QModelIndex(), i, i)
-                break
-
-    def rowCount(self, _parent) -> int:
-        return len(self._scripts) + 1
-
-    def data(self, index: QModelIndex, role: int) -> Any:
-        if role == Qt.DecorationRole:
-            return QIcon(":/img/python.svg")
-
-        if index.row() == 0:
-            if role == Qt.UserRole:
-                return None
-            elif role == Qt.DisplayRole:
-                return "<No script selected>"
-            return None
-
-        if len(self._scripts) > index.row() - 1:
-            fname = self._scripts[index.row() - 1]
-            if role == Qt.DisplayRole:
-                return str(fname)
-            elif role == Qt.UserRole:
-                return fname
-
-    def get_index(self, script: Optional[str]) -> int:
-        return self._scripts.index(script) + 1 if script is not None else 0
-
-    def __iter__(self):
-        return iter(self._scripts)
-
-    def __contains__(self, script):
-        return script in self._scripts
-
-    def __len__(self):
-        return len(self._scripts)
-
-    def __delitem__(self, key):
-        del self._scripts[key]
-
-
 class Project(QFileSystemModel):
+    """A single nimble project."""
+
     def __init__(
         self,
         project_name: Optional[str] = None,
@@ -129,22 +75,27 @@ class Project(QFileSystemModel):
             self.scene.set_active(_id)
 
     def save_scene(self):
+        """Save the current scene to the project folder."""
         scene_dict = serialize_scene(current_project.scene)
         json.dump(scene_dict, open(self.get_scene_file(self.folder), "w"))
 
     def _load_scene(self, filename: Path):
+        """Load the scene from the given filename."""
         scene_dict = json.load(open(filename, "r"))
         scene = unserialize_scene(scene_dict)
         self._scene.replace(scene)
 
     def save_project(self):
+        """Save the current project to the project folder."""
         json.dump({"name": self.name}, open(self.get_project_file(self.folder), "w"))
 
     def _load_project(self, filename: Path):
+        """Load the project from the given filename."""
         proj_info = json.load(open(filename, "r"))
         self.name = proj_info["name"]
 
     def set_folder(self, file: Path, create: bool = False):
+        """Load/create a project from a new folder."""
         if self.file_watcher is None:
             self.file_watcher = QFileSystemWatcher()
             self.file_watcher.directoryChanged.connect(self.dir_changed)
@@ -163,10 +114,11 @@ class Project(QFileSystemModel):
     def dir_changed(self, _path: str):
         old_len = len(self._scripts)
         for path in glob.glob(str(self.folder / "*.py")):
-            self._scripts.add_path(Path(path).name)
+            self._scripts.add_script(Path(path).name)
         del self._scripts[:old_len]
 
     def load_project(self, file: Path):
+        """Load a project from a `*.nimproj` file."""
         file = Path(file)
         self.set_folder(file.parent)
         self._load_scene(self.get_scene_file(self.folder))
@@ -215,7 +167,7 @@ class Project(QFileSystemModel):
         full_filename = current_project.folder / py_filename
         with open(full_filename, "w") as f:
             f.write(script_boilerplate.SCRIPT)
-        self.scripts.add_path(py_filename)
+        self.scripts.add_script(py_filename)
         return py_filename
 
     def copy_assets(self, to_dir: str, to_name: str) -> List[Path]:
@@ -226,6 +178,67 @@ class Project(QFileSystemModel):
             shutil.copy(self.folder / str(script), str(to_dir_path))
             scripts.append(script)
         return scripts
+
+
+class ScriptList(QAbstractListModel):
+    """A list of scripts in the current project."""
+
+    def __init__(self):
+        super().__init__()
+        self._scripts: List[str] = []
+
+    def add_script(self, path: str):
+        idx = len(self._scripts)
+        self._scripts.append(path)
+        self.rowsInserted.emit(QModelIndex(), idx, idx)
+
+    def clear_script(self):
+        scripts_len = len(self._scripts)
+        self._scripts.clear()
+        self.rowsRemoved.emit(QModelIndex(), 0, scripts_len)
+
+    def remove_script(self, path: str):
+        for i, p in enumerate(self._scripts):
+            if p == path:
+                del self._scripts[i]
+                self.rowsRemoved.emit(QModelIndex(), i, i)
+                break
+
+    def rowCount(self, _parent) -> int:
+        return len(self._scripts) + 1
+
+    def data(self, index: QModelIndex, role: int) -> Any:
+        if role == Qt.DecorationRole:
+            return QIcon(":/img/python.svg")
+
+        if index.row() == 0:
+            if role == Qt.UserRole:
+                return None
+            elif role == Qt.DisplayRole:
+                return "<No script selected>"
+            return None
+
+        if len(self._scripts) > index.row() - 1:
+            fname = self._scripts[index.row() - 1]
+            if role == Qt.DisplayRole:
+                return str(fname)
+            elif role == Qt.UserRole:
+                return fname
+
+    def get_index(self, script: Optional[str]) -> int:
+        return self._scripts.index(script) + 1 if script is not None else 0
+
+    def __iter__(self):
+        return iter(self._scripts)
+
+    def __contains__(self, script):
+        return script in self._scripts
+
+    def __len__(self):
+        return len(self._scripts)
+
+    def __delitem__(self, key):
+        del self._scripts[key]
 
 
 current_project = Project(project_folder=Path(QDir.temp().canonicalPath()))

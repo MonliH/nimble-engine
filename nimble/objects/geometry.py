@@ -18,6 +18,8 @@ from nimble.objects.draw_primitive import sphere
 
 
 class Geometry:
+    """The geometry (bounding box + verticies + collision shape) of an object."""
+
     def __init__(
         self,
         vao: mgl.VertexArray,
@@ -42,6 +44,8 @@ class Geometry:
 
 
 class Cube(Geometry):
+    """A cube."""
+
     def __init__(self, **kwargs):
         if "size" not in kwargs:
             kwargs["size"] = (1, 1, 1)
@@ -67,6 +71,8 @@ class Cube(Geometry):
 
 
 class Sphere(Geometry):
+    """A sphere."""
+
     def __init__(self, **kwargs):
         if "radius" not in kwargs:
             kwargs["radius"] = 0.5
@@ -99,16 +105,20 @@ class Sphere(Geometry):
 
     def create_collision_shape(self, scale: Vector3, p) -> Optional[int]:
         if np.all(np.isclose(scale, scale[0])):
+            # If the scale is uniform, use a sphere collider...
             return p.createCollisionShape(
                 p.GEOM_SPHERE, radius=scale[0] * self.kwargs["radius"]
             )
 
+        # ...otherwise, use a convex hull collider (p.GEOM_MESH)
         return p.createCollisionShape(
             p.GEOM_MESH, vertices=self.verts * scale[np.newaxis, :], indices=self.idx
         )
 
 
 class Ray(Geometry):
+    """A single line with a start and end point, for debugging."""
+
     def __init__(self, start: Vector3, ray: Vector3):
         if not isinstance(start, Vector3):
             start = Vector3(start)
@@ -127,6 +137,8 @@ class Ray(Geometry):
 
 
 class Cylinder(Geometry):
+    """A cylinder/cone."""
+
     def __init__(
         self,
         radial_segments: int = 32,
@@ -157,6 +169,7 @@ class Cylinder(Geometry):
         uvs = []
 
         # Create torso verticies, uvs, and normals
+        # Reference: http://www.songho.ca/opengl/gl_cylinder.html
         index_array = []
         index = 0
         for y in range(height_segments + 1):
@@ -274,6 +287,8 @@ class Cylinder(Geometry):
 
 
 class Plane(Geometry):
+    """A plane, with normals pointing up."""
+
     def __init__(self):
         self.kwargs = {}
 

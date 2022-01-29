@@ -16,12 +16,15 @@ def clamp(n, smallest, largest):
 
 
 class Spherical:
+    """A spherical coordinate helper."""
+
     def __init__(self, radius=1, phi=0, theta=0) -> None:
         self.radius = radius
         self.phi = phi
         self.theta = theta
 
     def set_from_vector(self, vec: Vector3) -> Spherical:
+        """Set the spherical coordinates from 3D cartesian coordinates."""
         return self.set_from_cartesian(vec.x, vec.y, vec.z)
 
     def set_from_cartesian(self, x, y, z) -> Spherical:
@@ -36,6 +39,7 @@ class Spherical:
         return self
 
     def to_cartesian(self) -> Vector3:
+        """Convert these spherical coordinates to 3D cartesian coordinates."""
         sin_phi_radius = sin(self.phi) * self.radius
         return Vector3(
             (
@@ -47,6 +51,8 @@ class Spherical:
 
 
 class OrbitCamera(Camera, InputObserver, WindowObserver):
+    """An camera that orbits around a target point."""
+
     def __init__(self, size: Size, radius=2, fov=60.0, near=1.0, far=100.0) -> None:
         self.size = size
         self._projection = Projection3D(
@@ -76,6 +82,7 @@ class OrbitCamera(Camera, InputObserver, WindowObserver):
 
     @property
     def proj(self):
+        """The projection matrix of the camera."""
         return self.projection.matrix
 
     @property
@@ -84,6 +91,7 @@ class OrbitCamera(Camera, InputObserver, WindowObserver):
 
     @property
     def view(self) -> Matrix44:
+        """Get the view matrix of the camera."""
         return Matrix44.look_at(
             self.position,
             self.target,

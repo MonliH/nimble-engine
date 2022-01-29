@@ -11,6 +11,8 @@ from nimble.common.singleton import Singleton
 
 
 class Shaders(metaclass=Singleton):
+    """A global shader manager to load OpenGL shaders."""
+
     def __init__(self):
         self.shaders = {}
 

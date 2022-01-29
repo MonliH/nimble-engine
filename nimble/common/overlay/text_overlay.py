@@ -6,6 +6,8 @@ from nimble.common.overlay.overlay import OverlayComponent
 
 
 class TextOverlay(OverlayComponent):
+    """A 2D text overlay component."""
+
     def __init__(self, text, font_size=32):
         file = QFile(":/fonts/OpenSans-Regular.ttf")
         file.setOpenMode(QFile.ReadOnly)
@@ -19,6 +21,7 @@ class TextOverlay(OverlayComponent):
         self.update_font()
 
     def update_font(self):
+        """Updates the font with new font size."""
         self.font = ImageFont.truetype(io.BytesIO(self.font_bytes), size=self.font_size)
 
     @property

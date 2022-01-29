@@ -40,8 +40,7 @@ class SaveProjectAs(QDialog):
         fname = QFileDialog.getExistingDirectory(
             self,
             "Open folder",
-            # QDir.homePath(),
-            ".",
+            QDir.homePath(),
             options=QFileDialog.DontUseNativeDialog,
         )
         self.filename_editor.setText(fname)

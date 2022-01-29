@@ -23,7 +23,7 @@ class Component(BaseComponent):
 		if force.length != 0.0:
 			# Normalize the vector
 			force = force.normalized
-			# Finally, Apply the force
+			# Finally, apply the force
 			physics_component.apply_force(force)
 		
 	

@@ -10,12 +10,14 @@ Ray = Tuple[Vector3, Vector3, Vector3, Tuple[int, int, int]]
 
 
 def create_ray(origin: Vector3, direction: Vector3) -> Ray:
+    """Create a ray from an origin and a direction."""
     inv_direction = Vector3((1.0 / direction.x, 1.0 / direction.y, 1.0 / direction.z))
     sign = (inv_direction.x < 0, inv_direction.y < 0, inv_direction.z < 0)
     return (origin, direction, inv_direction, sign)
 
 
 def get_ray(x: int, y: int, camera: OrbitCamera) -> Ray:
+    """Get the ray between the camera and 2D point on the screen."""
     ray_wor = unproject(x, y, camera).normalized
     orig = camera.position
     ray = create_ray(orig, ray_wor)
@@ -57,11 +59,12 @@ def does_intersect(
     bounds: BoundingBox,
     r: Ray,
 ) -> bool:
+    """Check if a ray intersects a bounding box."""
     return ray_intersect(bounds, r) is not None
 
 
 def ray_intersect(bounds: BoundingBox, r: Ray) -> Optional[Tuple[float, float]]:
-    (orig, _dir, invdir, sign) = r
+    (orig, _, invdir, sign) = r
 
     tmin = (bounds[sign[0]].x - orig.x) * invdir.x
     tmax = (bounds[1 - sign[0]].x - orig.x) * invdir.x

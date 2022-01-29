@@ -16,6 +16,8 @@ from ..orbit_camera import OrbitCamera
 
 
 class Arrow:
+    """A single axis arrow."""
+
     def __init__(self, color: Vector3, rotation: Vector3, scale: float):
         self.color = color.astype("f4")
 
@@ -140,6 +142,17 @@ class TransformTools(SceneObserver, ModelObserver):
     def project_point_on_plane(
         ray: Vector3, plane: Tuple[Vector3, Vector3], camera: OrbitCamera
     ) -> Vector3:
+        """Project a point on a plane.
+
+        Arguments:
+            ray {Vector3} -- The ray to project.
+            plane {Tuple[Vector3, Vector3]} -- A plane encoded as a normal vector and a point.
+
+        Returns the vector from the camera to the point on the plane.
+        """
+
+        # A good reference for the math involved here
+        # https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection#Algebraic_form
         normal, p0 = plane
         l = ray.normalised
 
@@ -165,11 +178,16 @@ class TransformTools(SceneObserver, ModelObserver):
             real_model = ray_cast.get_pos(x, y, self.camera)
             model = real_model.normalised * normal.length
 
+            # Get the difference between the current 3D position and the dragged 3D position
+            # by projecting the dragged 2D screen coordinates on the current plane that is relative
+            # to the camera
             real_diff = self.project_point_on_plane(
                 ray_cast.get_pos(x + dx, y + dy, self.camera), self.plane, self.camera
             )
             new_vector = real_diff.normalised * normal.length
             diff = new_vector - model
+
+            # Scale the difference based on the zoom level of the camera
             diff *= self.camera.radius / 3
 
             translation = (

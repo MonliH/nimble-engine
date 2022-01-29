@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class World(BaseWorld):
+    """A subclass of the ECS world with some nimble specific methods."""
+
     def get_obj_component(self, obj: Model, component: Type[_C]) -> _C:
         return self.component_for_entity(obj.entity_id, component)
 

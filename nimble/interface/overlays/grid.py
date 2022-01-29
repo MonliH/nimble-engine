@@ -1,3 +1,4 @@
+"""The a viewport grid."""
 import numpy as np
 import moderngl as mgl
 from pyrr import Matrix44
@@ -26,6 +27,7 @@ class Grid(Model):
             dtype="f4"
         )
         # fmt: on
+
         vbo = ctx.buffer(plane.tobytes())
         self.vao = ctx.vertex_array(self.shader, [(vbo, "3f", "in_position")])
 
@@ -42,12 +44,16 @@ class Grid(Model):
             np.absolute(Vector3((0, 0, 0), dtype="f4") - camera.target).max()
         )
         visible_grid_radius = camera.radius * 5
+
+        # The size of the grid that we need to set is the amount the camera
+        # can see plus the camera's offset
         grid_size = visible_grid_radius + diff_center
         self.transform = self.base_transform * Matrix44.from_scale(
             (grid_size, grid_size, 1),
             dtype="f4",
         )
 
+        # Pass the params we just calculated to the shader
         self.shader["model"].write(self.transform)
         self.shader["grid_radius"] = visible_grid_radius
         self.shader["camera_target"].write(camera.target)

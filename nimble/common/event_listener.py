@@ -3,6 +3,8 @@ from PyQt5 import QtGui
 
 
 class InputObserver:
+    """A base class for classes that want to be notified when input is captured."""
+
     def key_released(self, event: QtGui.QKeyEvent):
         pass
 
@@ -23,5 +25,7 @@ class InputObserver:
 
 
 class WindowObserver:
+    """A base class for classes that want to be notified window events occur."""
+
     def window_resized(self, width: int, height: int):
         pass

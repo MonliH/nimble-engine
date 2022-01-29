@@ -10,7 +10,11 @@ from nimble.common.resources import load_ui
 
 
 def with_gui_logging_default(default=None):
+    """Set the default return value if the function fails."""
+
     def gui_decorator(fn):
+        """Log and ignore errors from the passed function to the GUI log."""
+
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             log = logging.getLogger("nimble")
@@ -35,6 +39,8 @@ with_gui_logging = with_gui_logging_default()
 
 
 class StreamToLogger(TextIOBase):
+    """A custom stream to redirect stdout and stderr to a logger."""
+
     def __init__(self, logger, level):
         self.logger = logger
         self.level = level
@@ -49,6 +55,8 @@ class StreamToLogger(TextIOBase):
 
 
 class GuiLogger(QWidget, logging.Handler):
+    """A widget to output the result of a python logger to a text box."""
+
     def __init__(self, parent: Optional[QWidget] = None):
         super(QWidget, self).__init__(parent)
         super(logging.Handler, self).__init__()

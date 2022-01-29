@@ -43,6 +43,8 @@ def to_vec3(v: LikeVector3) -> Vector3:
 
 
 class Model:
+    """A 3D object in the world, with a material and geometry."""
+
     def __init__(
         self,
         material: Material,
@@ -152,6 +154,7 @@ class Model:
             self.vbo_vert.write(verts)
 
         if self.bounding_box_buffer is None:
+            # Create a new VAO if it doesn't exist
             self.bounding_box_buffer = ctx.vertex_array(
                 Shaders()["bounding_box"],
                 [(self.vbo_vert, "3f", "model_position")],
@@ -198,12 +201,15 @@ class Model:
         self.transform_changed()
 
     def transform_changed(self):
+        # Recalculate model matrix
         self.model_matrix = (
             Matrix44.from_translation(self.position, dtype="f4")
             * Matrix44.from_eulers(self.rotation[[0, 2, 1]], dtype="f4")
             * Matrix44.from_scale(self.scale, dtype="f4")
         )
+
         if self.geometry is not None:
+            # Recalculate bounding box
             self.bounding_box_world = self.geometry.get_world_bounding_box(
                 self.model_matrix
             )

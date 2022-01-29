@@ -31,6 +31,8 @@ from nimble.common import current_project
 
 
 class EntityInspector(QWidget, SceneObserver, ModelObserver):
+    """A widget to display and edit the properties of an object (entity)."""
+
     def __init__(
         self,
         parent: Optional[QWidget] = None,

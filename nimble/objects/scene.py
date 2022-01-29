@@ -16,6 +16,8 @@ from nimble.objects import Cube, Plane, Ray, Material, Model, ModelObserver
 
 
 class SceneObserver:
+    """A base class for classes that want to be notified when the scene changed."""
+
     def select_changed(self, idx: int, obj: Optional[Model]) -> None:
         pass
 
@@ -27,6 +29,8 @@ class SceneObserver:
 
 
 class Scene(InputObserver, QAbstractListModel):
+    """A scene object, which holds a collection of objects and the current selected object."""
+
     def __init__(self) -> None:
         super().__init__()
         self.objects: Dict[str, Model] = {}
@@ -38,6 +42,7 @@ class Scene(InputObserver, QAbstractListModel):
 
     @classmethod
     def default_scene(cls):
+        """Create a default scene, with a cube and a plane."""
         scene = cls()
         cube = Model(
             Material("viewport"),
@@ -58,10 +63,14 @@ class Scene(InputObserver, QAbstractListModel):
         return scene
 
     def replace(self, new_model: Scene):
+        """Replace the current scene with the given scene, in place."""
+
+        # Tell observers all objects are about to be deleted
         for observer in self.observers:
             for i in self.objects:
                 observer.obj_deleted(i)
 
+        # Delete all objects
         self.objects = new_model.objects
         self.objects_list = new_model.objects_list
         self.active_idx = new_model.active_idx
@@ -81,7 +90,8 @@ class Scene(InputObserver, QAbstractListModel):
         del self.active_obj_observers[key]
 
     def set_active(self, idx: int):
-        old_obj = self.get_active()
+        """Change the active object to the object at the given index."""
+        old_obj = self.get_actikve()
         new_obj = self.get_obj_from_idx(idx)
 
         if old_obj is not new_obj:
@@ -107,6 +117,7 @@ class Scene(InputObserver, QAbstractListModel):
         return self.active_idx != -1
 
     def rename_obj(self, idx: int, new_name: str):
+        """Rename the object at the given index."""
         old_name = self.get_obj_name(idx)
         obj = self.get_obj_from_idx(idx)
         if obj is not None:
@@ -119,6 +130,7 @@ class Scene(InputObserver, QAbstractListModel):
                 observer.obj_name_changed(idx, obj)
 
     def delete_obj(self, idx: int) -> None:
+        """Delete the object at the given index."""
         if 0 <= idx < len(self.objects_list):
             if idx == self.active_idx:
                 self.active_idx = -1
@@ -133,18 +145,22 @@ class Scene(InputObserver, QAbstractListModel):
                 observer.obj_deleted(idx)
 
     def get_obj_from_idx(self, idx: int) -> Optional[Model]:
+        """Get the object at the given index."""
         if 0 <= idx < len(self.objects_list):
             return self.objects[self.objects_list[idx]]
 
     def get_obj_name(self, idx) -> str:
+        """Get the name of the object at the given index."""
         if 0 <= idx < len(self.objects_list):
             return self.objects_list[idx]
 
     def get_active(self) -> Optional[Model]:
+        """Get the currently selected object."""
         if self.active in self.objects:
             return self.objects[self.active]
 
     def add_obj(self, obj: Model) -> int:
+        """Add an object to the scene, and return the index it was inserted at."""
         name = obj.name
         object_name = name if name not in self.objects else self.get_new_name(name)
         obj.set_name(object_name)
@@ -162,12 +178,14 @@ class Scene(InputObserver, QAbstractListModel):
         )
 
     def get_obj(self, name: str) -> Model:
+        """Get the object with the given name."""
         return self.objects[name]
 
     def __getitem__(self, key: str) -> Model:
         return self.objects[key]
 
     def get_new_name(self, name: str) -> str:
+        """Get a new name for an object that is unique, based on the given name."""
         i = 2
         while f"{name}{i}" in self.objects:
             i += 1
@@ -176,6 +194,8 @@ class Scene(InputObserver, QAbstractListModel):
     def render(
         self, camera: Camera, active_fbo: Framebuffer, screen: Framebuffer
     ) -> None:
+        """Render the scene to a `screen`, and the active object (if any) to
+        the `active_fbo`."""
         for obj in self.objects.values():
             if obj.active:
                 obj.render(camera)
@@ -187,6 +207,8 @@ class Scene(InputObserver, QAbstractListModel):
         screen.use()
 
     def cast_ray(self, ray: Ray) -> Optional[Tuple[str, int]]:
+        """Cast a ray into the scene, and return the name and the index of the
+        object it hit."""
         min_dist = float("inf")
         min_dist_obj = None
         for i, obj_str in enumerate(self.objects_list):

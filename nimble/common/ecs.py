@@ -2,8 +2,8 @@
 An entity compontent system implementation, credit to 
 https://github.com/benmoran56/esper.
 
-Code is originally licensed under the MIT license. The recommended
-way to use this framekwork is to copy it directly into your project.
+Code is originally licensed under the MIT license. I have modified the code to
+integrate it more into nimble.
 """
 
 import time as _time

@@ -13,14 +13,19 @@ class OutlineWidget(QListView, SceneObserver):
         self.selection_model = self.selectionModel()
         self.selection_model.selectionChanged.connect(self.on_selection_changed)
         self.setAlternatingRowColors(True)
+
         current_project.scene.register_observer(self)
 
     @pyqtSlot(QItemSelection, QItemSelection)
     def on_selection_changed(self, selected, deselected):
+        # When the selection changes, we need to update the active object
+        # in the scene.
         if selected.indexes():
             current_project.scene.set_active(selected.indexes()[0].row())
 
     def select_changed(self, idx: int, obj: Optional[Model]):
+        # The active object changed, so we need to update the selection in
+        # the outline.
         if idx >= 0:
             self.selection_model.setCurrentIndex(
                 self.model().index(idx), QItemSelectionModel.ClearAndSelect

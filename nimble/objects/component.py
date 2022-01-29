@@ -32,6 +32,8 @@ class SlotType(Enum):
 
 
 class Slot(ABC, Generic[T]):
+    """A value in a component that can be set by the user."""
+
     def __init__(self, value: Optional[T], label: str, ty: SlotType):
         self.value = value
         self.label = label
@@ -51,6 +53,8 @@ class Slot(ABC, Generic[T]):
 
 
 class Component:
+    """A component which can modify an entity."""
+
     def __init__(self):
         self.inited = False
 
@@ -68,6 +72,8 @@ class Component:
 
 
 class PhysicsComponent(Component):
+    """A rigid-body physics component"""
+
     def __init__(
         self,
         model: Model,
@@ -99,6 +105,7 @@ class PhysicsComponent(Component):
         return [self.mass, self.friction, self.static]
 
     def apply_force(self, force: LikeVector3):
+        """Apply an external force to this physics body."""
         p.applyExternalForce(
             self._id,
             -1,
@@ -108,6 +115,7 @@ class PhysicsComponent(Component):
         )
 
     def collides_with(self, other: PhysicsComponent) -> bool:
+        """Check if this physics body collides with `other`."""
         return len(p.getContactPoints(self._id, other._id)) > 0
 
     @property
@@ -120,10 +128,16 @@ class PhysicsComponent(Component):
 
 
 class PhysicsProcessor(Processor):
+    """The processor for physics."""
+
     def __init__(self):
         super().__init__()
+
         self.client = p.connect(p.DIRECT)
+
+        # Reset the simulation
         p.resetSimulation()
+        # Set physics parameters
         p.setPhysicsEngineParameter(
             fixedTimeStep=1.0 / 120.0,
             numSolverIterations=100,
@@ -131,18 +145,25 @@ class PhysicsProcessor(Processor):
         p.setGravity(0, -9.81, 0)
 
     def add_rigid_body(self, component: PhysicsComponent, eid: int):
+        """Add a rigid body to the physics simulation."""
         collider = component.model.geometry.create_collision_shape(
             component.model.scale, p
         )
         body_id = p.createMultiBody(
-            0 if component.static.get_value() else component.mass.get_value(),
+            0
+            if component.static.get_value()
+            else component.mass.get_value(),  # Note: mass = 0 means static
             collider,
             basePosition=tuple(component.model.position.tolist()),
+            # Encode euler angles as quaternion
             baseOrientation=p.getQuaternionFromEuler(
                 tuple(-r for r in component.model.rotation.tolist())
             ),
         )
+
+        # Remember that we added this entity
         self.added_entities[eid] = (body_id, component.model)
+
         friction = component.friction.get_value()
         p.changeDynamics(
             body_id, -1, lateralFriction=friction, spinningFriction=friction * 0.01
@@ -152,6 +173,8 @@ class PhysicsProcessor(Processor):
     def init(self):
         self.added_entities: Dict[int, int] = {}
         self.world: World = self.world
+
+        # Loop through each physics component and add it to the physics simulation
         for (eid, component) in self.world.get_component(PhysicsComponent):
             if eid not in self.added_entities:
                 self.add_rigid_body(component, eid)
@@ -159,23 +182,29 @@ class PhysicsProcessor(Processor):
     def process(self):
         for (eid, component) in self.world.get_component(PhysicsComponent):
             if not component.model.active:
+                # If the model is disabled (inactive), remove it from the physics simulation
                 if eid in self.added_entities:
                     p.removeBody(component.body_id)
                     del self.added_entities[eid]
                 continue
 
             if eid not in self.added_entities:
+                # Add new bodies to the physics simulation
                 self.add_rigid_body(component, eid)
 
+        # Run the simulation
         p.stepSimulation()
 
         for (eid, component) in self.world.get_component(PhysicsComponent):
             if not component.static.get_value():
+                # Update the model position and rotation from the physics simulation
                 pos, rot = p.getBasePositionAndOrientation(component.body_id)
                 component.model.set_position(pos)
                 x, y, z = p.getEulerFromQuaternion(rot)
                 component.model.set_rotation((-x, -y, -z))
 
+        # Perform collision detection before next step to allow for custom scripts to
+        # react to collisions
         p.performCollisionDetection()
 
 
@@ -184,6 +213,8 @@ def CustomComponentQuery(id) -> str:
 
 
 class CustomComponent(Component):
+    """A custom component that can modify an entity."""
+
     _unique_id = itertools.count()
 
     def __init__(
@@ -217,6 +248,8 @@ class CustomComponent(Component):
 
 
 class ScriptProcessor(Processor):
+    """The processor for custom scripts."""
+
     def __init__(self, components: List[CustomComponent]):
         is_inited = set()
         self.processors = {}
@@ -232,6 +265,7 @@ class ScriptProcessor(Processor):
 
     @staticmethod
     def get_processor_from_script(path: Optional[str]) -> Processor:
+        """Get a processor from a script file."""
         from nimble.common import current_project
 
         if path is None:
@@ -240,7 +274,7 @@ class ScriptProcessor(Processor):
         with open(current_project.folder / path, "r") as f:
             script_file_contents = f.read()
 
-        @with_gui_logging_default({})
+        @with_gui_logging_default({})  # Route errors to the GUI logger
         def run():
             module = {"nimble": nimble}
             exec(script_file_contents, module)
@@ -263,15 +297,18 @@ class ScriptProcessor(Processor):
             processor.world = self.world
 
             if hasattr(processor, "init"):
+                # Only run init if it exists
                 processor.init()
 
     @with_gui_logging
     def process(self):
         for pid, processor in self.processors.items():
             for (_, component) in self.world.get_component(pid):
+                # Process every custom component and pass in it's model
                 processor.process(component.model)
 
     def add_keys_attr(self, keys: PressedKeys):
+        """Add the pressed keys attribute to the processors."""
         for processor in self.processors.values():
             processor.keys = keys
 
@@ -285,6 +322,8 @@ class BaseComponent(Processor):
 
 
 class NoProcessor(BaseComponent):
+    """A processor that gives a warning on initialization."""
+
     def init(self):
         logging.getLogger("nimble").error(
             "No component found. There is likely some error above, which prevented a component from being loaded."

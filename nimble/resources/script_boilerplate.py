@@ -1,3 +1,5 @@
+"""Default script file."""
+
 SCRIPT = """\
 from nimble.objects import BaseComponent
 

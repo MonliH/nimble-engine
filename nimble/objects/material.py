@@ -11,6 +11,8 @@ default_color = (0.2, 0.2, 0.2)
 
 
 class Material:
+    """A material storing an OpenGL shader and parameters for it."""
+
     def __init__(
         self,
         shader: str,
@@ -41,6 +43,8 @@ class Material:
         self.pass_model_matrix = pass_model_matrix
 
     def write_matrix(self, camera: OrbitCamera, model: Optional[Matrix44] = None):
+        """Write the MVP (model view projection) matrix to the shader."""
+
         if self.pass_mvp:
             self.shader["mvp"].write(camera.proj * camera.view * model)
             return
@@ -62,6 +66,8 @@ class Material:
         model: Matrix44,
         bounding_box_buffer: mgl.VertexArray,
     ):
+        """Render a geometry with the shader and given camera."""
+
         self.write_matrix(camera, model)
         self.shader["color"] = self.color
         geometry.vao.render(self.shader, mode=mgl.TRIANGLES)

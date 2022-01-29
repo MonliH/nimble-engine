@@ -1,4 +1,6 @@
-from typing import Optional, cast, Callable
+"""Widgets for components and their slots."""
+
+from typing import Optional, cast
 from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
@@ -12,7 +14,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QWheelEvent
-from PyQtAds.QtAds import ads
 
 from nimble.common.resources import load_ui
 from nimble.interface.warning_popup import WarningPopup
@@ -22,6 +23,8 @@ from nimble.common import current_project
 
 
 class NoScrollComboBox(QComboBox):
+    """A combo box that doesn't take focus or change when the mouse wheel is used."""
+
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
@@ -30,6 +33,8 @@ class NoScrollComboBox(QComboBox):
 
 
 class CreateScript(QDialog):
+    """Dialog to create a new script."""
+
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         load_ui(":/ui/new_script_popup.ui", self)

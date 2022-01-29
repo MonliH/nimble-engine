@@ -1,6 +1,5 @@
 """A virtual file explorer to look at project files."""
 
-from multiprocessing.dummy import active_children
 from typing import Optional, cast
 from PyQt5.QtWidgets import QTreeView, QWidget, QFileSystemModel
 

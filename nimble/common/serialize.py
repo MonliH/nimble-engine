@@ -1,5 +1,8 @@
+"""Serialize and unserialize functions for nimble objects, to a json 
+compatible representation."""
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, List
+from typing import Any, List
 
 from pyrr import Vector3
 

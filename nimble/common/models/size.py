@@ -3,6 +3,8 @@ from nimble.common.event_listener import WindowObserver
 
 
 class Size:
+    """A class to hold the size of a window."""
+
     def __init__(self, width: int, height: int):
         self._width = width
         self._height = height
